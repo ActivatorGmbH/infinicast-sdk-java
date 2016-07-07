@@ -1,4 +1,4 @@
-import io.activator.infinicast.client.utils.PathUtils;
+import io.infinicast.client.utils.PathUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -1,9 +1,8 @@
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
-import io.activator.infinicast.JArray;
-import io.activator.infinicast.JObject;
-import io.activator.infinicast.JToken;
+import io.infinicast.JArray;
+import io.infinicast.JObject;
+import io.infinicast.JToken;
 
 import java.util.ArrayList;
 

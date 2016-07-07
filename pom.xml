@@ -2,13 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.activator.infinicast</groupId>
+    <groupId>io.infinicast</groupId>
     <artifactId>infinicast-client</artifactId>
     <version>1.0.15</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>Client API to connect to Infinicast Cloud.</description>
+    <description>Infinicast SDK to communicate with the cloud.</description>
     <url>https://www.infinicast.io/</url>
 
     <licenses>
@@ -28,9 +28,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://code.activator.io/git/aplay_servicestorm.git</connection>
-        <developerConnection>scm:git:https://code.activator.io/git/aplay_servicestorm.git</developerConnection>
-        <url>https://code.activator.io/aplay_servicestorm.git/tree/master</url>
+        <connection>scm:git:git@github.com:ActivatorGmbH/infinicast-sdk-java.git</connection>
+        <developerConnection>scm:git:git@github.com:ActivatorGmbH/infinicast-sdk-java.git</developerConnection>
+        <url>https://github.com/ActivatorGmbH/infinicast-sdk-java</url>
     </scm>
 
     <properties>
