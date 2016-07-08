@@ -12,7 +12,7 @@ import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.impl.pathAccess.IPathAndData;
 import io.infinicast.client.impl.pathAccess.PathAndData;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 

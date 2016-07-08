@@ -1,7 +1,7 @@
 package io.infinicast.client.impl.query;
 import io.infinicast.JObject;
 import io.infinicast.client.api.query.Filter;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class ICDataFilter {
     int _dataFilterType;

@@ -12,7 +12,7 @@ import io.infinicast.client.impl.IConnector;
 import io.infinicast.client.impl.contexts.APathContext;
 import io.infinicast.client.impl.helper.ErrorHandlingHelper;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class BaseQueryExecutor {

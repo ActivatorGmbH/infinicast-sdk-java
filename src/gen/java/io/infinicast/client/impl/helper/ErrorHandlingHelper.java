@@ -6,7 +6,7 @@ import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.IConnector;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class ErrorHandlingHelper {
     static Logger _logger = LoggerFactory.getLogger(ErrorHandlingHelper.class);

@@ -3,7 +3,7 @@ import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.handler.IValidationResponder;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 @FunctionalInterface
 public interface APValidateRequestCallback {

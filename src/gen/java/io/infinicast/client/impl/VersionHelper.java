@@ -1,5 +1,5 @@
 package io.infinicast.client.impl;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class VersionHelper {
     public static String getClientVersion() {

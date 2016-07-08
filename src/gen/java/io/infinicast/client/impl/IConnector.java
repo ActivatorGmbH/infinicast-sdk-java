@@ -4,7 +4,7 @@ import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.impl.objectState.ObjectStateManager;
 import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public interface IConnector {
     PathImpl getRootPath();

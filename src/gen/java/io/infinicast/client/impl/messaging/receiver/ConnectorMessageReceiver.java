@@ -13,7 +13,7 @@ import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.protocol.Eps2ConnectorProtocol;
 import io.infinicast.client.protocol.IEndpoint2ConnectorProtocolHandler;
 import io.infinicast.client.utils.PathUtils;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.concurrent.*;

@@ -23,7 +23,6 @@ import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.impl.query.*;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.utils.PathUtils;
-import io.activator.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.concurrent.*;

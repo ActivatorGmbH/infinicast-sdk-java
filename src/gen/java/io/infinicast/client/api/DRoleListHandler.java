@@ -1,6 +1,6 @@
 package io.infinicast.client.api;
 import io.infinicast.client.api.paths.ErrorInfo;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 @FunctionalInterface

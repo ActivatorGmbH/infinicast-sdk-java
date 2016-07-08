@@ -5,7 +5,7 @@ import io.infinicast.JObject;
 import io.infinicast.NotImplementedException;
 import io.infinicast.client.protocol.messages.Eps2ConnectorMessage;
 import io.infinicast.client.utils.PathUtils;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class Eps2ConnectorProtocol {
     public void decodeStringMessage(APlayStringMessage message, IEndpoint2ConnectorProtocolHandler handler) {

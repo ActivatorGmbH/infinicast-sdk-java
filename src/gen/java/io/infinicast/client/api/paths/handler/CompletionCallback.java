@@ -1,6 +1,6 @@
 package io.infinicast.client.api.paths.handler;
 import io.infinicast.client.api.paths.ErrorInfo;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 @FunctionalInterface
 public interface CompletionCallback {

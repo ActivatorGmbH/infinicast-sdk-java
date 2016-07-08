@@ -1,7 +1,7 @@
 package io.infinicast.client.api;
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class RoleSettings {
     Boolean _allowConnectAsRole;

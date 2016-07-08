@@ -5,7 +5,7 @@ import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.handler.IValidationResponder;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class ValidationResponder implements IValidationResponder {
     IEndpoint _endpointInfo;

@@ -17,7 +17,7 @@ import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.paths.taskObjects.ADataAndPathAndEndpointContext;
 import io.infinicast.client.api.paths.taskObjects.ADataAndPathContext;
 import io.infinicast.client.api.query.ListenTerminateReason;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 import java.util.function.*;
 import java.util.concurrent.*;

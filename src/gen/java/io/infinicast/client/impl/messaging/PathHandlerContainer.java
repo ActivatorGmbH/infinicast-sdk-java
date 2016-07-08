@@ -3,7 +3,7 @@ import io.infinicast.JObject;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
 import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class PathHandlerContainer {

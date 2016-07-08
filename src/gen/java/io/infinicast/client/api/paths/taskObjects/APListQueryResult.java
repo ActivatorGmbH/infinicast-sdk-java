@@ -1,6 +1,6 @@
 package io.infinicast.client.api.paths.taskObjects;
 import io.infinicast.client.impl.pathAccess.IPathAndData;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class APListQueryResult {

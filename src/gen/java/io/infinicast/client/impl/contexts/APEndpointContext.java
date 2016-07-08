@@ -2,7 +2,7 @@ package io.infinicast.client.impl.contexts;
 import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.paths.IEndpointContext;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class APEndpointContext implements IEndpointContext {
     IEndpoint _endpoint;

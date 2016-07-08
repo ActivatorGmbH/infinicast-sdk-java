@@ -1,7 +1,7 @@
 package io.infinicast.client.api.paths.handler.lists;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.impl.pathAccess.IPathAndData;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 @FunctionalInterface

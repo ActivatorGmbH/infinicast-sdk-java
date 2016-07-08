@@ -1,5 +1,5 @@
 package io.infinicast.client.api.paths;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public interface IListenOnListenersHandler {
     void onListeningStarted(IListeningStartedContext context);

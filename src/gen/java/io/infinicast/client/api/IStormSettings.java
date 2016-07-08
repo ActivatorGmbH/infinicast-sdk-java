@@ -1,6 +1,6 @@
 package io.infinicast.client.api;
 import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 import java.util.concurrent.*;
 

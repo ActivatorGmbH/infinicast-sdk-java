@@ -3,7 +3,7 @@ import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.api.paths.IListeningStartedContext;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class APListeningStartedContext extends APathContext  implements IAPathContext, IListeningStartedContext {

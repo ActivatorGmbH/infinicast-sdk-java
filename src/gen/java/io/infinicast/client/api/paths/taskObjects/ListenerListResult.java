@@ -1,7 +1,7 @@
 package io.infinicast.client.api.paths.taskObjects;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class ListenerListResult {

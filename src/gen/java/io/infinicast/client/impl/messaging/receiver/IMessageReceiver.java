@@ -4,7 +4,7 @@ import io.infinicast.client.api.IPath;
 import io.infinicast.client.impl.IConnector;
 import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public interface IMessageReceiver {
     void addHandler(String messageType, IPath path, DCloudMessageHandler handler);

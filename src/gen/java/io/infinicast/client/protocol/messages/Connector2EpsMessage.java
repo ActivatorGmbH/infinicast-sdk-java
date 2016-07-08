@@ -3,7 +3,7 @@ import io.infinicast.APlayStringMessage;
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class Connector2EpsMessage extends BaseMessage  {
     String _space;

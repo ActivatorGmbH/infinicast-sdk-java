@@ -1,7 +1,7 @@
 package io.infinicast.client.api.paths.handler.lists;
 import io.infinicast.JObject;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 @FunctionalInterface
 public interface APListRemoveCallback {

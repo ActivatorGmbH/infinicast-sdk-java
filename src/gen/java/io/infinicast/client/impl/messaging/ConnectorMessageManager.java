@@ -17,7 +17,6 @@ import io.infinicast.client.impl.messaging.receiver.IMessageReceiver;
 import io.infinicast.client.impl.messaging.sender.IMessageSender;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.protocol.Connector2EpsProtocol;
-import io.activator.infinicast.*;
 
 import java.util.function.*;
 

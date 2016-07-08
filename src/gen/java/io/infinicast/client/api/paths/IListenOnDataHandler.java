@@ -1,7 +1,7 @@
 package io.infinicast.client.api.paths;
 import io.infinicast.JObject;
 import io.infinicast.client.api.IPath;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public interface IListenOnDataHandler {
     void onAdd(JObject data, IPath context);

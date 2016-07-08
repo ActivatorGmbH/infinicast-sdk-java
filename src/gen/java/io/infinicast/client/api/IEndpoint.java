@@ -3,7 +3,7 @@ import io.infinicast.JObject;
 import io.infinicast.client.api.paths.EndpointConnectionInfo;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.concurrent.*;

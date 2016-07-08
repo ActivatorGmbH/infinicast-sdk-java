@@ -1,6 +1,6 @@
 package io.infinicast.client.api;
 import io.infinicast.JObject;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class PathRoleSettings {
     public Boolean sendMessage;

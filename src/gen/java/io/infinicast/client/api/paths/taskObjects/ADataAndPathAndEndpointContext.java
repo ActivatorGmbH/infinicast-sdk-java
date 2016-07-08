@@ -1,7 +1,7 @@
 package io.infinicast.client.api.paths.taskObjects;
 import io.infinicast.JObject;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class ADataAndPathAndEndpointContext {
     JObject _data;

@@ -9,7 +9,7 @@ import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.pathAccess.PathImpl;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.concurrent.*;

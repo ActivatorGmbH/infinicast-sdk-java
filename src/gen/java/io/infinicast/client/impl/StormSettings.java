@@ -7,7 +7,7 @@ import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.helper.ErrorHandlingHelper;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 import java.util.concurrent.*;
 

@@ -1,5 +1,5 @@
 package io.infinicast.client.api.paths;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class GetDataOptions extends GetDataOptionsData  {

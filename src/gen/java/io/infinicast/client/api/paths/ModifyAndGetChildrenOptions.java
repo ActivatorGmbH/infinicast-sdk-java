@@ -1,6 +1,6 @@
 package io.infinicast.client.api.paths;
 import io.infinicast.client.api.query.OrderCriteria;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class ModifyAndGetChildrenOptions extends QueryOptionsData  {

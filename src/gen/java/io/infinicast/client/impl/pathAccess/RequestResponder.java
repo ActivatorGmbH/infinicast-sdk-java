@@ -4,7 +4,7 @@ import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.handler.requests.IAPResponder;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class RequestResponder implements IAPResponder {
     ConnectorMessageManager _messageManager;

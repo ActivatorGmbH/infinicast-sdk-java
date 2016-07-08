@@ -20,7 +20,7 @@ import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.impl.pathAccess.RequestResponder;
 import io.infinicast.client.impl.responder.ValidationResponder;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 import java.util.function.*;
 

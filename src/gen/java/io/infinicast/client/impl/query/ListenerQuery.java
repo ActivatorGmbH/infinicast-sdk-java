@@ -6,7 +6,7 @@ import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
 import io.infinicast.client.api.query.ListeningType;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.concurrent.*;

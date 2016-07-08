@@ -4,7 +4,7 @@ import io.infinicast.StringExtensions;
 import io.infinicast.client.api.query.ListeningType;
 import io.infinicast.client.impl.VersionHelper;
 import io.infinicast.client.protocol.messages.Connector2EpsMessage;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class Connector2EpsProtocol {
     public Connector2EpsMessage encodeInitConnector(String space, String type, JObject credentials) {

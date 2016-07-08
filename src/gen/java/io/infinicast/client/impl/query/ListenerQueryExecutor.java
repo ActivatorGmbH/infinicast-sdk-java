@@ -14,7 +14,7 @@ import io.infinicast.client.impl.pathAccess.EndpointAndData;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
 import io.infinicast.client.impl.pathAccess.PathImpl;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
 

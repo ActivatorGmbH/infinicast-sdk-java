@@ -2,7 +2,7 @@ package io.infinicast.client.api.paths.handler.requests;
 import io.infinicast.JObject;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 @FunctionalInterface
 public interface APRequestAnswerCallback {

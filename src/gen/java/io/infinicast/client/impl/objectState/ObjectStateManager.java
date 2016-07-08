@@ -1,7 +1,7 @@
 package io.infinicast.client.impl.objectState;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.impl.IConnector;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class ObjectStateManager {

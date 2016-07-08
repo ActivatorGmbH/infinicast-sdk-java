@@ -1,5 +1,5 @@
 package io.infinicast.client.impl.helper;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class LockObject {
 }

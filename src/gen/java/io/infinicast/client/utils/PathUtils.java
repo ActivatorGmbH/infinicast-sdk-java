@@ -2,7 +2,7 @@ package io.infinicast.client.utils;
 import io.infinicast.StringExtensions;
 import io.infinicast.StringUtils;
 import io.infinicast.client.api.IPath;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 import java.util.*;
 
 public class PathUtils {

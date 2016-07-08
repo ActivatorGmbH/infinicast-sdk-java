@@ -1,5 +1,5 @@
 package io.infinicast.client.api.query;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class OrderCriteria {
     String _field;

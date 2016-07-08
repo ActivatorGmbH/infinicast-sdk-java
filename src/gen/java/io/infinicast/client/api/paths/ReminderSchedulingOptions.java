@@ -1,7 +1,7 @@
 package io.infinicast.client.api.paths;
 import io.infinicast.JObject;
 import org.joda.time.DateTime;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class ReminderSchedulingOptions {
     DateTime dateTime;

@@ -1,5 +1,5 @@
 package io.infinicast.client.api.paths;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public interface IListeningStartedContext extends IPathAndEndpointContext {
     boolean isFirstListenerOfRole(String role);

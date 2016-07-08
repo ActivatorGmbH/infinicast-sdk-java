@@ -10,7 +10,7 @@ import io.infinicast.client.api.paths.taskObjects.FindOneOrAddChildResult;
 import io.infinicast.client.api.query.Filter;
 import io.infinicast.client.api.query.OrderCriteria;
 import io.infinicast.client.impl.pathAccess.IPathAndData;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 import java.util.function.*;
 import java.util.concurrent.*;

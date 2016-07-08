@@ -1,7 +1,7 @@
 package io.infinicast.client.impl.pathAccess;
 import io.infinicast.JObject;
 import io.infinicast.client.api.IPath;
-import io.activator.infinicast.*;
+import io.infinicast.*;
 
 public class PathAndData implements IPathAndData {
     JObject _data;
