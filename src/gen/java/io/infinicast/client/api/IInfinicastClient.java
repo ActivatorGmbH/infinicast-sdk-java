@@ -137,7 +137,6 @@ public interface IInfinicastClient {
      * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
      * @param role
      * @param callback
-     * @param registrationCompleteCallback
     */
     void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback);
 }

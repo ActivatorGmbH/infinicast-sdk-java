@@ -1,19 +1,36 @@
 package io.infinicast.client.impl.objectState;
-
-import io.infinicast.JObject;
-import io.infinicast.client.api.DRoleListHandler;
-import io.infinicast.client.api.IEndpoint;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.AfinityException;
-import io.infinicast.client.api.paths.EndpointConnectionInfo;
-import io.infinicast.client.api.paths.ErrorInfo;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
+import org.joda.time.DateTime;
+import io.infinicast.*;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -32,7 +49,6 @@ public class Endpoint extends PathImpl  implements IEndpoint {
      * note: path wildcards are valid paths for roles
      * @param pathString
      * @param role
-     * @param onComplete
     */
     public void addRoleToStringPath(String pathString, String role) {
         this.addRoleToStringPath(pathString, role, (CompleteCallback) null);
@@ -54,7 +70,6 @@ public class Endpoint extends PathImpl  implements IEndpoint {
      * note: path wildcards are valid paths for roles
      * @param path
      * @param role
-     * @param onComplete
     */
     public void addRole(IPath path, String role) {
         this.addRole(path, role, (CompleteCallback) null);
@@ -289,7 +304,6 @@ public class Endpoint extends PathImpl  implements IEndpoint {
      * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
      * @param path
      * @param role
-     * @param onComplete
     */
     public void removeRole(IPath path, String role) {
         this.removeRole(path, role, (CompleteCallback) null);
@@ -313,7 +327,6 @@ public class Endpoint extends PathImpl  implements IEndpoint {
      * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
      * @param pathString
      * @param role
-     * @param onComplete
     */
     public void removeRoleFromStringPath(String pathString, String role) {
         this.removeRoleFromStringPath(pathString, role, (CompleteCallback) null);

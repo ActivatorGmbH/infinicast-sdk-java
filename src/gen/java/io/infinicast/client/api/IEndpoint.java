@@ -29,7 +29,6 @@ public interface IEndpoint extends IPath {
      * note: path wildcards are valid paths for roles
      * @param pathString
      * @param role
-     * @param onComplete
     */
     void addRoleToStringPath(String pathString, String role);
     /**
@@ -63,7 +62,6 @@ public interface IEndpoint extends IPath {
      * note: path wildcards are valid paths for roles
      * @param path
      * @param role
-     * @param onComplete
     */
     void addRole(IPath path, String role);
     /**
@@ -138,7 +136,6 @@ public interface IEndpoint extends IPath {
      * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
      * @param path
      * @param role
-     * @param onComplete
     */
     void removeRole(IPath path, String role);
     /**
@@ -158,7 +155,6 @@ public interface IEndpoint extends IPath {
      * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
      * @param pathString
      * @param role
-     * @param onComplete
     */
     void removeRoleFromStringPath(String pathString, String role);
     void introduce(IPath objekt, JObject infoJson);
