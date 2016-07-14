@@ -1,7 +1,23 @@
 package io.infinicast.client.impl.pathAccess;
-import io.infinicast.*;
+
+import io.infinicast.JArray;
+import io.infinicast.JObject;
+import io.infinicast.JToken;
+import io.infinicast.Logger;
+import io.infinicast.LoggerFactory;
+import io.infinicast.StringExtensions;
+import io.infinicast.TriConsumer;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.paths.AMessageLevel;
+import io.infinicast.client.api.paths.AfinityException;
+import io.infinicast.client.api.paths.AtomicChange;
+import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.paths.GetDataOptions;
+import io.infinicast.client.api.paths.IAPathContext;
+import io.infinicast.client.api.paths.IChildrenQuery;
+import io.infinicast.client.api.paths.IListenerQuery;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.api.paths.ReminderSchedulingOptions;
 import io.infinicast.client.api.paths.handler.CompletionCallback;
 import io.infinicast.client.api.paths.handler.JsonCompletionCallback;
 import io.infinicast.client.api.paths.handler.messages.APMessageCallback;
@@ -20,13 +36,17 @@ import io.infinicast.client.impl.IConnector;
 import io.infinicast.client.impl.contexts.APathContext;
 import io.infinicast.client.impl.helper.ErrorHandlingHelper;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.query.ChildQueryExecutor;
+import io.infinicast.client.impl.query.ChildrenQuery;
+import io.infinicast.client.impl.query.ListenerQuery;
+import io.infinicast.client.impl.query.ListenerQueryExecutor;
+import io.infinicast.client.impl.query.PathQueryWithHandlerExecutor;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.utils.PathUtils;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
 
+import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -1074,7 +1094,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataSetValue(String field, double value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
@@ -1111,7 +1132,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataSetValue(String field, int value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
@@ -1140,7 +1162,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataSetValue(String field, boolean value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
@@ -1175,7 +1198,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataSetValue(String field, String value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
@@ -1295,7 +1319,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataSetValue(String field, JObject value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
@@ -1331,7 +1356,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return if the operation was successfull or not
      * @param data an AtomicChange object that can chain multiple atomic changes into one big atomic change
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataAtomic(AtomicChange data) {
         this.modifyDataAtomic(data, (CompletionCallback) null);
     }
@@ -1393,7 +1419,8 @@ public class PathImpl implements IPath {
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return the resulting json
      * @param data an AtomicChange object that can chain multiple atomic changes into one big atomic change
-     */
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
     public void modifyDataAtomicAndGetResult(AtomicChange data) {
         this.modifyDataAtomicAndGetResult(data, (JsonCompletionCallback) null);
     }
@@ -1473,7 +1500,8 @@ public class PathImpl implements IPath {
     /**
      * Sets the data of this path.
      * @param json the data to be assigned
-     */
+     * @param completeCallback a result that indicates success or failure
+    */
     public void setData(JObject json) {
         this.setData(json, (CompleteCallback) null);
     }
@@ -1989,7 +2017,8 @@ public class PathImpl implements IPath {
     /**
      * returns the data stored in the path
      * @param callback the returned json or an error
-     */
+     * @param options  optional parameter to add additional datacontext to the path (Note: deprecated)
+    */
     public void getData(GetDataCallback callback) {
         this.getData(callback, (GetDataOptions) null);
     }
@@ -2017,6 +2046,7 @@ public class PathImpl implements IPath {
     }
     /**
      * returns the data stored in the path
+     * @param options  optional parameter to add additional datacontext to the path (Note: deprecated)
      * @return the returned json or an error
     */
     public CompletableFuture<ADataAndPathContext> getDataAsync() {
@@ -2034,7 +2064,8 @@ public class PathImpl implements IPath {
     }
     /**
      * deletes the path and child paths
-     */
+     * @param completeCallback called with success or error
+    */
     public void delete() {
         this.delete((CompleteCallback) null);
     }
@@ -2053,7 +2084,8 @@ public class PathImpl implements IPath {
      * adds a reminder in the cloud. exactly one of the services that is registered via OnReminder will receive the reminder
      * @param schedulingOptions scheduling options to define when the timer should be fired
      * @param json data to be added to the reminder
-     */
+     * @param completeCallback called with success or error
+    */
     public void addReminder(ReminderSchedulingOptions schedulingOptions, JObject json) {
         this.addReminder(schedulingOptions, json, (CompleteCallback) null);
     }
@@ -2095,7 +2127,8 @@ public class PathImpl implements IPath {
     /**
      * Sends a Json Message to a Path. All Endpoints currently listening on Messages on this path will receive it.
      * @param json the Message payload
-     */
+     * @param completeCallback a callback triggered when the message  has been received by the cloud
+    */
     public void sendMessage(JObject json) {
         this.sendMessage(json, (CompleteCallback) null);
     }
@@ -2120,7 +2153,8 @@ public class PathImpl implements IPath {
     /**
      * registers a listener on data changes on this path
      * @param callback callback when the data changed
-     */
+     * @param registrationCompleteCallback sucessfull registration(error = null) or error
+    */
     public void onDataChange(TriConsumer<JObject, JObject, IPathAndEndpointContext> callback) {
         this.onDataChange(callback, (CompleteCallback) null);
     }
@@ -2149,7 +2183,8 @@ public class PathImpl implements IPath {
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
      * @param callback the callback to be called when a message is sent to this path
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
-     */
+     * @param listenTerminationHandler an optional parameter to get informed when the listening has been ended by the server.
+    */
     public void onMessage(APMessageCallback callback, CompleteCallback registrationCompleteCallback) {
         this.onMessage(callback, registrationCompleteCallback, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
@@ -2157,7 +2192,9 @@ public class PathImpl implements IPath {
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
      * @param callback the callback to be called when a message is sent to this path
-     */
+     * @param registrationCompleteCallback sucessfull registration(error = null) or error
+     * @param listenTerminationHandler an optional parameter to get informed when the listening has been ended by the server.
+    */
     public void onMessage(APMessageCallback callback) {
         this.onMessage(callback, (CompleteCallback) null, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
@@ -2186,6 +2223,7 @@ public class PathImpl implements IPath {
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
      * @param callback the callback to be called when a message is sent to this path
+     * @param listenTerminationHandler an optional parameter to get informed when the listening has been ended by the server.
      * @return a promise indicating success or error
     */
     public CompletableFuture<Void> onMessageAsync(APMessageCallback callback) {
@@ -2214,7 +2252,8 @@ public class PathImpl implements IPath {
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validtor needs to accept, change or reject the change via the responder object
      * @param callback callback when the validation occurs
-     */
+     * @param registrationCompleteCallback sucessfull registration(error = null) or error
+    */
     public void onValidateDataChange(APValidateDataChangeCallback callback) {
         this.onValidateDataChange(callback, (CompleteCallback) null);
     }
@@ -2241,7 +2280,8 @@ public class PathImpl implements IPath {
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
      * @param callback callback when the validation occurs
-     */
+     * @param registrationCompleteCallback sucessfull registration(error = null) or error
+    */
     public void onValidateMessage(APValidateMessageCallback callback) {
         this.onValidateMessage(callback, (CompleteCallback) null);
     }
@@ -2272,7 +2312,8 @@ public class PathImpl implements IPath {
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
      * @param callback callback that handels the request
-     */
+     * @param registrationCompleteCallback sucessfull registration(error = null) or error
+    */
     public void onRequest(APRequestCallback callback) {
         this.onRequest(callback, (CompleteCallback) null);
     }
@@ -2299,7 +2340,8 @@ public class PathImpl implements IPath {
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
      * @param callback callback that handels the reminder event
-     */
+     * @param registrationCompleteCallback sucessfull registration(error = null) or error
+    */
     public void onReminder(AReminderCallback callback) {
         this.onReminder(callback, (CompleteCallback) null);
     }
@@ -2328,7 +2370,8 @@ public class PathImpl implements IPath {
     /**
      * this method is deprecated and should no longer be used
      * @param callback
-     */
+     * @param registrationCompleteCallback
+    */
     public void onIntroduce(APObjectIntroduceCallback callback) {
         this.onIntroduce(callback, (CompleteCallback) null);
     }

@@ -1,5 +1,4 @@
 package io.infinicast.client.protocol;
-import io.infinicast.*;
 
 public enum Eps2ConnectorMessageType {
     Message(0),

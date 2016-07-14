@@ -1,10 +1,9 @@
 package io.infinicast.client.protocol.messages;
+
 import io.infinicast.APlayStringMessage;
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.client.protocol.Eps2ConnectorMessageType;
-import io.infinicast.*;
-
 public class Eps2ConnectorMessage extends BaseMessage  {
     Eps2ConnectorMessageType _type;
     JObject _endpointObject;

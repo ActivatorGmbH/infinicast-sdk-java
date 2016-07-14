@@ -1,11 +1,10 @@
 package io.infinicast.client.impl.messaging.sender;
+
 import io.infinicast.APlayStringMessage;
 import io.infinicast.IEndpoint2ServerNetLayer;
 import io.infinicast.Logger;
 import io.infinicast.LoggerFactory;
 import io.infinicast.client.protocol.messages.Connector2EpsMessage;
-import io.infinicast.*;
-
 public class MessageSender implements IMessageSender {
     IEndpoint2ServerNetLayer _connection;
     Logger _logger = LoggerFactory.getLogger(MessageSender.class);

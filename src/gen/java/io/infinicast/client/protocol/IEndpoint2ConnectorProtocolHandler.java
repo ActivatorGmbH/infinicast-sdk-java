@@ -1,8 +1,7 @@
 package io.infinicast.client.protocol;
+
 import io.infinicast.JArray;
 import io.infinicast.JObject;
-import io.infinicast.*;
-
 public interface IEndpoint2ConnectorProtocolHandler {
     void onInitConnector(JObject data, JObject senderEndpoint);
     void onReceiveRequestResponse(JObject data, int requestId, JObject senderEndpointObject);

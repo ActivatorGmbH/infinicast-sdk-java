@@ -1,11 +1,10 @@
 package io.infinicast.client.impl;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.impl.objectState.ObjectStateManager;
 import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.*;
-
 public interface IConnector {
     PathImpl getRootPath();
     IPath path(String path);

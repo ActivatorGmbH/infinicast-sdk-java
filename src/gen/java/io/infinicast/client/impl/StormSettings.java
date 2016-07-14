@@ -1,4 +1,5 @@
 package io.infinicast.client.impl;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IStormSettings;
 import io.infinicast.client.api.RoleSettings;
@@ -7,10 +8,8 @@ import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.helper.ErrorHandlingHelper;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.*;
 
-import java.util.concurrent.*;
-
+import java.util.concurrent.CompletableFuture;
 public class StormSettings implements IStormSettings {
     ConnectorMessageManager _messageManager;
     public StormSettings(ConnectorMessageManager messageManager) {

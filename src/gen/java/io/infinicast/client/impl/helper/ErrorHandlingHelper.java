@@ -1,4 +1,5 @@
 package io.infinicast.client.impl.helper;
+
 import io.infinicast.JObject;
 import io.infinicast.Logger;
 import io.infinicast.LoggerFactory;
@@ -6,8 +7,6 @@ import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.IConnector;
-import io.infinicast.*;
-
 public class ErrorHandlingHelper {
     static Logger _logger = LoggerFactory.getLogger(ErrorHandlingHelper.class);
     public static void checkIfHasErrorsAndCallHandlersFull(IConnector connector, JObject json, CompleteCallback completeCallback, IPath path) {

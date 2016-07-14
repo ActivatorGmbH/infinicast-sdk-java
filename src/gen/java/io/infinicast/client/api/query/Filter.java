@@ -1,7 +1,6 @@
 package io.infinicast.client.api.query;
-import io.infinicast.JObject;
-import io.infinicast.*;
 
+import io.infinicast.JObject;
 /**
  * Field filter class can be used to filter on fields as part of a ChildrenQuery
 */

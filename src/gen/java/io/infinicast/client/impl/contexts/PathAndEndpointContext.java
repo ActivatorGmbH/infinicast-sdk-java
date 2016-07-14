@@ -1,10 +1,9 @@
 package io.infinicast.client.impl.contexts;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.infinicast.*;
-
 public class PathAndEndpointContext implements IPathAndEndpointContext {
     IPath _path;
     IEndpoint _endpoint;

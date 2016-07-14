@@ -1,8 +1,7 @@
 package io.infinicast.client.api.paths;
+
 import io.infinicast.JArray;
 import io.infinicast.JObject;
-import io.infinicast.*;
-
 public class InternAtomicChange {
     public JObject json;
     public InternAtomicChange() {

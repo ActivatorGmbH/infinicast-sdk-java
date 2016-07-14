@@ -1,8 +1,5 @@
 package io.infinicast;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 public class NotImplementedException extends RuntimeException {
     public NotImplementedException() {
     }

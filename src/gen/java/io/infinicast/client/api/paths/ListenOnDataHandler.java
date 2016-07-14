@@ -1,10 +1,9 @@
 package io.infinicast.client.api.paths;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IPath;
-import io.infinicast.*;
 
-import java.util.function.*;
-
+import java.util.function.BiConsumer;
 public class ListenOnDataHandler implements IListenOnDataHandler {
     BiConsumer<JObject, IPath> _onAdd;
     BiConsumer<JObject, IPath> _onChange;

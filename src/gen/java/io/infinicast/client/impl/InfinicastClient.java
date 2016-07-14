@@ -1,6 +1,22 @@
 package io.infinicast.client.impl;
-import io.infinicast.*;
-import io.infinicast.client.api.*;
+
+import io.infinicast.Action;
+import io.infinicast.Console;
+import io.infinicast.Endpoint2ServerNetSettings;
+import io.infinicast.IEndpoint2ServerNetLayer;
+import io.infinicast.IEndpoint2ServerNetLayerHandler;
+import io.infinicast.JObject;
+import io.infinicast.LogLevel;
+import io.infinicast.Logger;
+import io.infinicast.LoggerFactory;
+import io.infinicast.LoggerSettings;
+import io.infinicast.StringExtensions;
+import io.infinicast.TcpEndpoint2ServerNetLayer;
+import io.infinicast.client.api.IEndpoint;
+import io.infinicast.client.api.IInfinicastClient;
+import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.IStormSettings;
+import io.infinicast.client.api.PathRoleSettings;
 import io.infinicast.client.api.paths.AfinityException;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.IEndpointContext;
@@ -16,15 +32,15 @@ import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.utils.NetFactory;
 import io.infinicast.client.utils.PathUtils;
 
-import java.util.function.*;
-import java.util.concurrent.*;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
  * all data, requests, messages can be listened on and live updates can be received.
 */
-public class InfinicastClient extends PathImpl implements IPath, IInfinicastClient, IConnector {
+public class InfinicastClient extends PathImpl  implements IPath, IInfinicastClient, IConnector {
     IEndpoint2ServerNetLayer _endpoint2ServerNetLayer;
     ObjectStateManager _objectStateManager;
     String _role = "";
@@ -420,7 +436,8 @@ public class InfinicastClient extends PathImpl implements IPath, IInfinicastClie
      * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
      * @param role
      * @param callback
-     */
+     * @param registrationCompleteCallback
+    */
     public void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback) {
         this.onOtherEndpointDisconnected(role, callback, (CompleteCallback) null);
     }

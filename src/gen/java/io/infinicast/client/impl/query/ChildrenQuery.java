@@ -1,8 +1,15 @@
 package io.infinicast.client.impl.query;
+
 import io.infinicast.JObject;
 import io.infinicast.QuadConsumer;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.paths.AfinityException;
+import io.infinicast.client.api.paths.AtomicChange;
+import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.paths.IAPathContext;
+import io.infinicast.client.api.paths.ICDataQuery;
+import io.infinicast.client.api.paths.IChildrenQuery;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
 import io.infinicast.client.api.paths.handler.lists.APListQueryResultCallback;
 import io.infinicast.client.api.paths.handler.objects.CreateObjectCallback;
 import io.infinicast.client.api.paths.options.CompleteCallback;
@@ -13,9 +20,8 @@ import io.infinicast.client.api.query.Filter;
 import io.infinicast.client.api.query.OrderCriteria;
 import io.infinicast.client.impl.pathAccess.IPathAndData;
 
-import java.util.function.*;
-import java.util.concurrent.*;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 /**
  * by using IChildrenQuery a path can be used as a collection containing other paths.
 */

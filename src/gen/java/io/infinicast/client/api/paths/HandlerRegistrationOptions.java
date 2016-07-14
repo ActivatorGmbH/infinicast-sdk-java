@@ -1,7 +1,6 @@
 package io.infinicast.client.api.paths;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.ArrayList;
 public class HandlerRegistrationOptions extends HandlerRegistrationOptionsData  {
     public HandlerRegistrationOptions() {
     }

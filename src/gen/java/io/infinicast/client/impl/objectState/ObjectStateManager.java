@@ -1,9 +1,9 @@
 package io.infinicast.client.impl.objectState;
+
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.impl.IConnector;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.HashMap;
 public class ObjectStateManager {
     IConnector _connector;
     HashMap<String, IPath> _localObjects = new HashMap<String, IPath>();

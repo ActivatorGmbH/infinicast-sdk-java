@@ -1,14 +1,14 @@
 package io.infinicast.client.api.paths;
+
 import io.infinicast.TriConsumer;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
 import io.infinicast.client.api.query.ListeningType;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-import io.infinicast.*;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
 
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 /**
  * access to listeners on a given path.
 */

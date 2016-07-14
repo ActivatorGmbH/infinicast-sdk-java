@@ -1,4 +1,5 @@
 package io.infinicast.client.impl.query;
+
 import io.infinicast.JObject;
 import io.infinicast.Logger;
 import io.infinicast.LoggerFactory;
@@ -20,10 +21,8 @@ import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.impl.pathAccess.RequestResponder;
 import io.infinicast.client.impl.responder.ValidationResponder;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.*;
 
-import java.util.function.*;
-
+import java.util.function.BiConsumer;
 public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
     Logger _logger = LoggerFactory.getLogger(PathQueryWithHandlerExecutor.class);
     public PathQueryWithHandlerExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {

@@ -1,8 +1,6 @@
 package io.infinicast.client.api.paths;
-import io.infinicast.*;
 
-import java.util.function.*;
-
+import java.util.function.Consumer;
 public class ListenOnListenersHandlerWithoutChange implements IListenOnListenersHandlerWithoutChange {
     Consumer<IListeningStartedContext> _OnListeningStarted;
     Consumer<IListeningEndedContext> _OnListeningEnded;

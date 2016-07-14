@@ -1,8 +1,7 @@
 package io.infinicast.client.utils;
+
 import io.infinicast.APlayStringMessage;
 import io.infinicast.ServerAddress;
-import io.infinicast.*;
-
 public class NetFactory {
     public static APlayStringMessage createMessage() {
         return new APlayStringMessage();

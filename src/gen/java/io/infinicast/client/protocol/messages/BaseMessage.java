@@ -1,8 +1,7 @@
 package io.infinicast.client.protocol.messages;
+
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
-import io.infinicast.*;
-
 public class BaseMessage {
     String _role;
     String _path;

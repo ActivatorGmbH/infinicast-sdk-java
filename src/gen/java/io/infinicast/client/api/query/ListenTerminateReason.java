@@ -1,5 +1,4 @@
 package io.infinicast.client.api.query;
-import io.infinicast.*;
 
 public enum ListenTerminateReason {
     UserRemoved(0),

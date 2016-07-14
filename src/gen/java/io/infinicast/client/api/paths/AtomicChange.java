@@ -1,9 +1,9 @@
 package io.infinicast.client.api.paths;
+
 import io.infinicast.JArray;
 import io.infinicast.JObject;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.ArrayList;
 public class AtomicChange {
     ArrayList<AfinityNamedJsonDataQuery> namedQueryList = new ArrayList<AfinityNamedJsonDataQuery>();
     ArrayList<InternAtomicChange> atomicChangeList = new ArrayList<InternAtomicChange>();

@@ -1,5 +1,10 @@
 package io.infinicast.client.impl.messaging;
-import io.infinicast.*;
+
+import io.infinicast.APlayStringMessage;
+import io.infinicast.Console;
+import io.infinicast.IEndpoint2ServerNetLayerHandler;
+import io.infinicast.JObject;
+import io.infinicast.StringExtensions;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.HandlerRegistrationOptionsData;
@@ -18,8 +23,8 @@ import io.infinicast.client.impl.messaging.sender.IMessageSender;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.protocol.Connector2EpsProtocol;
 
-import java.util.function.*;
-
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler {
     Connector2EpsProtocol _connector2EpsProtocol = new Connector2EpsProtocol();
     IMessageReceiver _receiver = new ConnectorMessageReceiver();

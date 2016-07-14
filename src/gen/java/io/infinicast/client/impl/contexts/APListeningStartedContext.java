@@ -1,11 +1,11 @@
 package io.infinicast.client.impl.contexts;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.api.paths.IListeningStartedContext;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.HashMap;
 public class APListeningStartedContext extends APathContext  implements IAPathContext, IListeningStartedContext {
     public HashMap<String, Integer> listenerCount = null;
     IEndpoint _endpoint;

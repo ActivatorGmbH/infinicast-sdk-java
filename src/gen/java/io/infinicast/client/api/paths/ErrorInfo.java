@@ -1,8 +1,7 @@
 package io.infinicast.client.api.paths;
+
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
-import io.infinicast.*;
-
 public class ErrorInfo {
     String _message;
     /**

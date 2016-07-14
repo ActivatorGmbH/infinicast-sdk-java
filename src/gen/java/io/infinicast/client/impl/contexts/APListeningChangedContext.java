@@ -1,10 +1,9 @@
 package io.infinicast.client.impl.contexts;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.api.paths.IListeningChangedContext;
-import io.infinicast.*;
-
 public class APListeningChangedContext extends APathContext  implements IAPathContext, IListeningChangedContext {
     IEndpoint _endpoint;
     JObject _endpointData;

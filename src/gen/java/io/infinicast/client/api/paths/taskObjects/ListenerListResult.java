@@ -1,9 +1,9 @@
 package io.infinicast.client.api.paths.taskObjects;
+
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.ArrayList;
 public class ListenerListResult {
     ArrayList<IEndpointAndData> _list;
     IAPathContext _context;

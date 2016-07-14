@@ -1,8 +1,8 @@
 package io.infinicast.client.api.paths.taskObjects;
-import io.infinicast.client.impl.pathAccess.IPathAndData;
-import io.infinicast.*;
-import java.util.*;
 
+import io.infinicast.client.impl.pathAccess.IPathAndData;
+
+import java.util.ArrayList;
 public class APListQueryResult {
     ArrayList<IPathAndData> _list;
     int _fullCount;

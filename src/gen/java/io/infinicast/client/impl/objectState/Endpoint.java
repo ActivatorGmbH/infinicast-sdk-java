@@ -1,4 +1,5 @@
 package io.infinicast.client.impl.objectState;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.DRoleListHandler;
 import io.infinicast.client.api.IEndpoint;
@@ -9,17 +10,16 @@ import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.pathAccess.PathImpl;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.*;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
 
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
  * all data, requests, messages can be listened on and live updates can be received.
 */
-public class Endpoint extends PathImpl implements IEndpoint {
+public class Endpoint extends PathImpl  implements IEndpoint {
     String _endpointId;
     public Endpoint(String path, String targetAddress, PathImpl root) {
         super(path);
@@ -32,7 +32,8 @@ public class Endpoint extends PathImpl implements IEndpoint {
      * note: path wildcards are valid paths for roles
      * @param pathString
      * @param role
-     */
+     * @param onComplete
+    */
     public void addRoleToStringPath(String pathString, String role) {
         this.addRoleToStringPath(pathString, role, (CompleteCallback) null);
     }
@@ -53,7 +54,8 @@ public class Endpoint extends PathImpl implements IEndpoint {
      * note: path wildcards are valid paths for roles
      * @param path
      * @param role
-     */
+     * @param onComplete
+    */
     public void addRole(IPath path, String role) {
         this.addRole(path, role, (CompleteCallback) null);
     }
@@ -287,7 +289,8 @@ public class Endpoint extends PathImpl implements IEndpoint {
      * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
      * @param path
      * @param role
-     */
+     * @param onComplete
+    */
     public void removeRole(IPath path, String role) {
         this.removeRole(path, role, (CompleteCallback) null);
     }
@@ -310,7 +313,8 @@ public class Endpoint extends PathImpl implements IEndpoint {
      * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
      * @param pathString
      * @param role
-     */
+     * @param onComplete
+    */
     public void removeRoleFromStringPath(String pathString, String role) {
         this.removeRoleFromStringPath(pathString, role, (CompleteCallback) null);
     }

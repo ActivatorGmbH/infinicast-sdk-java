@@ -1,12 +1,11 @@
 package io.infinicast.client.impl.responder;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.handler.IValidationResponder;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.*;
-
 public class ValidationResponder implements IValidationResponder {
     IEndpoint _endpointInfo;
     JObject _acceptJson;

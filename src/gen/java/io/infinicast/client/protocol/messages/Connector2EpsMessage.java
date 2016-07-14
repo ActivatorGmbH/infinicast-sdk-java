@@ -1,10 +1,9 @@
 package io.infinicast.client.protocol.messages;
+
 import io.infinicast.APlayStringMessage;
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.*;
-
 public class Connector2EpsMessage extends BaseMessage  {
     String _space;
     Connector2EpsMessageType _type;

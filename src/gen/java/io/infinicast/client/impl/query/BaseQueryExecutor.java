@@ -1,4 +1,5 @@
 package io.infinicast.client.impl.query;
+
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.JToken;
@@ -12,9 +13,8 @@ import io.infinicast.client.impl.IConnector;
 import io.infinicast.client.impl.contexts.APathContext;
 import io.infinicast.client.impl.helper.ErrorHandlingHelper;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.HashMap;
 public class BaseQueryExecutor {
     public IPath _path;
     public ConnectorMessageManager _messageManager;

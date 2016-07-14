@@ -1,7 +1,18 @@
 package io.infinicast.client.impl.query;
-import io.infinicast.*;
+
+import io.infinicast.JArray;
+import io.infinicast.JObject;
+import io.infinicast.JToken;
+import io.infinicast.StringExtensions;
+import io.infinicast.TriConsumer;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.paths.IAPathContext;
+import io.infinicast.client.api.paths.IListeningChangedContext;
+import io.infinicast.client.api.paths.IListeningEndedContext;
+import io.infinicast.client.api.paths.IListeningStartedContext;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.api.paths.ListeningHandlerRegistrationOptions;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.query.ListeningType;
 import io.infinicast.client.impl.IConnector;
@@ -14,10 +25,9 @@ import io.infinicast.client.impl.pathAccess.EndpointAndData;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
 import io.infinicast.client.impl.pathAccess.PathImpl;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.*;
-import java.util.*;
-import java.util.function.*;
 
+import java.util.ArrayList;
+import java.util.function.Consumer;
 public class ListenerQueryExecutor extends BaseQueryExecutor  {
     public ListenerQueryExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
         super(connector, path, messageManager);
@@ -62,7 +72,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     static APListeningStartedContext getListeningStartedContext(JObject json, IPathAndEndpointContext ctx) {
         APListeningStartedContext context = new APListeningStartedContext();
         if ((json != null)) {
-            context.listenerCount = getRoleCountDictionary(json);
+            context.listenerCount = BaseQueryExecutor.getRoleCountDictionary(json);
         }
         context.setPath(ctx.getPath());
         context.setEndpoint(ctx.getEndpoint());
@@ -72,7 +82,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     static APListeningEndedContext getListeningEndedContext(JObject json, IPathAndEndpointContext ctx) {
         APListeningEndedContext context = new APListeningEndedContext();
         if ((json != null)) {
-            context.listenerCount = getRoleCountDictionary(json);
+            context.listenerCount = BaseQueryExecutor.getRoleCountDictionary(json);
         }
         context.setPath(ctx.getPath());
         context.setEndpoint(ctx.getEndpoint());

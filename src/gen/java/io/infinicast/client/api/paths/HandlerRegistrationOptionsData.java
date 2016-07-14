@@ -1,8 +1,8 @@
 package io.infinicast.client.api.paths;
-import io.infinicast.client.api.query.ListeningType;
-import io.infinicast.*;
-import java.util.*;
 
+import io.infinicast.client.api.query.ListeningType;
+
+import java.util.ArrayList;
 public class HandlerRegistrationOptionsData {
     public boolean sendingEndpointDataContext = false;
     public ArrayList<DataContextRequest> dataContextPaths = null;

@@ -1,15 +1,12 @@
-import org.junit.Assert;
-import org.junit.Test;
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.JToken;
+import org.junit.Assert;
+import org.junit.Test;
 
 import java.util.ArrayList;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 /**
  * Created by ASG on 28.04.2016.

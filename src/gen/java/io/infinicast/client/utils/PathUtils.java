@@ -1,10 +1,11 @@
 package io.infinicast.client.utils;
+
 import io.infinicast.StringExtensions;
 import io.infinicast.StringUtils;
 import io.infinicast.client.api.IPath;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.ArrayList;
+import java.util.List;
 public class PathUtils {
     public static String infinicastInternStart = "/~IC/";
     public static String cleanup(String path) {

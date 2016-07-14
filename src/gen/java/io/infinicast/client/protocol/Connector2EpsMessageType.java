@@ -1,5 +1,4 @@
 package io.infinicast.client.protocol;
-import io.infinicast.*;
 
 public enum Connector2EpsMessageType {
     RequestResponse(0),

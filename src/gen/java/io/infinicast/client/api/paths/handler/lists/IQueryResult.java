@@ -1,8 +1,8 @@
 package io.infinicast.client.api.paths.handler.lists;
-import io.infinicast.client.api.IPath;
-import io.infinicast.*;
-import java.util.*;
 
+import io.infinicast.client.api.IPath;
+
+import java.util.List;
 public interface IQueryResult {
     List<IPath> results();
     IPath first();

@@ -1,8 +1,7 @@
 package io.infinicast.client.impl.pathAccess;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.IEndpoint;
-import io.infinicast.*;
-
 public class EndpointAndData implements IEndpointAndData {
     JObject _data;
     IEndpoint _endpoint;

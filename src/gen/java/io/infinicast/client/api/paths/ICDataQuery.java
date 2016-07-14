@@ -1,11 +1,11 @@
 package io.infinicast.client.api.paths;
+
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.client.api.query.OrderCriteria;
 import io.infinicast.client.impl.query.ICDataFilter;
-import io.infinicast.*;
-import java.util.*;
 
+import java.util.ArrayList;
 public class ICDataQuery {
     ArrayList<ICDataFilter> _dataFilters;
     int _limit;
