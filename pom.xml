@@ -7,13 +7,13 @@
     <version>1.0.15</version>
     <packaging>jar</packaging>
 
-    <name>${project.groupId}:${project.artifactId}</name>
+    <name>Infinicast SDK Java</name>
     <description>Infinicast SDK to communicate with the cloud.</description>
     <url>https://www.infinicast.io/</url>
 
     <licenses>
         <license>
-            <name>The Apache License, Version 2.0</name>
+            <name>The Apache Software License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
@@ -147,6 +147,12 @@
                      </execution>
 
                 </executions>
+            </plugin>
+            <!-- Run with goal notice:generate to update the NOTICE file -->
+            <plugin>
+                <groupId>org.jasig.maven</groupId>
+                <artifactId>maven-notice-plugin</artifactId>
+                <version>1.0.4</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
