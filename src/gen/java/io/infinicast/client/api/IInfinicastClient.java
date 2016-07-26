@@ -1,15 +1,15 @@
 package io.infinicast.client.api;
+
 import io.infinicast.Action;
 import io.infinicast.JObject;
 import io.infinicast.LogLevel;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.IEndpointContext;
 import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.*;
 
-import java.util.function.*;
-import java.util.concurrent.*;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 /**
  * the main object to communicate with the infinicat cloud.
  * it is mainly used to obtain a path or endpoint reference, as well as connection management
@@ -137,6 +137,6 @@ public interface IInfinicastClient {
      * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
      * @param role
      * @param callback
-     */
+    */
     void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback);
 }

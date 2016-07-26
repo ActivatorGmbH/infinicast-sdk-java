@@ -1,8 +1,16 @@
 package io.infinicast.client.api;
+
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.TriConsumer;
-import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.paths.AMessageLevel;
+import io.infinicast.client.api.paths.AtomicChange;
+import io.infinicast.client.api.paths.GetDataOptions;
+import io.infinicast.client.api.paths.IAPathContext;
+import io.infinicast.client.api.paths.IChildrenQuery;
+import io.infinicast.client.api.paths.IListenerQuery;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.api.paths.ReminderSchedulingOptions;
 import io.infinicast.client.api.paths.handler.CompletionCallback;
 import io.infinicast.client.api.paths.handler.JsonCompletionCallback;
 import io.infinicast.client.api.paths.handler.messages.APMessageCallback;
@@ -17,11 +25,9 @@ import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.paths.taskObjects.ADataAndPathAndEndpointContext;
 import io.infinicast.client.api.paths.taskObjects.ADataAndPathContext;
 import io.infinicast.client.api.query.ListenTerminateReason;
-import io.infinicast.*;
 
-import java.util.function.*;
-import java.util.concurrent.*;
-
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -408,7 +414,7 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+    */
     void modifyDataSetValue(String field, double value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
@@ -433,7 +439,7 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+    */
     void modifyDataSetValue(String field, boolean value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
@@ -458,7 +464,7 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+    */
     void modifyDataSetValue(String field, int value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
@@ -483,7 +489,7 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+    */
     void modifyDataSetValue(String field, String value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
@@ -508,7 +514,7 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     */
+    */
     void modifyDataSetValue(String field, JObject value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
@@ -533,7 +539,7 @@ public interface IPath {
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return if the operation was successfull or not
      * @param data an AtomicChange object that can chain multiple atomic changes into one big atomic change
-     */
+    */
     void modifyDataAtomic(AtomicChange data);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
@@ -558,7 +564,7 @@ public interface IPath {
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return the resulting json
      * @param data an AtomicChange object that can chain multiple atomic changes into one big atomic change
-     */
+    */
     void modifyDataAtomicAndGetResult(AtomicChange data);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
@@ -582,7 +588,7 @@ public interface IPath {
     /**
      * this method is deprecated and should no longer be used
      * @param callback
-     */
+    */
     void onIntroduce(APObjectIntroduceCallback callback);
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
@@ -606,7 +612,7 @@ public interface IPath {
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
      * @param callback callback that handels the reminder event
-     */
+    */
     void onReminder(AReminderCallback callback);
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
@@ -631,7 +637,7 @@ public interface IPath {
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
      * @param callback callback that handels the request
-     */
+    */
     void onRequest(APRequestCallback callback);
     /**
      * sets the data of a given field to the value.
@@ -654,7 +660,7 @@ public interface IPath {
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
      * @param callback callback when the validation occurs
-     */
+    */
     void onValidateMessage(APValidateMessageCallback callback);
     /**
      * sets the data of a given field to the value.
@@ -703,7 +709,7 @@ public interface IPath {
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
      * @param callback the callback to be called when a message is sent to this path
-     */
+    */
     void onMessage(APMessageCallback callback);
     /**
      * Modifies the data by incrementing the given field of the data in this path.
@@ -716,7 +722,7 @@ public interface IPath {
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
      * @param callback the callback to be called when a message is sent to this path
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
-     */
+    */
     void onMessage(APMessageCallback callback, CompleteCallback registrationCompleteCallback);
     /**
      * Modifies the data by decrement the given field of the data in this path.
@@ -742,7 +748,7 @@ public interface IPath {
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validtor needs to accept, change or reject the change via the responder object
      * @param callback callback when the validation occurs
-     */
+    */
     void onValidateDataChange(APValidateDataChangeCallback callback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
@@ -766,7 +772,7 @@ public interface IPath {
     /**
      * registers a listener on data changes on this path
      * @param callback callback when the data changed
-     */
+    */
     void onDataChange(TriConsumer<JObject, JObject, IPathAndEndpointContext> callback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
@@ -790,7 +796,7 @@ public interface IPath {
      * Experimental feature:
      * deletes a reminder by comparing the provided queryData
      * @param queryData data to identify the reminder.
-     */
+    */
     void deleteReminder(JObject queryData);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
@@ -817,7 +823,7 @@ public interface IPath {
      * @param queryData data to identify the reminder.
      * @param schedulingOptions scheduling options to define when the timer should be fired
      * @param json data to be added to the reminder
-     */
+    */
     void addOrReplaceReminder(JObject queryData, ReminderSchedulingOptions schedulingOptions, JObject json);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
@@ -845,7 +851,7 @@ public interface IPath {
      * adds a reminder in the cloud. exactly one of the services that is registered via OnReminder will receive the reminder
      * @param schedulingOptions scheduling options to define when the timer should be fired
      * @param json data to be added to the reminder
-     */
+    */
     void addReminder(ReminderSchedulingOptions schedulingOptions, JObject json);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
@@ -869,7 +875,7 @@ public interface IPath {
     CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, double value);
     /**
      * deletes the path and child paths
-     */
+    */
     void delete();
     /**
      * Modifies the data by converting the given field in the data to an array and adds the value to the array
@@ -914,7 +920,7 @@ public interface IPath {
     /**
      * returns the data stored in the path
      * @param callback the returned json or an error
-     */
+    */
     void getData(GetDataCallback callback);
     /**
      * Modifies the data by converting the given field in the data to an array and adds the value to the array
@@ -937,7 +943,7 @@ public interface IPath {
     /**
      * Sets the data of this path.
      * @param json the data to be assigned
-     */
+    */
     void setData(JObject json);
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
@@ -960,7 +966,7 @@ public interface IPath {
     /**
      * Sends a Json Message to a Path. All Endpoints currently listening on Messages on this path will receive it.
      * @param json the Message payload
-     */
+    */
     void sendMessage(JObject json);
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time

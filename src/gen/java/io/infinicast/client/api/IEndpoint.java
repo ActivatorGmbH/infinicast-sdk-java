@@ -1,13 +1,13 @@
 package io.infinicast.client.api;
+
 import io.infinicast.JObject;
 import io.infinicast.client.api.paths.EndpointConnectionInfo;
 import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.*;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
 
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 /**
  * An endpoint is a connected client in the infinicast cloud.
  * via this interface services can modify roles of the endpoints, disconnect them or simply get the id of an endpoint.

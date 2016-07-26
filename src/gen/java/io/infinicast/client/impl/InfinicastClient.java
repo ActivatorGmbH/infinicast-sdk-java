@@ -1,30 +1,42 @@
 package io.infinicast.client.impl;
+import org.joda.time.DateTime;
 import io.infinicast.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.api.paths.AfinityException;
-import io.infinicast.client.api.paths.ErrorInfo;
-import io.infinicast.client.api.paths.IEndpointContext;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.impl.contexts.APEndpointContext;
-import io.infinicast.client.impl.helper.ErrorHandlingHelper;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.sender.MessageSender;
-import io.infinicast.client.impl.objectState.Endpoint;
-import io.infinicast.client.impl.objectState.ObjectStateManager;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.client.utils.NetFactory;
-import io.infinicast.client.utils.PathUtils;
-
+import java.util.*;
 import java.util.function.*;
 import java.util.concurrent.*;
-
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
  * all data, requests, messages can be listened on and live updates can be received.
 */
-public class InfinicastClient extends PathImpl implements IPath, IInfinicastClient, IConnector {
+public class InfinicastClient extends PathImpl  implements IPath, IInfinicastClient, IConnector {
     IEndpoint2ServerNetLayer _endpoint2ServerNetLayer;
     ObjectStateManager _objectStateManager;
     String _role = "";
@@ -420,7 +432,7 @@ public class InfinicastClient extends PathImpl implements IPath, IInfinicastClie
      * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
      * @param role
      * @param callback
-     */
+    */
     public void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback) {
         this.onOtherEndpointDisconnected(role, callback, (CompleteCallback) null);
     }

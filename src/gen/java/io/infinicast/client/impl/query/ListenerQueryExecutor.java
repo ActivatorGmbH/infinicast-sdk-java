@@ -1,23 +1,36 @@
 package io.infinicast.client.impl.query;
-import io.infinicast.*;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.query.ListeningType;
-import io.infinicast.client.impl.IConnector;
-import io.infinicast.client.impl.contexts.APListeningChangedContext;
-import io.infinicast.client.impl.contexts.APListeningEndedContext;
-import io.infinicast.client.impl.contexts.APListeningStartedContext;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.objectState.Endpoint;
-import io.infinicast.client.impl.pathAccess.EndpointAndData;
-import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
+import org.joda.time.DateTime;
 import io.infinicast.*;
 import java.util.*;
 import java.util.function.*;
-
+import java.util.concurrent.*;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.node.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 public class ListenerQueryExecutor extends BaseQueryExecutor  {
     public ListenerQueryExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
         super(connector, path, messageManager);
@@ -62,7 +75,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     static APListeningStartedContext getListeningStartedContext(JObject json, IPathAndEndpointContext ctx) {
         APListeningStartedContext context = new APListeningStartedContext();
         if ((json != null)) {
-            context.listenerCount = getRoleCountDictionary(json);
+            context.listenerCount = BaseQueryExecutor.getRoleCountDictionary(json);
         }
         context.setPath(ctx.getPath());
         context.setEndpoint(ctx.getEndpoint());
@@ -72,7 +85,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     static APListeningEndedContext getListeningEndedContext(JObject json, IPathAndEndpointContext ctx) {
         APListeningEndedContext context = new APListeningEndedContext();
         if ((json != null)) {
-            context.listenerCount = getRoleCountDictionary(json);
+            context.listenerCount = BaseQueryExecutor.getRoleCountDictionary(json);
         }
         context.setPath(ctx.getPath());
         context.setEndpoint(ctx.getEndpoint());

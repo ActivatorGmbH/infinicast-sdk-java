@@ -1,5 +1,4 @@
 package io.infinicast.client.api.paths;
-import io.infinicast.*;
 
 public enum AfinityJsonDataQueryType {
     All(0),
