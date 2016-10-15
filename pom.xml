@@ -4,7 +4,7 @@
 
     <groupId>io.infinicast</groupId>
     <artifactId>infinicast-client</artifactId>
-    <version>1.0.16-Java7-SNAPSHOT</version>
+    <version>1.0.16-Java7</version>
     <packaging>jar</packaging>
 
     <name>Infinicast SDK Java</name>
