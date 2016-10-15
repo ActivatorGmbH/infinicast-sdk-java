@@ -1,26 +1,34 @@
 package io.infinicast.client.impl.messaging;
-
 import io.infinicast.*;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.ErrorInfo;
-import io.infinicast.client.api.paths.HandlerRegistrationOptionsData;
-import io.infinicast.client.api.paths.IAPathContext;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.query.ListenTerminateReason;
-import io.infinicast.client.api.query.ListeningType;
-import io.infinicast.client.impl.IConnector;
-import io.infinicast.client.impl.contexts.APathContext;
-import io.infinicast.client.impl.helper.LockObject;
-import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
-import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
-import io.infinicast.client.impl.messaging.receiver.ConnectorMessageReceiver;
-import io.infinicast.client.impl.messaging.receiver.IMessageReceiver;
-import io.infinicast.client.impl.messaging.sender.IMessageSender;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.client.protocol.Connector2EpsProtocol;
-
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler {
     Connector2EpsProtocol _connector2EpsProtocol = new Connector2EpsProtocol();
     IMessageReceiver _receiver = new ConnectorMessageReceiver();
@@ -40,11 +48,14 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
     public void setSender(IMessageSender sender) {
         this._sender = sender;
     }
-    public void sendMessageWithResponseString(Connector2EpsMessageType messageType, String pathString, JObject data, DMessageResponseHandler responseHandler) {
+    public void sendMessageWithResponseString(Connector2EpsMessageType messageType, String pathString, JObject data, final DMessageResponseHandler responseHandler) {
+        ConnectorMessageManager self = this;
         int messageRequestId = this.getRequestId();
-        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, context, requestedId) -> {
-            responseHandler.accept(json, context);
-            ;
+        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context, int requestedId) {
+                responseHandler.accept(json, context);
+                ;
+            }
         }
         );
         this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithResponse(messageType, pathString, data, messageRequestId));
@@ -78,7 +89,8 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
     public void sendValidatedMessage(Connector2EpsMessageType messageType, IPath path, JObject data, String originalEndpoint) {
         this._sender.sendMessage(this._connector2EpsProtocol.encodeValidatedMessage(messageType, path.toString(), data, originalEndpoint));
     }
-    public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, IPath path, DCloudMessageHandler handler, CompleteCallback completeCallback, HandlerRegistrationOptionsData options, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
+    public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options, final BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
+        ConnectorMessageManager self = this;
         Boolean consomeOnePerRole = null;
         if ((options != null)) {
             consomeOnePerRole = options.getIsOncePerRole();
@@ -97,24 +109,26 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
             roleFilter = options.getRoleFilter();
         }
         int messageRequestId = this.getRequestId();
-        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, context, requestedId) -> {
-            JObject errorJson = null;
-            if ((json != null)) {
-                errorJson = json.getJObject("error");
-            }
-            if (((json != null) && (errorJson != null))) {
-                if ((completeCallback != null)) {
-                    completeCallback.accept(ErrorInfo.fromJson(errorJson, path.toString()));
-                    ;
+        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context, int requestedId) {
+                JObject errorJson = null;
+                if ((json != null)) {
+                    errorJson = json.getJObject("error");
+                }
+                if (((json != null) && (errorJson != null))) {
+                    if ((completeCallback != null)) {
+                        completeCallback.accept(ErrorInfo.fromJson(errorJson, path.toString()));
+                        ;
+                    }
+                    else {
+                        getConnector().unhandeledError(path, errorJson);
+                    }
                 }
                 else {
-                    this.getConnector().unhandeledError(path, errorJson);
-                }
-            }
-            else {
-                if ((completeCallback != null)) {
-                    completeCallback.accept(null);
-                    ;
+                    if ((completeCallback != null)) {
+                        completeCallback.accept(null);
+                        ;
+                    }
                 }
             }
         }
@@ -123,13 +137,15 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
             this._sender.sendMessage(this._connector2EpsProtocol.encodeRegisterHandlerMessage(messageType, path.toString(), messageRequestId, consomeOnePerRole, sticky, listeningType, roleFilter, terminationHandler));
             this._receiver.addHandler(messageType.toString(), path, handler);
             if ((listenTerminationHandler != null)) {
-                this._receiver.addHandler((messageType.toString() + "_ListenTerminate"), path, (json, context, id) -> {
-                    Console.WriteLine(("Listenterminate received " + json.toString()));
-                    APathContext ctx = new APathContext();
-                    ctx.setPath(context.getPath());
-                    ListenTerminateReason reason = (ListenTerminateReason) ListenTerminateReason.valueOf(json.getString("reason"));
-                    listenTerminationHandler.accept(reason, ctx);
-                    ;
+                this._receiver.addHandler((messageType.toString() + "_ListenTerminate"), path, new DCloudMessageHandler() {
+                    public void accept(JObject json, IPathAndEndpointContext context, int id) {
+                        Console.WriteLine(("Listenterminate received " + json.toString()));
+                        APathContext ctx = new APathContext();
+                        ctx.setPath(context.getPath());
+                        ListenTerminateReason reason = (ListenTerminateReason) ListenTerminateReason.valueOf(json.getString("reason"));
+                        listenTerminationHandler.accept(reason, ctx);
+                        ;
+                    }
                 }
                 );
             }
@@ -163,15 +179,18 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
     }
     public void sendDebugMessage(IPath iaPath, int level, JObject data) {
     }
-    public void sendUpdateDebugStatistics(JObject filters, Consumer<JObject> handler) {
+    public void sendUpdateDebugStatistics(JObject filters, final Consumer<JObject> handler) {
+        ConnectorMessageManager self = this;
         int messageRequestId = this.getRequestId();
-        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, context, requestedId) -> {
-            handler.accept(json);
+        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context, int requestedId) {
+                handler.accept(json);
+            }
         }
         );
         this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithResponse(Connector2EpsMessageType.DebugStatistics, "", filters, messageRequestId));
     }
-    public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, IPath path, DCloudMessageHandler handler, CompleteCallback completeCallback, HandlerRegistrationOptionsData options) {
+    public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options) {
         this.addHandler(isDelete, messageType, path, handler, completeCallback, options, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
 }

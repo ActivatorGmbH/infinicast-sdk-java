@@ -1,26 +1,34 @@
 package io.infinicast.client.api;
-
-import io.infinicast.JArray;
-import io.infinicast.JObject;
-import io.infinicast.TriConsumer;
+import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.handler.CompletionCallback;
-import io.infinicast.client.api.paths.handler.JsonCompletionCallback;
-import io.infinicast.client.api.paths.handler.messages.APMessageCallback;
-import io.infinicast.client.api.paths.handler.messages.APValidateDataChangeCallback;
-import io.infinicast.client.api.paths.handler.messages.APValidateMessageCallback;
-import io.infinicast.client.api.paths.handler.objects.APObjectIntroduceCallback;
-import io.infinicast.client.api.paths.handler.objects.GetDataCallback;
-import io.infinicast.client.api.paths.handler.reminders.AReminderCallback;
-import io.infinicast.client.api.paths.handler.requests.APRequestAnswerCallback;
-import io.infinicast.client.api.paths.handler.requests.APRequestCallback;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.paths.taskObjects.ADataAndPathAndEndpointContext;
-import io.infinicast.client.api.paths.taskObjects.ADataAndPathContext;
-import io.infinicast.client.api.query.ListenTerminateReason;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -159,6 +167,7 @@ public interface IPath {
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validator needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the data changed
      * @return a promise indicating success or error
     */
@@ -184,6 +193,7 @@ public interface IPath {
     /**
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the validation occurs
      * @return a promise indicating success or error
     */
@@ -197,6 +207,7 @@ public interface IPath {
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
+     * the handler can be deregistered by passing null as callback
      * @param callback callback that handels the request
      * @return a promise indicating success or error
     */
@@ -210,6 +221,7 @@ public interface IPath {
     /**
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
+     * the handler can be deregistered by passing null as callback
      * @param callback callback that handels the reminder event
      * @return a promise indicating success or error
     */
@@ -604,6 +616,7 @@ public interface IPath {
     /**
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
+     * the handler can be deregistered by passing null as callback
      * @param callback callback that handels the reminder event
     */
     void onReminder(AReminderCallback callback);
@@ -616,6 +629,7 @@ public interface IPath {
     /**
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
+     * the handler can be deregistered by passing null as callback
      * @param callback callback that handels the reminder event
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
     */
@@ -629,6 +643,7 @@ public interface IPath {
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
+     * the handler can be deregistered by passing null as callback
      * @param callback callback that handels the request
     */
     void onRequest(APRequestCallback callback);
@@ -640,6 +655,7 @@ public interface IPath {
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
+     * the handler can be deregistered by passing null as callback
      * @param callback callback that handels the request
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
     */
@@ -652,6 +668,7 @@ public interface IPath {
     /**
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the validation occurs
     */
     void onValidateMessage(APValidateMessageCallback callback);
@@ -663,6 +680,7 @@ public interface IPath {
     /**
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the validation occurs
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
     */
@@ -675,6 +693,7 @@ public interface IPath {
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
      * @param callback the callback to be called when a message is sent to this path
      * @return a promise indicating success or error
     */
@@ -687,6 +706,7 @@ public interface IPath {
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
      * @param callback the callback to be called when a message is sent to this path
      * @param listenTerminationHandler an optional parameter to get informed when the listening has been ended by the server.
      * @return a promise indicating success or error
@@ -701,6 +721,7 @@ public interface IPath {
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
      * @param callback the callback to be called when a message is sent to this path
     */
     void onMessage(APMessageCallback callback);
@@ -713,6 +734,7 @@ public interface IPath {
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
      * @param callback the callback to be called when a message is sent to this path
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
     */
@@ -726,6 +748,7 @@ public interface IPath {
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
      * @param callback the callback to be called when a message is sent to this path
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
      * @param listenTerminationHandler an optional parameter to get informed when the listening has been ended by the server.
@@ -740,6 +763,7 @@ public interface IPath {
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validtor needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the validation occurs
     */
     void onValidateDataChange(APValidateDataChangeCallback callback);
@@ -752,6 +776,7 @@ public interface IPath {
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validtor needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the validation occurs
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
     */
@@ -764,6 +789,7 @@ public interface IPath {
     CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, JArray value);
     /**
      * registers a listener on data changes on this path
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the data changed
     */
     void onDataChange(TriConsumer<JObject, JObject, IPathAndEndpointContext> callback);
@@ -775,6 +801,7 @@ public interface IPath {
     CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, String value);
     /**
      * registers a listener on data changes on this path
+     * the handler can be deregistered by passing null as callback
      * @param callback callback when the data changed
      * @param registrationCompleteCallback sucessfull registration(error = null) or error
     */

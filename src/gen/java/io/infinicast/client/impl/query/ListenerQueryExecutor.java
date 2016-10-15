@@ -1,28 +1,40 @@
 package io.infinicast.client.impl.query;
-
 import io.infinicast.*;
-import io.infinicast.client.api.IPath;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.query.ListeningType;
-import io.infinicast.client.impl.IConnector;
-import io.infinicast.client.impl.contexts.APListeningChangedContext;
-import io.infinicast.client.impl.contexts.APListeningEndedContext;
-import io.infinicast.client.impl.contexts.APListeningStartedContext;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.objectState.Endpoint;
-import io.infinicast.client.impl.pathAccess.EndpointAndData;
-import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-
-import java.util.ArrayList;
-import java.util.function.Consumer;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 public class ListenerQueryExecutor extends BaseQueryExecutor  {
     public ListenerQueryExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
         super(connector, path, messageManager);
     }
-    public void getListenerList(TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback, String roleFilter, ListeningType listeningType) {
+    public void getListenerList(final TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback, String roleFilter, ListeningType listeningType) {
+        ListenerQueryExecutor self = this;
         JObject settings = new JObject();
         if (!(StringExtensions.IsNullOrEmpty(roleFilter))) {
             settings.set("role", roleFilter);
@@ -30,32 +42,36 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         if ((listeningType != ListeningType.Any)) {
             settings.set("messageType", listeningType.toString());
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetListeningList, super._path, settings, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
-                callback.accept(error, null, null);
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetListeningList, super._path, settings, new DMessageResponseHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context) {
+                if (!(checkIfHasErrorsAndCallHandlersNew(json, new CompleteCallback() {
+                    public void accept(ErrorInfo error) {
+                        callback.accept(error, null, null);
+                        ;
+                    }
+                }
+                ))) {
+                    JArray array = json.getJArray("list");
+                    if ((array != null)) {
+                        ArrayList<IEndpointAndData> resultList = new ArrayList<IEndpointAndData>();
+                        for (JToken ob : array) {
+                            Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), _connector.getRootPath());
+                            EndpointAndData endpointData = new EndpointAndData();
+                            if (ob.containsNonNull("data")) {
+                                endpointData.setData(ob.getJObject("data"));
+                            }
+                            endpointData.setEndpoint(endpointObject);
+                            resultList.add(endpointData);
+                        }
+                        callback.accept(null, resultList, getPathContext(_path));
+                        ;
+                    }
+                    else {
+                        throw new RuntimeException(new Exception("GetListeningList should always contain a list, even if it is empty"));
+                    }
+                }
                 ;
             }
-            ))) {
-                JArray array = json.getJArray("list");
-                if ((array != null)) {
-                    ArrayList<IEndpointAndData> resultList = new ArrayList<IEndpointAndData>();
-                    for (JToken ob : array) {
-                        Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), super._connector.getRootPath());
-                        EndpointAndData endpointData = new EndpointAndData();
-                        if (ob.containsNonNull("data")) {
-                            endpointData.setData(ob.getJObject("data"));
-                        }
-                        endpointData.setEndpoint(endpointObject);
-                        resultList.add(endpointData);
-                    }
-                    callback.accept(null, resultList, super.getPathContext(super._path));
-                    ;
-                }
-                else {
-                    throw new RuntimeException(new Exception("GetListeningList should always contain a list, even if it is empty"));
-                }
-            }
-            ;
         }
         );
     }
@@ -80,10 +96,10 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         context.setIsDisconnected(json.getBoolean("disconnected"));
         return context;
     }
-    public void onListeningStarted(Consumer<IListeningStartedContext> handler) {
+    public void onListeningStarted(final Consumer<IListeningStartedContext> handler) {
         this.onListeningStarted(handler, (ListeningHandlerRegistrationOptions) null, (CompleteCallback) null);
     }
-    public void onListeningStarted(Consumer<IListeningStartedContext> handler, ListeningHandlerRegistrationOptions options) {
+    public void onListeningStarted(final Consumer<IListeningStartedContext> handler, ListeningHandlerRegistrationOptions options) {
         this.onListeningStarted(handler, options, (CompleteCallback) null);
     }
     JObject getCustomOptionsJson(ListeningHandlerRegistrationOptions options) {
@@ -102,15 +118,19 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         }
         return customOptions;
     }
-    public void onListeningStarted(Consumer<IListeningStartedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningStarted, super._path, (json, ctx, id) -> {
-            APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
-            handler.accept(context);
-            ;
+    public void onListeningStarted(final Consumer<IListeningStartedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
+        ListenerQueryExecutor self = this;
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningStarted, super._path, new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
+                APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
+                handler.accept(context);
+                ;
+            }
         }
         , completeCallback, options);
     }
-    public void getAndListenOnListeners(Consumer<IListeningStartedContext> onStart, Consumer<IListeningChangedContext> onChange, Consumer<IListeningEndedContext> onEnd, ListeningHandlerRegistrationOptions options, CompleteCallback registrationCompleteCallback) {
+    public void getAndListenOnListeners(final Consumer<IListeningStartedContext> onStart, final Consumer<IListeningChangedContext> onChange, final Consumer<IListeningEndedContext> onEnd, ListeningHandlerRegistrationOptions options, final CompleteCallback registrationCompleteCallback) {
+        ListenerQueryExecutor self = this;
         JObject parameters = this.getCustomOptionsJson(options);
         if ((parameters == null)) {
             parameters = new JObject();
@@ -127,61 +147,71 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         if ((onChange == null)) {
             parameters.set("noChange", true);
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnListeners, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
-                if ((registrationCompleteCallback != null)) {
-                    registrationCompleteCallback.accept(error);
-                    ;
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnListeners, super._path, parameters, new DMessageResponseHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context) {
+                if (!(checkIfHasErrorsAndCallHandlersNew(json, new CompleteCallback() {
+                    public void accept(ErrorInfo error) {
+                        if ((registrationCompleteCallback != null)) {
+                            registrationCompleteCallback.accept(error);
+                            ;
+                        }
+                        ;
+                    }
+                }
+                ))) {
+                    JArray array = json.getJArray("list");
+                    if ((array != null)) {
+                        PathImpl rootPath = _connector.getRootPath();
+                        for (JToken ob : array) {
+                            Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), rootPath);
+                            EndpointAndData endpointData = new EndpointAndData();
+                            endpointData.setData(ob.getJObject("data"));
+                            endpointData.setEndpoint(endpointObject);
+                            APListeningStartedContext listeningStartedContext = new APListeningStartedContext();
+                            listeningStartedContext.setEndpoint(endpointObject);
+                            listeningStartedContext.setEndpointData(endpointData.getData());
+                            if ((onStart != null)) {
+                                onStart.accept(listeningStartedContext);
+                                ;
+                            }
+                        }
+                    }
+                    if ((registrationCompleteCallback != null)) {
+                        registrationCompleteCallback.accept(null);
+                        ;
+                    }
                 }
                 ;
             }
-            ))) {
-                JArray array = json.getJArray("list");
-                if ((array != null)) {
-                    PathImpl rootPath = super._connector.getRootPath();
-                    for (JToken ob : array) {
-                        Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), rootPath);
-                        EndpointAndData endpointData = new EndpointAndData();
-                        endpointData.setData(ob.getJObject("data"));
-                        endpointData.setEndpoint(endpointObject);
-                        APListeningStartedContext listeningStartedContext = new APListeningStartedContext();
-                        listeningStartedContext.setEndpoint(endpointObject);
-                        listeningStartedContext.setEndpointData(endpointData.getData());
-                        if ((onStart != null)) {
-                            onStart.accept(listeningStartedContext);
-                            ;
-                        }
-                    }
-                }
-                if ((registrationCompleteCallback != null)) {
-                    registrationCompleteCallback.accept(null);
-                    ;
-                }
-            }
-            ;
         }
         );
         if ((((onStart != null) || (onChange != null)) || (onEnd != null))) {
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, (json, ctx, id) -> {
-                APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
-                if ((onStart != null)) {
-                    onStart.accept(context);
-                    ;
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, new DCloudMessageHandler() {
+                public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
+                    APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
+                    if ((onStart != null)) {
+                        onStart.accept(context);
+                        ;
+                    }
                 }
             }
             );
             if ((onChange != null)) {
-                super._messageManager.registerHandler(Connector2EpsMessageType.ListeningChanged, super._path, (json, ctx, id) -> {
-                    onChange.accept(ListenerQueryExecutor.getListeningChangedContext(json, ctx));
-                    ;
+                super._messageManager.registerHandler(Connector2EpsMessageType.ListeningChanged, super._path, new DCloudMessageHandler() {
+                    public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
+                        onChange.accept(ListenerQueryExecutor.getListeningChangedContext(json, ctx));
+                        ;
+                    }
                 }
                 );
             }
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningEnded, super._path, (json, ctx, id) -> {
-                APListeningEndedContext context = ListenerQueryExecutor.getListeningEndedContext(json, ctx);
-                if ((onEnd != null)) {
-                    onEnd.accept(context);
-                    ;
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningEnded, super._path, new DCloudMessageHandler() {
+                public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
+                    APListeningEndedContext context = ListenerQueryExecutor.getListeningEndedContext(json, ctx);
+                    if ((onEnd != null)) {
+                        onEnd.accept(context);
+                        ;
+                    }
                 }
             }
             );
@@ -209,28 +239,34 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         context.setEndpointData(ctx.getEndpointData());
         return context;
     }
-    public void onListeningChanged(Consumer<IListeningChangedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningChanged, super._path, (json, ctx, id) -> {
-            ListenerQueryExecutor.forwardListeningChangedMessages(handler, json, ctx);
+    public void onListeningChanged(final Consumer<IListeningChangedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
+        ListenerQueryExecutor self = this;
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningChanged, super._path, new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
+                ListenerQueryExecutor.forwardListeningChangedMessages(handler, json, ctx);
+            }
         }
         , completeCallback, options);
     }
-    public void onListeningChanged(Consumer<IListeningChangedContext> handler, ListeningHandlerRegistrationOptions options) {
+    public void onListeningChanged(final Consumer<IListeningChangedContext> handler, ListeningHandlerRegistrationOptions options) {
         this.onListeningChanged(handler, options, (CompleteCallback) null);
     }
-    public void onListeningChanged(Consumer<IListeningChangedContext> handler) {
+    public void onListeningChanged(final Consumer<IListeningChangedContext> handler) {
         this.onListeningChanged(handler, (ListeningHandlerRegistrationOptions) null, (CompleteCallback) null);
     }
-    public void onListeningEnded(Consumer<IListeningEndedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningEnded, super._path, (json, ctx, id) -> {
-            ListenerQueryExecutor.forwardListeningEndedMessages(handler, json, ctx);
+    public void onListeningEnded(final Consumer<IListeningEndedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
+        ListenerQueryExecutor self = this;
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningEnded, super._path, new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
+                ListenerQueryExecutor.forwardListeningEndedMessages(handler, json, ctx);
+            }
         }
         , completeCallback, options);
     }
-    public void onListeningEnded(Consumer<IListeningEndedContext> handler, ListeningHandlerRegistrationOptions options) {
+    public void onListeningEnded(final Consumer<IListeningEndedContext> handler, ListeningHandlerRegistrationOptions options) {
         this.onListeningEnded(handler, options, (CompleteCallback) null);
     }
-    public void onListeningEnded(Consumer<IListeningEndedContext> handler) {
+    public void onListeningEnded(final Consumer<IListeningEndedContext> handler) {
         this.onListeningEnded(handler, (ListeningHandlerRegistrationOptions) null, (CompleteCallback) null);
     }
 }

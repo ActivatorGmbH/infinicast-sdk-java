@@ -1,16 +1,34 @@
 package io.infinicast.client.impl.query;
-
-import io.infinicast.TriConsumer;
-import io.infinicast.client.api.IPath;
+import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
-import io.infinicast.client.api.query.ListeningType;
-import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * access to listeners on a given path.
 */
@@ -53,18 +71,21 @@ public class ListenerQuery implements IListenerQuery {
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */
     public CompletableFuture<ListenerListResult> toListAsync() {
-        CompletableFuture<ListenerListResult> tcs = new CompletableFuture<ListenerListResult>();
-        this.toList((error, list, context) -> {
-            if ((error != null)) {
-                tcs.completeExceptionally(new AfinityException(error));
+        ListenerQuery self = this;
+        final CompletableFuture<ListenerListResult> tcs = new CompletableFuture<ListenerListResult>();
+        this.toList(new TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext>() {
+            public void accept(ErrorInfo error, ArrayList<IEndpointAndData> list, IAPathContext context) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    ListenerListResult result = new ListenerListResult();
+                    result.setContext(context);
+                    result.setList(list);
+                    tcs.complete(result);
+                }
+                ;
             }
-            else {
-                ListenerListResult result = new ListenerListResult();
-                result.setContext(context);
-                result.setList(list);
-                tcs.complete(result);
-            }
-            ;
         }
         );
         return tcs;
@@ -75,20 +96,25 @@ public class ListenerQuery implements IListenerQuery {
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will stop to listen on this path.
     */
-    public void onEnd(Consumer<IListeningEndedContext> handler, CompleteCallback registrationCompleteCallback) {
-        this._executor.onListeningEnded((context) -> {
-            handler.accept(context);
-            ;
-        }
-        , this.getHandlerRegistrationOptions(), (error) -> {
-            if ((registrationCompleteCallback != null)) {
-                registrationCompleteCallback.accept(error);
+    public void onEnd(final Consumer<IListeningEndedContext> handler, final CompleteCallback registrationCompleteCallback) {
+        ListenerQuery self = this;
+        this._executor.onListeningEnded(new Consumer<IListeningEndedContext>() {
+            public void accept(IListeningEndedContext context) {
+                handler.accept(context);
                 ;
             }
-            else if ((error != null)) {
-                this._executor.unhandeledError(error);
+        }
+        , this.getHandlerRegistrationOptions(), new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((registrationCompleteCallback != null)) {
+                    registrationCompleteCallback.accept(error);
+                    ;
+                }
+                else if ((error != null)) {
+                    _executor.unhandeledError(error);
+                }
+                ;
             }
-            ;
         }
         );
     }
@@ -96,15 +122,18 @@ public class ListenerQuery implements IListenerQuery {
      * adds a listener that will be informed as soon as an endpoint that fits the filters will begin to listen on this path.
     */
     public CompletableFuture<Void> onStartAsync(Consumer<IListeningStartedContext> handler) {
-        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.onStart(handler, (error) -> {
-            if ((error != null)) {
-                tcs.completeExceptionally(new AfinityException(error));
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onStart(handler, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
             }
-            else {
-                tcs.complete(null);
-            }
-            ;
         }
         );
         return tcs;
@@ -112,22 +141,25 @@ public class ListenerQuery implements IListenerQuery {
     /**
      * adds a listener that will be informed as soon as the endpoint data of a listener on this path will be changed
     */
-    public void onDataChange(Consumer<IListeningChangedContext> handler) {
+    public void onDataChange(final Consumer<IListeningChangedContext> handler) {
         this.onDataChange(handler, (CompleteCallback) null);
     }
     /**
      * adds a listener that will be informed as soon as the endpoint data of a listener on this path will be changed
     */
     public CompletableFuture<Void> onDataChangeAsync(Consumer<IListeningChangedContext> handler) {
-        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.onDataChange(handler, (error) -> {
-            if ((error != null)) {
-                tcs.completeExceptionally(new AfinityException(error));
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onDataChange(handler, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
             }
-            else {
-                tcs.complete(null);
-            }
-            ;
         }
         );
         return tcs;
@@ -135,20 +167,25 @@ public class ListenerQuery implements IListenerQuery {
     /**
      * adds a listener that will be informed as soon as the endpoint data of a listener on this path will be changed
     */
-    public void onDataChange(Consumer<IListeningChangedContext> handler, CompleteCallback registrationCompleteCallback) {
-        this._executor.onListeningChanged((context) -> {
-            handler.accept(context);
-            ;
-        }
-        , this.getHandlerRegistrationOptions(), (error) -> {
-            if ((registrationCompleteCallback != null)) {
-                registrationCompleteCallback.accept(error);
+    public void onDataChange(final Consumer<IListeningChangedContext> handler, final CompleteCallback registrationCompleteCallback) {
+        ListenerQuery self = this;
+        this._executor.onListeningChanged(new Consumer<IListeningChangedContext>() {
+            public void accept(IListeningChangedContext context) {
+                handler.accept(context);
                 ;
             }
-            else if ((error != null)) {
-                this._executor.unhandeledError(error);
+        }
+        , this.getHandlerRegistrationOptions(), new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((registrationCompleteCallback != null)) {
+                    registrationCompleteCallback.accept(error);
+                    ;
+                }
+                else if ((error != null)) {
+                    _executor.unhandeledError(error);
+                }
+                ;
             }
-            ;
         }
         );
     }
@@ -156,15 +193,18 @@ public class ListenerQuery implements IListenerQuery {
      * adds a listener that will be informed as soon as an endpoint that fits the filters will stop to listen on this path.
     */
     public CompletableFuture<Void> onEndAsync(Consumer<IListeningEndedContext> handler) {
-        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.onEnd(handler, (error) -> {
-            if ((error != null)) {
-                tcs.completeExceptionally(new AfinityException(error));
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onEnd(handler, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
             }
-            else {
-                tcs.complete(null);
-            }
-            ;
         }
         );
         return tcs;
@@ -178,49 +218,57 @@ public class ListenerQuery implements IListenerQuery {
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will begin to listen on this path.
     */
-    public void onStart(Consumer<IListeningStartedContext> handler) {
+    public void onStart(final Consumer<IListeningStartedContext> handler) {
         this.onStart(handler, (CompleteCallback) null);
     }
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will begin to listen on this path.
     */
-    public void onStart(Consumer<IListeningStartedContext> handler, CompleteCallback registrationCompleteCallback) {
-        this._executor.onListeningStarted((context) -> {
-            handler.accept(context);
-            ;
-        }
-        , this.getHandlerRegistrationOptions(), (error) -> {
-            if ((registrationCompleteCallback != null)) {
-                registrationCompleteCallback.accept(error);
+    public void onStart(final Consumer<IListeningStartedContext> handler, final CompleteCallback registrationCompleteCallback) {
+        ListenerQuery self = this;
+        this._executor.onListeningStarted(new Consumer<IListeningStartedContext>() {
+            public void accept(IListeningStartedContext context) {
+                handler.accept(context);
                 ;
             }
-            else if ((error != null)) {
-                this._executor.unhandeledError(error);
+        }
+        , this.getHandlerRegistrationOptions(), new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((registrationCompleteCallback != null)) {
+                    registrationCompleteCallback.accept(error);
+                    ;
+                }
+                else if ((error != null)) {
+                    _executor.unhandeledError(error);
+                }
+                ;
             }
-            ;
         }
         );
     }
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will stop to listen on this path.
     */
-    public void onEnd(Consumer<IListeningEndedContext> handler) {
+    public void onEnd(final Consumer<IListeningEndedContext> handler) {
         this.onEnd(handler, (CompleteCallback) null);
     }
     /**
      * adds listeners to start, end and change of endpoint listeners on this path.
      * the onStart event will be triggered for all already existing listeners on this path.
     */
-    public void live(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd, Consumer<IListeningChangedContext> onChange, CompleteCallback registrationCompleteCallback) {
-        this._executor.getAndListenOnListeners(onStart, onChange, onEnd, this.getHandlerRegistrationOptions(), (error) -> {
-            if ((registrationCompleteCallback != null)) {
-                registrationCompleteCallback.accept(error);
+    public void live(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd, Consumer<IListeningChangedContext> onChange, final CompleteCallback registrationCompleteCallback) {
+        ListenerQuery self = this;
+        this._executor.getAndListenOnListeners(onStart, onChange, onEnd, this.getHandlerRegistrationOptions(), new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((registrationCompleteCallback != null)) {
+                    registrationCompleteCallback.accept(error);
+                    ;
+                }
+                else if ((error != null)) {
+                    _executor.unhandeledError(error);
+                }
                 ;
             }
-            else if ((error != null)) {
-                this._executor.unhandeledError(error);
-            }
-            ;
         }
         );
     }
@@ -243,15 +291,18 @@ public class ListenerQuery implements IListenerQuery {
      * the onStart event will be triggered for all already existing listeners on this path.
     */
     public CompletableFuture<Void> liveAsync(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd, Consumer<IListeningChangedContext> onChange) {
-        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.live(onStart, onEnd, onChange, (error) -> {
-            if ((error != null)) {
-                tcs.completeExceptionally(new AfinityException(error));
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.live(onStart, onEnd, onChange, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
             }
-            else {
-                tcs.complete(null);
-            }
-            ;
         }
         );
         return tcs;

@@ -1,25 +1,34 @@
 package io.infinicast.client.impl;
-
 import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
 import io.infinicast.client.api.*;
-import io.infinicast.client.api.paths.AfinityException;
-import io.infinicast.client.api.paths.ErrorInfo;
-import io.infinicast.client.api.paths.IEndpointContext;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.impl.contexts.APEndpointContext;
-import io.infinicast.client.impl.helper.ErrorHandlingHelper;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.sender.MessageSender;
-import io.infinicast.client.impl.objectState.Endpoint;
-import io.infinicast.client.impl.objectState.ObjectStateManager;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.client.utils.NetFactory;
-import io.infinicast.client.utils.PathUtils;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -78,15 +87,18 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
      * @return Promise that will complete as soon as the connection has been established or throw an  if not.
     */
     public CompletableFuture<Void> connectWithCredentialsAsync(String address, String space, String conntectRole, JObject credentials) {
-        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.connectWithCredentials(address, space, conntectRole, credentials, (errorInfo) -> {
-            if ((errorInfo != null)) {
-                tcs.completeExceptionally(new AfinityException(errorInfo));
+        InfinicastClient self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.connectWithCredentials(address, space, conntectRole, credentials, new Consumer<ErrorInfo>() {
+            public void accept(ErrorInfo errorInfo) {
+                if ((errorInfo != null)) {
+                    tcs.completeExceptionally(new AfinityException(errorInfo));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
             }
-            else {
-                tcs.complete(null);
-            }
-            ;
         }
         );
         return tcs;
@@ -194,14 +206,18 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public IPath getEndpointListPath() {
         return super.path("/~endpoints/");
     }
-    public void systemCommand(String path, JObject data, Consumer<JObject> result) {
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.SystemCommand, path, data, (json, context) -> {
-            result.accept(json);
-            ;
+    public void systemCommand(String path, JObject data, final Consumer<JObject> result) {
+        InfinicastClient self = this;
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.SystemCommand, path, data, new DMessageResponseHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context) {
+                result.accept(json);
+                ;
+            }
         }
         );
     }
-    public void systemCommandWithHandler(String path, JObject data, Consumer<JObject> onEvent, CompleteCallback registrationCompleteHandler) {
+    public void systemCommandWithHandler(String path, JObject data, final Consumer<JObject> onEvent, final CompleteCallback registrationCompleteHandler) {
+        InfinicastClient self = this;
         if (data.containsNonNull("type")) {
             String type = data.getString("type");
             if ((!(StringExtensions.IsNullOrEmpty(type)) && StringExtensions.areEqual(type, "registerMsgDebugger"))) {
@@ -210,22 +226,26 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
                     super.messageManager.registerHandler(Connector2EpsMessageType.DebugObserverMessage, super.path(PathUtils.infinicastInternStart), null);
                 }
                 else {
-                    super.messageManager.registerHandler(Connector2EpsMessageType.DebugObserverMessage, super.path(PathUtils.infinicastInternStart), (json, context, id) -> {
-                        onEvent.accept(json);
-                        ;
+                    super.messageManager.registerHandler(Connector2EpsMessageType.DebugObserverMessage, super.path(PathUtils.infinicastInternStart), new DCloudMessageHandler() {
+                        public void accept(JObject json, IPathAndEndpointContext context, int id) {
+                            onEvent.accept(json);
+                            ;
+                        }
                     }
                     );
                 }
-                super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.SystemCommand, path, data, (json, context) -> {
-                    if (((json == null) || json.containsNonNull("error"))) {
-                        registrationCompleteHandler.accept(ErrorInfo.fromMessage(json.getString("error"), ""));
+                super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.SystemCommand, path, data, new DMessageResponseHandler() {
+                    public void accept(JObject json, IPathAndEndpointContext context) {
+                        if (((json == null) || json.containsNonNull("error"))) {
+                            registrationCompleteHandler.accept(ErrorInfo.fromMessage(json.getString("error"), ""));
+                            ;
+                        }
+                        else {
+                            registrationCompleteHandler.accept(null);
+                            ;
+                        }
                         ;
                     }
-                    else {
-                        registrationCompleteHandler.accept(null);
-                        ;
-                    }
-                    ;
                 }
                 );
             }
@@ -235,15 +255,18 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         this.pathRoleSetup(path, role, pathSettings, (CompleteCallback) null);
     }
     public CompletableFuture<Void> pathRoleSetupAsync(String path, String role, PathRoleSettings pathSettings) {
-        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.pathRoleSetup(path, role, pathSettings, (info) -> {
-            if ((info != null)) {
-                tcs.completeExceptionally(new AfinityException(info));
+        InfinicastClient self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.pathRoleSetup(path, role, pathSettings, new CompleteCallback() {
+            public void accept(ErrorInfo info) {
+                if ((info != null)) {
+                    tcs.completeExceptionally(new AfinityException(info));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
             }
-            else {
-                tcs.complete(null);
-            }
-            ;
         }
         );
         return tcs;
@@ -263,9 +286,12 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         super.messageManager.sendUpdateDebugStatistics(filters, handler);
     }
     public CompletableFuture<JObject> updateDebugStatisticsAsync(JObject filters) {
-        CompletableFuture<JObject> tcs = new CompletableFuture<JObject>();
-        this.updateDebugStatistics(filters, (json) -> {
-            tcs.complete(json);
+        InfinicastClient self = this;
+        final CompletableFuture<JObject> tcs = new CompletableFuture<JObject>();
+        this.updateDebugStatistics(filters, new Consumer<JObject>() {
+            public void accept(JObject json) {
+                tcs.complete(json);
+            }
         }
         );
         return tcs;
@@ -352,7 +378,8 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public void onUnhandeledError(BiConsumer<IPath, String> errorHandler) {
         this._unhandeledErrorHandler = errorHandler;
     }
-    public void pathRoleSetup(String path, String role, PathRoleSettings pathSettings, CompleteCallback onComplete) {
+    public void pathRoleSetup(String path, String role, PathRoleSettings pathSettings, final CompleteCallback onComplete) {
+        InfinicastClient self = this;
         if (!(StringExtensions.IsNullOrEmpty(path))) {
             path = PathUtils.cleanup(path);
         }
@@ -361,8 +388,10 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             message.set("data", pathSettings.toJson());
         }
         message.set("role", role);
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.PathRoleSetup, path, message, (json, context) -> {
-            ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(super.getConnector(), json, onComplete, context.getPath());
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.PathRoleSetup, path, message, new DMessageResponseHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context) {
+                ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(getConnector(), json, onComplete, context.getPath());
+            }
         }
         );
     }
@@ -373,15 +402,18 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
      * @return
     */
     public CompletableFuture<Void> onOtherEndpointDisconnectedAsync(String role, Consumer<IEndpointContext> callback) {
-        CompletableFuture<Void> tsc = new CompletableFuture<Void>();
-        this.onOtherEndpointDisconnected(role, callback, (error) -> {
-            if ((error != null)) {
-                tsc.completeExceptionally(new AfinityException(error));
+        InfinicastClient self = this;
+        final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
+        this.onOtherEndpointDisconnected(role, callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tsc.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tsc.complete(null);
+                }
+                ;
             }
-            else {
-                tsc.complete(null);
-            }
-            ;
         }
         );
         return tsc;
@@ -407,13 +439,16 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
      * @param callback
      * @param registrationCompleteCallback
     */
-    public void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback, CompleteCallback registrationCompleteCallback) {
-        super.messageManager.addHandler(false, Connector2EpsMessageType.EndpointDisconnected, super.path(PathUtils.endpointDisconnectedByRolePath(role)), (json, context, id) -> {
-            APEndpointContext endpointContext = new APEndpointContext();
-            endpointContext.setEndpoint(context.getEndpoint());
-            endpointContext.setEndpointData(context.getEndpointData());
-            callback.accept(endpointContext);
-            ;
+    public void onOtherEndpointDisconnected(String role, final Consumer<IEndpointContext> callback, CompleteCallback registrationCompleteCallback) {
+        InfinicastClient self = this;
+        super.messageManager.addHandler(false, Connector2EpsMessageType.EndpointDisconnected, super.path(PathUtils.endpointDisconnectedByRolePath(role)), new DCloudMessageHandler() {
+            public void accept(JObject json, IPathAndEndpointContext context, int id) {
+                APEndpointContext endpointContext = new APEndpointContext();
+                endpointContext.setEndpoint(context.getEndpoint());
+                endpointContext.setEndpointData(context.getEndpointData());
+                callback.accept(endpointContext);
+                ;
+            }
         }
         , registrationCompleteCallback, null);
     }
@@ -422,7 +457,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
      * @param role
      * @param callback
     */
-    public void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback) {
+    public void onOtherEndpointDisconnected(String role, final Consumer<IEndpointContext> callback) {
         this.onOtherEndpointDisconnected(role, callback, (CompleteCallback) null);
     }
 }
