@@ -1,34 +1,11 @@
 package io.infinicast.client.api;
 import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.protocol.*;
+
+
+
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
 import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+
 /**
  * the main object to communicate with the infinicat cloud.
  * it is mainly used to obtain a path or endpoint reference, as well as connection management
@@ -50,16 +27,7 @@ public interface IInfinicastClient {
      * @param onResult Callback that gets triggered when the connection has been successfull or failed. ErrorInfo is null if the connection is sucessful.
     */
     void connectWithCredentials(String address, String space, String conntectRole, JObject credentials, Consumer<ErrorInfo> onResult);
-    /**
-     * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole} and the provided {@code credentials}
-     * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
-     * @param space Your Space name. A space is similar to a database name in usual databases.
-     * @param conntectRole The connection Role this client should be connected to. Article:ConnectRole
-     * @param credentials Json credentials that can be passed to the authorisation service you defined
-     * @return Promise that will complete as soon as the connection has been established or throw an  if not.
-    */
-    CompletableFuture<Void> connectWithCredentialsAsync(String address, String space, String conntectRole, JObject credentials);
-    /**
+     /**
      * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole}
      * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
      * @param space Your Space name. A space is similar to a database name in usual databases.
@@ -68,33 +36,14 @@ public interface IInfinicastClient {
     */
     void connect(String address, String space, String conntectRole, Consumer<ErrorInfo> onResult);
     /**
-     * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole}
-     * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
-     * @param space Your Space name. A space is similar to a database name in usual databases.
-     * @param conntectRole The connection Role this client should be connected to. Article:ConnectRole
-     * @return Promise that will complete as soon as the connection has been established or throw an  if not.
-    */
-    CompletableFuture<Void> connectAsync(String address, String space, String conntectRole);
-    /**
      * Disconnects the client from the cloud.
     */
     void disconnect();
-    /**
-     * Disconnects the client from the cloud.
-     * @return a promise that completes after the disconnect has been successfull
-    */
-    CompletableFuture<Void> disconnectAsync();
-    /**
+     /**
      * Registers a {@code handler} to be informed when the Client has been disconnected.
      * @param handler Handler to be informed when the Client has been disconnected.
     */
     void onDisconnect(Action handler);
-    /**
-     * Registers a {@code handler} to be informed when the Client has been disconnected.
-     * @param handler Handler to be informed when the Client has been disconnected.
-     * @return a promise that completes after the handler has been registered
-    */
-    CompletableFuture<Void> onDisconnectAsync(Action handler);
     /**
      * registers a listener that will be called when infinicast catches errors that should have been caught by the app.
      * @param errorHandler
@@ -135,27 +84,14 @@ public interface IInfinicastClient {
      * @param registrationCompleteCallback
     */
     void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback, CompleteCallback registrationCompleteCallback);
-    /**
-     * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
-     * @param role
-     * @param callback
-     * @return
-    */
-    CompletableFuture<Void> onOtherEndpointDisconnectedAsync(String role, Consumer<IEndpointContext> callback);
-    /**
+     /**
      * allows to set the {@code logLevel} of internal infinicast log functions
      * @param logLevel
     */
     void setLogLevel(LogLevel logLevel);
     void systemCommand(String path, JObject data, Consumer<JObject> result);
     void introduceObjectToEndpoint(String address, IPath objekt);
-    CompletableFuture<Void> introduceObjectToEndpointAsync(String address, IPath objekt);
     void updateDebugStatistics(JObject filters, Consumer<JObject> handler);
-    CompletableFuture<JObject> updateDebugStatisticsAsync(JObject filters);
-    /**
-     * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
-     * @param role
-     * @param callback
-    */
+
     void onOtherEndpointDisconnected(String role, Consumer<IEndpointContext> callback);
 }

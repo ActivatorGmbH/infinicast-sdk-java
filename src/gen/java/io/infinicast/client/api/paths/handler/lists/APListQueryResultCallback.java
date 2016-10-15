@@ -2,7 +2,7 @@ package io.infinicast.client.api.paths.handler.lists;
 import io.infinicast.*;
 import org.joda.time.DateTime;
 import java.util.*;
-import java.util.function.*;
+
 import java.util.concurrent.*;
 import io.infinicast.client.api.*;
 import io.infinicast.client.impl.*;
@@ -29,7 +29,7 @@ import io.infinicast.client.impl.messaging.receiver.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.sender.*;
 import io.infinicast.client.protocol.messages.*;
-@FunctionalInterface
+
 public interface APListQueryResultCallback {
     void accept(ErrorInfo error, ArrayList<IPathAndData> resultList, int fullCount);
 }

@@ -42,6 +42,11 @@ public class JArray extends JToken implements Iterable<JToken> {
         public JToken next() {
             return new JToken(iterator.next());
         }
+
+        @Override
+        public void remove() {
+
+        }
     }
 
     public void Add(JObject rhs) {

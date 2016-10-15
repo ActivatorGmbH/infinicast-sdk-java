@@ -1,34 +1,16 @@
 package io.infinicast.client.impl.objectState;
 import io.infinicast.*;
-import org.joda.time.DateTime;
+
 import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
+
+
 import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.utils.*;
 import io.infinicast.client.protocol.*;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
 import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.receiver.*;
 import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -72,54 +54,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public void addRole(IPath path, String role) {
         this.addRole(path, role, (CompleteCallback) null);
     }
-    /**
-     * adds a role to the given {@code path}.
-     * multiple roles cann be passed by a comma seperated list in the {@code role} parameter
-     * note: path wildcards are valid paths for roles
-     * @param path
-     * @param role
-    */
-    public CompletableFuture<Void> addRoleAsync(IPath path, String role) {
-        Endpoint self = this;
-        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.addRole(path, role, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
-            }
-        }
-        );
-        return tcs;
-    }
-    /**
-     * adds a role to the given {@code pathString}.
-     * multiple roles cann be passed by a comma seperated list in the {@code role} parameter
-     * note: path wildcards are valid paths for roles
-     * @param pathString
-     * @param role
-    */
-    public CompletableFuture<Void> addRoleToStringPathAsync(String pathString, String role) {
-        Endpoint self = this;
-        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.addRoleToStringPath(pathString, role, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
-            }
-        }
-        );
-        return tcs;
-    }
+
     /**
      * adds a role to the given {@code path}.
      * multiple roles cann be passed by a comma seperated list in the {@code role} parameter.
@@ -134,56 +69,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public void introduce(IPath objekt) {
         this.introduce(objekt, (JObject) null);
     }
-    /**
-     * removes a role to the given {@code path}.
-     * multiple roles cann be passed by a comma seperated list in the {@code role} parameter
-     * note: path wildcards are valid paths for roles
-     * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
-     * @param path
-     * @param role
-    */
-    public CompletableFuture<Void> removeRoleAsync(IPath path, String role) {
-        Endpoint self = this;
-        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.removeRole(path, role, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
-            }
-        }
-        );
-        return tcs;
-    }
-    /**
-     * removes a role to the given {@code pathString}.
-     * multiple roles cann be passed by a comma seperated list in the {@code role} parameter
-     * note: path wildcards are valid paths for roles
-     * note: for removing roles wildcards can be used. for example RemoveRole(...,"*",...)
-     * @param pathString
-     * @param role
-    */
-    public CompletableFuture<Void> removeRoleFromStringPathAsync(String pathString, String role) {
-        Endpoint self = this;
-        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.removeRoleFromStringPath(pathString, role, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
-            }
-        }
-        );
-        return tcs;
-    }
+
     public void getRoles(IPath rolePath, DRoleListHandler roleListHandler) {
         this.getRolesForStringPath(rolePath.toString(), roleListHandler);
     }
@@ -214,34 +100,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         }
         );
     }
-    /**
-     * returns a list of the roles the endpoint fullfills for the given {@code path}
-     * @param path
-    */
-    public CompletableFuture<ArrayList<String>> getRolesAsync(IPath path) {
-        return this.getRolesForStringPathAsync(path.toString());
-    }
-    /**
-     * returns a list of the roles the endpoint fullfills for the given {@code pathString}
-     * @param pathString
-    */
-    public CompletableFuture<ArrayList<String>> getRolesForStringPathAsync(String pathString) {
-        Endpoint self = this;
-        final CompletableFuture<ArrayList<String>> tcs = new CompletableFuture<ArrayList<String>>();
-        this.getRolesForStringPath(pathString, new DRoleListHandler() {
-            public void accept(ErrorInfo error, ArrayList<String> roles) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(roles);
-                }
-                ;
-            }
-        }
-        );
-        return tcs;
-    }
+
     public void setDebugName(String name) {
         JObject data = new JObject();
         data.set("target", this.getEndpointId());
@@ -279,27 +138,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
             ;
         }
     }
-    /**
-     * returns the endpointconnectinfo of the given endpoint.
-     * The IPAdress is an example of the information available.
-    */
-    public CompletableFuture<EndpointConnectionInfo> getEndpointConnectionInfoAsync() {
-        Endpoint self = this;
-        final CompletableFuture<EndpointConnectionInfo> tcs = new CompletableFuture<EndpointConnectionInfo>();
-        this.getEndpointConnectionInfo(new BiConsumer<ErrorInfo, EndpointConnectionInfo>() {
-            public void accept(ErrorInfo error, EndpointConnectionInfo info) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(info);
-                }
-                ;
-            }
-        }
-        );
-        return tcs;
-    }
+
     public void introduce(IPath objekt, JObject infoJson) {
         JObject data = new JObject();
         data.set("target", this.getEndpointId());
