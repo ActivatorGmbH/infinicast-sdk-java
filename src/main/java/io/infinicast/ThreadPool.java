@@ -2,6 +2,7 @@ package io.infinicast;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 public class ThreadPool {
     private static final ExecutorService sExecutor = Executors.newSingleThreadExecutor();

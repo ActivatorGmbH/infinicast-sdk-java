@@ -1,16 +1,18 @@
 package io.infinicast.client.impl;
-import io.infinicast.*;
 
+import io.infinicast.JObject;
+import io.infinicast.client.api.IStormSettings;
+import io.infinicast.client.api.RoleSettings;
+import io.infinicast.client.api.paths.AfinityException;
+import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.api.paths.options.CompleteCallback;
+import io.infinicast.client.impl.helper.ErrorHandlingHelper;
+import io.infinicast.client.impl.messaging.ConnectorMessageManager;
+import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
+import io.infinicast.client.protocol.Connector2EpsMessageType;
 
-
-import io.infinicast.client.api.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-
+import java.util.concurrent.CompletableFuture;
 public class StormSettings implements IStormSettings {
     ConnectorMessageManager _messageManager;
     public StormSettings(ConnectorMessageManager messageManager) {
@@ -18,6 +20,23 @@ public class StormSettings implements IStormSettings {
     }
     public void createOrUpdateRole(String name, RoleSettings data) {
         this.createOrUpdateRole(name, data, (CompleteCallback) null);
+    }
+    public CompletableFuture<Void> createOrUpdateRoleAsync(String name, RoleSettings roleSettings) {
+        StormSettings self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.createOrUpdateRole(name, roleSettings, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
     }
     public void createOrUpdateRole(String name, RoleSettings data, final CompleteCallback completeCallback) {
         StormSettings self = this;
@@ -36,6 +55,23 @@ public class StormSettings implements IStormSettings {
             }
         }
         );
+    }
+    public CompletableFuture<Void> destroyRoleAsync(String name) {
+        StormSettings self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.destroyRole(name, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
     }
     public void destroyRole(String name, final CompleteCallback completeCallback) {
         StormSettings self = this;

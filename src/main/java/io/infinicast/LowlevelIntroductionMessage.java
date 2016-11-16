@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class LowlevelIntroductionMessage implements Serializable {
     private String addressString;
-    public LowlevelIntroductionMessage(ServerAddress address) {
+    public LowlevelIntroductionMessage(InfinicastServerAddress address) {
         this.addressString = address.getAddress();
     }
     public LowlevelIntroductionMessage(IEndpointAddress address) {

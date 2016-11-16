@@ -1,39 +1,16 @@
 package io.infinicast.client.api.paths;
-import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
 
-import java.util.concurrent.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+import io.infinicast.JArray;
+import io.infinicast.JObject;
+import io.infinicast.client.api.query.SortCriteria;
+import io.infinicast.client.impl.query.ICDataFilter;
+
+import java.util.ArrayList;
 public class ICDataQuery {
     ArrayList<ICDataFilter> _dataFilters;
     int _limit;
     int _start;
-    OrderCriteria _orderCriteria;
+    SortCriteria _orderCriteria;
     public ICDataQuery() {
         this.setDataFilters(new ArrayList<ICDataFilter>());
         this.setLimit(-1);
@@ -78,10 +55,10 @@ public class ICDataQuery {
     public void setStart(int value) {
         this._start = value;
     }
-    public OrderCriteria getOrderCriteria() {
+    public SortCriteria getOrderCriteria() {
         return this._orderCriteria;
     }
-    public void setOrderCriteria(OrderCriteria value) {
+    public void setOrderCriteria(SortCriteria value) {
         this._orderCriteria = value;
     }
 }

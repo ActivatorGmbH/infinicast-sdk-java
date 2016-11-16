@@ -2,16 +2,16 @@ package io.infinicast;
 
 import java.net.InetSocketAddress;
 
-public class ServerAddress extends TcpEndpointAddress {
+public class InfinicastServerAddress extends TcpEndpointAddress {
     private String address;
-    public ServerAddress(String addressString) {
+    public InfinicastServerAddress(String addressString) {
         super(addressString);
         this.address= addressString;
     }
-    public ServerAddress(InetSocketAddress inetSocketAddress) {
+    public InfinicastServerAddress(InetSocketAddress inetSocketAddress) {
         super(inetSocketAddress);
     }
-    public ServerAddress() {
+    public InfinicastServerAddress() {
         super();
     }
     public String getAddress() {

@@ -1,7 +1,5 @@
 package io.infinicast;
 
-import java.util.Objects;
-
 //
 public interface QuadConsumer<T, U, W, X> {
 

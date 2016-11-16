@@ -1,13 +1,13 @@
 package io.infinicast;
 
 public class Endpoint2ServerNetSettings implements IEndpoint2ServerNetSettings {
-    ServerAddress address;
+    InfinicastServerAddress address;
     IEndpoint2ServerNetLayerHandler handler;
     @Override
-    public ServerAddress getServerAddress() {
+    public InfinicastServerAddress getServerAddress() {
         return address;
     }
-    public void setServerAddress(ServerAddress address) {
+    public void setServerAddress(InfinicastServerAddress address) {
         this.address = address;
     }
     @Override

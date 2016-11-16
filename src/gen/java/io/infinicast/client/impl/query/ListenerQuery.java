@@ -1,16 +1,16 @@
 package io.infinicast.client.impl.query;
-import io.infinicast.*;
 
-import java.util.*;
-
-
-import io.infinicast.client.api.*;
+import io.infinicast.TriConsumer;
+import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.api.paths.options.CompleteCallback;
+import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
+import io.infinicast.client.api.query.ListeningType;
+import io.infinicast.client.impl.pathAccess.IEndpointAndData;
 
+import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 /**
  * access to listeners on a given path.
 */
@@ -49,7 +49,29 @@ public class ListenerQuery implements IListenerQuery {
     public void toList(TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback) {
         this._executor.getListenerList(callback, this._roleFilter, this._listeningType);
     }
-
+    /**
+     * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
+    */
+    public CompletableFuture<ListenerListResult> toListAsync() {
+        ListenerQuery self = this;
+        final CompletableFuture<ListenerListResult> tcs = new CompletableFuture<ListenerListResult>();
+        this.toList(new TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext>() {
+            public void accept(ErrorInfo error, ArrayList<IEndpointAndData> list, IAPathContext context) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    ListenerListResult result = new ListenerListResult();
+                    result.setContext(context);
+                    result.setList(list);
+                    tcs.complete(result);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     public String getFilteredRole() {
         return this._roleFilter;
     }
@@ -78,14 +100,52 @@ public class ListenerQuery implements IListenerQuery {
         }
         );
     }
-
+    /**
+     * adds a listener that will be informed as soon as an endpoint that fits the filters will begin to listen on this path.
+    */
+    public CompletableFuture<Void> onStartAsync(Consumer<IListeningStartedContext> handler) {
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onStart(handler, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * adds a listener that will be informed as soon as the endpoint data of a listener on this path will be changed
     */
     public void onDataChange(final Consumer<IListeningChangedContext> handler) {
         this.onDataChange(handler, (CompleteCallback) null);
     }
-
+    /**
+     * adds a listener that will be informed as soon as the endpoint data of a listener on this path will be changed
+    */
+    public CompletableFuture<Void> onDataChangeAsync(Consumer<IListeningChangedContext> handler) {
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onDataChange(handler, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * adds a listener that will be informed as soon as the endpoint data of a listener on this path will be changed
     */
@@ -111,7 +171,26 @@ public class ListenerQuery implements IListenerQuery {
         }
         );
     }
-
+    /**
+     * adds a listener that will be informed as soon as an endpoint that fits the filters will stop to listen on this path.
+    */
+    public CompletableFuture<Void> onEndAsync(Consumer<IListeningEndedContext> handler) {
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onEnd(handler, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     ListeningHandlerRegistrationOptions getHandlerRegistrationOptions() {
         ListeningHandlerRegistrationOptions options = new ListeningHandlerRegistrationOptions();
         options.withRole(this.getFilteredRole());
@@ -189,5 +268,32 @@ public class ListenerQuery implements IListenerQuery {
     public void live(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd) {
         this.live(onStart, onEnd, (Consumer<IListeningChangedContext>) null, (CompleteCallback) null);
     }
-
+    /**
+     * adds listeners to start, end and change of endpoint listeners on this path.
+     * the onStart event will be triggered for all already existing listeners on this path.
+    */
+    public CompletableFuture<Void> liveAsync(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd, Consumer<IListeningChangedContext> onChange) {
+        ListenerQuery self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.live(onStart, onEnd, onChange, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
+    /**
+     * adds listeners to start, end and change of endpoint listeners on this path.
+     * the onStart event will be triggered for all already existing listeners on this path.
+    */
+    public CompletableFuture<Void> liveAsync(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd) {
+        return this.liveAsync(onStart, onEnd, (Consumer<IListeningChangedContext>) null);
+    }
 }

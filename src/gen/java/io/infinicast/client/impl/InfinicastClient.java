@@ -1,21 +1,28 @@
 package io.infinicast.client.impl;
+
 import io.infinicast.*;
-
-
-
 import io.infinicast.client.api.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.api.paths.AfinityException;
+import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.paths.IEndpointContext;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.api.paths.options.CompleteCallback;
+import io.infinicast.client.impl.contexts.APEndpointContext;
+import io.infinicast.client.impl.helper.ErrorHandlingHelper;
+import io.infinicast.client.impl.messaging.ConnectorMessageManager;
+import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
+import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
+import io.infinicast.client.impl.messaging.sender.MessageSender;
+import io.infinicast.client.impl.objectState.Endpoint;
+import io.infinicast.client.impl.objectState.ObjectStateManager;
+import io.infinicast.client.impl.pathAccess.PathImpl;
+import io.infinicast.client.protocol.Connector2EpsMessageType;
+import io.infinicast.client.utils.NetFactory;
+import io.infinicast.client.utils.PathUtils;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -32,6 +39,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     Consumer<ErrorInfo> _onConnect;
     Action _onDisconnect;
     BiConsumer<IPath, String> _unhandeledErrorHandler;
+    DisconnectManager _disconnectManager;
     public InfinicastClient() {
         super("");
         this._ClientLogger.info(("Infinicast Client " + VersionHelper.getClientVersion()));
@@ -39,7 +47,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     void setCredentials(JObject credentials) {
         this._credentials = credentials;
     }
-    public void connectWithCredentials(String address, String space, String conntectRole, JObject credentials, Consumer<ErrorInfo> onConnect_) {
+    public void connectWithCredentials(String address, String space, String connectRole, JObject credentials, Consumer<ErrorInfo> onConnect_) {
         this.init();
         try {
             this._onConnect = onConnect_;
@@ -48,7 +56,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             Endpoint2ServerNetSettings netSettings = new Endpoint2ServerNetSettings();
             netSettings.setServerAddress(NetFactory.createServerAddress(address));
             connector.setSpace(space);
-            connector.setRole(conntectRole);
+            connector.setRole(connectRole);
             connector.setCredentials(credentials);
             netSettings.setHandler(super.messageManager);
             this._endpoint2ServerNetLayer = e2SNetLayer;
@@ -65,11 +73,44 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             ;
         }
     }
-
+    /**
+     * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole} and the provided {@code credentials}
+     * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
+     * @param space Your Space name. A space is similar to a database name in usual databases.
+     * @param conntectRole The connection Role this client should be connected to. Article:ConnectRole
+     * @param credentials Json credentials that can be passed to the authorisation service you defined
+     * @return Promise that will complete as soon as the connection has been established or throw an  if not.
+    */
+    public CompletableFuture<Void> connectWithCredentialsAsync(String address, String space, String conntectRole, JObject credentials) {
+        InfinicastClient self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.connectWithCredentials(address, space, conntectRole, credentials, new Consumer<ErrorInfo>() {
+            public void accept(ErrorInfo errorInfo) {
+                if ((errorInfo != null)) {
+                    tcs.completeExceptionally(new AfinityException(errorInfo));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     public void connect(String address, String space, String conntectRole, Consumer<ErrorInfo> onConnect_) {
         this.connectWithCredentials(address, space, conntectRole, null, onConnect_);
     }
-
+    /**
+     * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole}
+     * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
+     * @param space Your Space name. A space is similar to a database name in usual databases.
+     * @param conntectRole The connection Role this client should be connected to. Article:ConnectRole
+     * @return Promise that will complete as soon as the connection has been established or throw an  if not.
+    */
+    public CompletableFuture<Void> connectAsync(String address, String space, String conntectRole) {
+        return this.connectWithCredentialsAsync(address, space, conntectRole, null);
+    }
     /**
      * Registers a {@code handler} to be informed when the Client has been disconnected.
      * @param handler Handler to be informed when the Client has been disconnected.
@@ -77,16 +118,39 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public void onDisconnect(Action handler) {
         this._onDisconnect = handler;
     }
-
+    /**
+     * Registers a {@code handler} to be informed when the Client has been disconnected.
+     * @param handler Handler to be informed when the Client has been disconnected.
+     * @return a promise that completes after the handler has been registered
+    */
+    public CompletableFuture<Void> onDisconnectAsync(Action handler) {
+        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onDisconnect(handler);
+        tcs.complete(null);
+        return tcs;
+    }
     /**
      * Disconnects the client from the cloud.
     */
     public void disconnect() {
+        if ((this._disconnectManager != null)) {
+            this._disconnectManager.StopDisconnectChecker();
+            this._disconnectManager = null;
+        }
         if ((this._endpoint2ServerNetLayer != null)) {
             this._endpoint2ServerNetLayer.Close();
         }
     }
-
+    /**
+     * Disconnects the client from the cloud.
+     * @return a promise that completes after the disconnect has been successfull
+    */
+    public CompletableFuture<Void> disconnectAsync() {
+        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.disconnect();
+        tcs.complete(null);
+        return tcs;
+    }
     /**
      * get a reference to your own @see Infinicast.Client.Api.IEndpoint
      * @return an  that represents this clients Endpoint(http://infinicast.io/docs/Endpoint)
@@ -189,13 +253,47 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public void pathRoleSetup(String path, String role, PathRoleSettings pathSettings) {
         this.pathRoleSetup(path, role, pathSettings, (CompleteCallback) null);
     }
+    public CompletableFuture<Void> pathRoleSetupAsync(String path, String role, PathRoleSettings pathSettings) {
+        InfinicastClient self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.pathRoleSetup(path, role, pathSettings, new CompleteCallback() {
+            public void accept(ErrorInfo info) {
+                if ((info != null)) {
+                    tcs.completeExceptionally(new AfinityException(info));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     public void introduceObjectToEndpoint(String address, IPath objekt) {
         JObject data = new JObject();
         data.set("target", address);
         super.messageManager.sendMessage(Connector2EpsMessageType.IntroduceObject, objekt, data);
     }
+    public CompletableFuture<Void> introduceObjectToEndpointAsync(String address, IPath objekt) {
+        CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.introduceObjectToEndpoint(address, objekt);
+        tcs.complete(null);
+        return tcs;
+    }
     public void updateDebugStatistics(JObject filters, Consumer<JObject> handler) {
         super.messageManager.sendUpdateDebugStatistics(filters, handler);
+    }
+    public CompletableFuture<JObject> updateDebugStatisticsAsync(JObject filters) {
+        InfinicastClient self = this;
+        final CompletableFuture<JObject> tcs = new CompletableFuture<JObject>();
+        this.updateDebugStatistics(filters, new Consumer<JObject>() {
+            public void accept(JObject json) {
+                tcs.complete(json);
+            }
+        }
+        );
+        return tcs;
     }
     /**
      * allows to set the {@code logLevel} of internal infinicast log functions
@@ -248,6 +346,12 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public JObject getCredentials() {
         return this._credentials;
     }
+    public void receivedPing(int msgLastRoundTrip, long msgSendTime) {
+        DisconnectManager discMan = this._disconnectManager;
+        if ((discMan != null)) {
+            discMan.ReceivedPing();
+        }
+    }
     public void onInitConnector(JObject data, JObject endPoint) {
         if (((data != null) && (data.get("error") != null))) {
             this._onConnect.accept(ErrorInfo.fromJson(data.getJObject("error"), ""));
@@ -269,8 +373,22 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         if ((this._objectStateManager == null)) {
             super.messageManager = new ConnectorMessageManager();
             this._objectStateManager = new ObjectStateManager(this);
+            if ((this._disconnectManager == null)) {
+                this.initDisconnectDetection();
+            }
             super.setConnector(this);
         }
+    }
+    void initDisconnectDetection() {
+        InfinicastClient self = this;
+        this._disconnectManager = new DisconnectManager();
+        this._disconnectManager.StartDisconnectChecker(new Action() {
+            public void accept() {
+                _ClientLogger.warn("disconnecting because of missing pings");
+                triggerDisconnect();
+            }
+        }
+        , 30000, (60000 * 3));
     }
     /**
      * registers a listener that will be called when infinicast catches errors that should have been caught by the app.
@@ -295,6 +413,29 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             }
         }
         );
+    }
+    /**
+     * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected
+     * @param role
+     * @param callback
+     * @return
+    */
+    public CompletableFuture<Void> onOtherEndpointDisconnectedAsync(String role, Consumer<IEndpointContext> callback) {
+        InfinicastClient self = this;
+        final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
+        this.onOtherEndpointDisconnected(role, callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tsc.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tsc.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tsc;
     }
     public void setRole(String role) {
         this._role = role;

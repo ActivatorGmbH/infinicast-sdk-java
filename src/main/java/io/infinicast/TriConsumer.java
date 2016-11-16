@@ -1,7 +1,5 @@
 package io.infinicast;
 
-import java.util.Objects;
-
 //
 public interface TriConsumer<T, U, W> {
 

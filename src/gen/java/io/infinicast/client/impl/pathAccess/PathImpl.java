@@ -1,28 +1,35 @@
 package io.infinicast.client.impl.pathAccess;
+
 import io.infinicast.*;
-
-import java.util.*;
-
-
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.protocol.*;
+import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.api.paths.handler.CompletionCallback;
+import io.infinicast.client.api.paths.handler.JsonCompletionCallback;
+import io.infinicast.client.api.paths.handler.messages.APMessageCallback;
+import io.infinicast.client.api.paths.handler.messages.APValidateDataChangeCallback;
+import io.infinicast.client.api.paths.handler.messages.APValidateMessageCallback;
+import io.infinicast.client.api.paths.handler.objects.APObjectIntroduceCallback;
+import io.infinicast.client.api.paths.handler.objects.GetDataCallback;
+import io.infinicast.client.api.paths.handler.reminders.AReminderCallback;
+import io.infinicast.client.api.paths.handler.requests.APRequestAnswerCallback;
+import io.infinicast.client.api.paths.handler.requests.APRequestCallback;
+import io.infinicast.client.api.paths.handler.requests.IAPResponder;
+import io.infinicast.client.api.paths.options.CompleteCallback;
+import io.infinicast.client.api.paths.taskObjects.ADataAndPathAndEndpointContext;
+import io.infinicast.client.api.paths.taskObjects.ADataAndPathContext;
+import io.infinicast.client.api.query.ListenTerminateReason;
+import io.infinicast.client.impl.IConnector;
+import io.infinicast.client.impl.contexts.APathContext;
+import io.infinicast.client.impl.helper.ErrorHandlingHelper;
+import io.infinicast.client.impl.messaging.ConnectorMessageManager;
+import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.protocol.Connector2EpsMessageType;
+import io.infinicast.client.utils.PathUtils;
 
+import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -113,7 +120,22 @@ public class PathImpl implements IPath {
     public void modifyDataIncValueAndGetResult(String field, int value) {
         this.modifyDataIncValueAndGetResult(field, value, (JsonCompletionCallback) null);
     }
-
+    /**
+     * Sets the data of this path.
+     * @param json the data to be assigned
+     * @return a result that indicates success or failure
+    */
+    public CompletableFuture<Void> setDataAsync(JObject json) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
+        this.setData(json, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                PathImpl.handleCompleteHandlerAsyncVoid(tsc, error);
+            }
+        }
+        );
+        return tsc;
+    }
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -122,7 +144,23 @@ public class PathImpl implements IPath {
     public void modifyDataIncValueAndGetResult(String field, int value, JsonCompletionCallback completeCallback) {
         this.modifyDataAtomicAndGetResult(new AtomicChange().incValue(field, value), completeCallback);
     }
-
+    public CompletableFuture<JObject> modifyDataAtomicAndGetResultAsync(AtomicChange atomicChangeChange) {
+        PathImpl self = this;
+        final CompletableFuture<JObject> tsc = new CompletableFuture<JObject>();
+        this.modifyDataAtomicAndGetResult(atomicChangeChange, new JsonCompletionCallback() {
+            public void accept(ErrorInfo error, JObject data) {
+                if ((error != null)) {
+                    tsc.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tsc.complete(data);
+                }
+                ;
+            }
+        }
+        );
+        return tsc;
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -130,7 +168,23 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, double value) {
         this.modifyDataSetValueAndGetResult(field, value, (JsonCompletionCallback) null);
     }
-
+    public CompletableFuture<Void> modifyDataAtomicAsync(AtomicChange atomicChangeChange) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
+        this.modifyDataAtomic(atomicChangeChange, new CompletionCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tsc.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tsc.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tsc;
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -138,7 +192,15 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, double value, JsonCompletionCallback completeCallback) {
         this.modifyDataAtomicAndGetResult(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    public CompletableFuture<Void> modifyDataSetValueAsync(String field, JObject value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -146,7 +208,15 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, int value) {
         this.modifyDataSetValueAndGetResult(field, value, (JsonCompletionCallback) null);
     }
-
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    public CompletableFuture<Void> modifyDataSetValueAsync(String field, String value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -154,7 +224,15 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, int value, JsonCompletionCallback completeCallback) {
         this.modifyDataAtomicAndGetResult(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    public CompletableFuture<Void> modifyDataSetValueAsync(String field, boolean value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -162,7 +240,9 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, boolean value) {
         this.modifyDataSetValueAndGetResult(field, value, (JsonCompletionCallback) null);
     }
-
+    public CompletableFuture<Void> modifyDataSetValueAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -170,7 +250,15 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, boolean value, JsonCompletionCallback completeCallback) {
         this.modifyDataAtomicAndGetResult(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    public CompletableFuture<Void> modifyDataSetValueAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -178,7 +266,14 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, String value) {
         this.modifyDataSetValueAndGetResult(field, value, (JsonCompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by incrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about success or failure.
+    */
+    public CompletableFuture<Void> modifyDataIncValueAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().incValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -186,7 +281,14 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, String value, JsonCompletionCallback completeCallback) {
         this.modifyDataAtomicAndGetResult(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by incrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about success or failure.
+    */
+    public CompletableFuture<Void> modifyDataIncValueAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().incValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -194,7 +296,14 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, JObject value) {
         this.modifyDataSetValueAndGetResult(field, value, (JsonCompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by decrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about success or failure.
+    */
+    public CompletableFuture<Void> modifyDataDecValueAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().decValue(field, value));
+    }
     /**
      * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -202,7 +311,14 @@ public class PathImpl implements IPath {
     public void modifyDataSetValueAndGetResult(String field, JObject value, JsonCompletionCallback completeCallback) {
         this.modifyDataAtomicAndGetResult(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by decrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about success or failure.
+    */
+    public CompletableFuture<Void> modifyDataDecValueAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().decValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -211,7 +327,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, double value) {
         this.modifyDataRemoveFromArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToSetAsync(String field, JObject value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -220,7 +343,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, double value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToSetAsync(String field, JArray value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -229,7 +359,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, int value) {
         this.modifyDataRemoveFromArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToSetAsync(String field, String value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -238,7 +375,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToSetAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -247,7 +391,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, String value) {
         this.modifyDataRemoveFromArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToSetAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -256,7 +407,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, String value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, JObject value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -265,7 +423,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, JArray value) {
         this.modifyDataRemoveFromArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, JArray value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -274,7 +439,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, JArray value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, String value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -283,7 +455,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, JObject value) {
         this.modifyDataRemoveFromArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -292,7 +471,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromArray(String field, JObject value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -301,7 +487,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, double value) {
         this.modifyDataAddToArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToArrayAsync(String field, JObject value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -310,7 +503,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, double value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToArrayAsync(String field, JArray value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -319,7 +519,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, int value) {
         this.modifyDataAddToArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToArrayAsync(String field, String value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -328,7 +535,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToArrayAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -337,7 +551,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, String value) {
         this.modifyDataAddToArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataAddToArrayAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -346,7 +567,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, String value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, JObject value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -355,7 +583,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, JArray value) {
         this.modifyDataAddToArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, JArray value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -364,7 +599,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, JArray value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, String value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -373,7 +615,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, JObject value) {
         this.modifyDataAddToArray(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, int value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -382,7 +631,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToArray(String field, JObject value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToArray(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, double value) {
+        return this.modifyDataAtomicAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -391,7 +647,13 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, double value) {
         this.modifyDataRemoveFromSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * sets the data of a given field to the value.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, JObject value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -400,7 +662,13 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, double value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromSet(field, value), completeCallback);
     }
-
+    /**
+     * sets the data of a given field to the value.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, String value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -409,7 +677,13 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, int value) {
         this.modifyDataRemoveFromSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * sets the data of a given field to the value.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, boolean value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -418,7 +692,13 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromSet(field, value), completeCallback);
     }
-
+    /**
+     * sets the data of a given field to the value.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -427,7 +707,13 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, String value) {
         this.modifyDataRemoveFromSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * sets the data of a given field to the value.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().setValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -436,7 +722,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, String value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by incrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataIncValueAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().incValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -445,7 +738,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, JArray value) {
         this.modifyDataRemoveFromSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by incrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataIncValueAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().incValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -454,7 +754,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, JArray value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by decrement the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataDecValueAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().decValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -463,7 +770,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, JObject value) {
         this.modifyDataRemoveFromSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by decrement the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataDecValueAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().decValue(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -472,7 +786,14 @@ public class PathImpl implements IPath {
     public void modifyDataRemoveFromSet(String field, JObject value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().removeFromSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, JObject value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -481,7 +802,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, double value) {
         this.modifyDataAddToSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, JArray value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -490,7 +818,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, double value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, String value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -499,7 +834,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, int value) {
         this.modifyDataAddToSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -508,7 +850,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToSetAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -517,7 +866,15 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, String value) {
         this.modifyDataAddToSet(field, value, (CompletionCallback) null);
     }
-     /**
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, JObject value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromSet(field, value));
+    }
+    /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -525,7 +882,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, String value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, JArray value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -534,7 +898,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, JArray value) {
         this.modifyDataAddToSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, String value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -544,6 +915,14 @@ public class PathImpl implements IPath {
         this.modifyDataAtomic(new AtomicChange().addToSet(field, value), completeCallback);
     }
     /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromSet(field, value));
+    }
+    /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
@@ -551,7 +930,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, JObject value) {
         this.modifyDataAddToSet(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromSet(field, value));
+    }
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -560,7 +946,14 @@ public class PathImpl implements IPath {
     public void modifyDataAddToSet(String field, JObject value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().addToSet(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and adds the value to the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToArrayAndGetResultAsync(String field, JObject value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by decrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -569,7 +962,14 @@ public class PathImpl implements IPath {
     public void modifyDataDecValue(String field, double value) {
         this.modifyDataDecValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and adds the value to the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToArrayAndGetResultAsync(String field, JArray value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by decrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -578,7 +978,14 @@ public class PathImpl implements IPath {
     public void modifyDataDecValue(String field, double value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().decValue(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and adds the value to the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToArrayAndGetResultAsync(String field, String value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by decrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -587,7 +994,14 @@ public class PathImpl implements IPath {
     public void modifyDataDecValue(String field, int value) {
         this.modifyDataDecValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and adds the value to the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToArrayAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by decrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -596,7 +1010,14 @@ public class PathImpl implements IPath {
     public void modifyDataDecValue(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().decValue(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and adds the value to the array
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataAddToArrayAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().addToArray(field, value));
+    }
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -605,7 +1026,14 @@ public class PathImpl implements IPath {
     public void modifyDataIncValue(String field, double value) {
         this.modifyDataIncValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromArrayAndGetResultAsync(String field, JObject value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -614,7 +1042,14 @@ public class PathImpl implements IPath {
     public void modifyDataIncValue(String field, double value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().incValue(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromArrayAndGetResultAsync(String field, JArray value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -623,7 +1058,14 @@ public class PathImpl implements IPath {
     public void modifyDataIncValue(String field, int value) {
         this.modifyDataIncValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromArrayAndGetResultAsync(String field, String value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -632,7 +1074,14 @@ public class PathImpl implements IPath {
     public void modifyDataIncValue(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().incValue(field, value), completeCallback);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromArrayAndGetResultAsync(String field, int value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -641,7 +1090,14 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, double value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    public CompletableFuture<JObject> modifyDataRemoveFromArrayAndGetResultAsync(String field, double value) {
+        return this.modifyDataAtomicAndGetResultAsync(new AtomicChange().removeFromArray(field, value));
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -680,7 +1136,21 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, int value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * deletes the path and child paths
+     * @return promise containg success or error
+    */
+    public CompletableFuture<Void> destroyAsync() {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.destroy(new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -689,7 +1159,16 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, boolean value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * Experimental feature:
+     * adds a reminder in the cloud. exactly one of the services that is registered via OnReminder will receive the reminder
+     * @param schedulingOptions scheduling options to define when the timer should be fired
+     * @param json data to be added to the reminder
+     * @return success or error
+    */
+    public CompletableFuture<Void> addReminderAsync(ReminderSchedulingOptions schedulingOptions, JObject json) {
+        return this.addOrReplaceReminderAsync(null, schedulingOptions, json);
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -699,7 +1178,17 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, boolean value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    public CompletableFuture<Void> addOrReplaceReminderAsync(JObject queryJson, ReminderSchedulingOptions schedulingOptions, JObject json) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.addReminder(schedulingOptions, json, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -708,7 +1197,17 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, String value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
-
+    public CompletableFuture<Void> deleteReminderAsync(JObject queryJson) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.deleteReminder(queryJson, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
+            }
+        }
+        );
+        return tcs;
+    }
     public void sendRequest(JObject data, final APRequestAnswerCallback answer) {
         PathImpl self = this;
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Request, this, data, new DMessageResponseHandler() {
@@ -728,7 +1227,26 @@ public class PathImpl implements IPath {
         }
         );
     }
-
+    public CompletableFuture<ADataAndPathAndEndpointContext> sendRequestAsync(JObject data) {
+        PathImpl self = this;
+        final CompletableFuture<ADataAndPathAndEndpointContext> tcs = new CompletableFuture<ADataAndPathAndEndpointContext>();
+        this.sendRequest(data, new APRequestAnswerCallback() {
+            public void accept(ErrorInfo error, JObject json, IPathAndEndpointContext context) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    ADataAndPathAndEndpointContext res = new ADataAndPathAndEndpointContext();
+                    res.setContext(context);
+                    res.setData(json);
+                    tcs.complete(res);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -738,7 +1256,22 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, String value, CompletionCallback completeCallback) {
         this.modifyDataAtomic(new AtomicChange().setValue(field, value), completeCallback);
     }
-
+    /**
+     * Sends a Json Message to a Path. All Endpoints currently listening on Messages on this path will receive it.
+     * @param json the Message payload
+     * @return a promise that completes when the message has been received by the cloud
+    */
+    public CompletableFuture<Void> sendMessageAsync(JObject json) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.sendMessage(json, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
+            }
+        }
+        );
+        return tcs;
+    }
     public void addDebugPingInfo(int pingInMs) {
         this.messageManager.sendDebugPingInfo(this, pingInMs);
     }
@@ -758,7 +1291,14 @@ public class PathImpl implements IPath {
         path._advancedOptions = obj;
         return path;
     }
-
+    static void handleCompleteHandlerAsyncVoid(CompletableFuture<Void> tcs, ErrorInfo error) {
+        if ((error != null)) {
+            tcs.completeExceptionally(new AfinityException(error));
+        }
+        else {
+            tcs.complete(null);
+        }
+    }
     static HashMap<String, Integer> getRoleCountDictionary(JObject json) {
         HashMap<String, Integer> roleCount = new HashMap<String, Integer>();
         JArray roleCountArray = json.getJArray("roleCount");
@@ -791,7 +1331,28 @@ public class PathImpl implements IPath {
     public void modifyDataSetValue(String field, JObject value) {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
-
+    /**
+     * registers a listener on data changes on this path
+     * @param callback callback when the data changed
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onDataChangeAsync(TriConsumer<JObject, JObject, IPathAndEndpointContext> callback) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onDataChange(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Modify Path Data by setting the field to the passed value
      * @param field
@@ -816,7 +1377,7 @@ public class PathImpl implements IPath {
      * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
     public void modifyDataAtomic(AtomicChange data, final CompletionCallback completeCallback) {
-        final PathImpl self = this;
+        PathImpl self = this;
         JObject json = new JObject();
         json.set("changes", data.toJson());
         if (data.hasNamedQueries()) {
@@ -848,7 +1409,30 @@ public class PathImpl implements IPath {
         }
         );
     }
-
+    /**
+     * registers a data validator on this path. A validator will be called before the data change is applied to the system
+     * the validator needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
+     * @param callback callback when the data changed
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onValidateDataChangeAsync(APValidateDataChangeCallback callback) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onValidateDataChange(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return the resulting json
@@ -857,7 +1441,30 @@ public class PathImpl implements IPath {
     public void modifyDataAtomicAndGetResult(AtomicChange data) {
         this.modifyDataAtomicAndGetResult(data, (JsonCompletionCallback) null);
     }
-
+    /**
+     * registers a message validator on this path. A validator will be called before the message is actually sent to the system
+     * the validtor needs to accept, change or reject the change via the responder object
+     * the handler can be deregistered by passing null as callback
+     * @param callback callback when the validation occurs
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onValidateMessageAsync(APValidateMessageCallback callback) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onValidateMessage(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return the resulting json
@@ -865,7 +1472,7 @@ public class PathImpl implements IPath {
      * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
     public void modifyDataAtomicAndGetResult(AtomicChange data, final JsonCompletionCallback completeCallback) {
-        final PathImpl self = this;
+        PathImpl self = this;
         JObject json = new JObject();
         json.set("changes", data.toJson());
         if (data.hasNamedQueries()) {
@@ -896,7 +1503,30 @@ public class PathImpl implements IPath {
         }
         );
     }
-
+    /**
+     * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
+     * the responder object needs to be used to respond to the sender.
+     * the handler can be deregistered by passing null as callback
+     * @param callback callback that handels the request
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onRequestAsync(APRequestCallback callback) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onRequest(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Sets the data of this path.
      * @param json the data to be assigned
@@ -904,7 +1534,30 @@ public class PathImpl implements IPath {
     public void setData(JObject json) {
         this.setData(json, (CompleteCallback) null);
     }
-
+    /**
+     * Experimental feature:
+     * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
+     * the handler can be deregistered by passing null as callback
+     * @param callback callback that handels the reminder event
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onReminderAsync(AReminderCallback callback) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onReminder(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     /**
      * Sets the data of this path.
      * @param json the data to be assigned
@@ -925,7 +1578,27 @@ public class PathImpl implements IPath {
         }
         );
     }
-
+    /**
+     * this method is deprecated and should no longer be used
+     * @param callback
+    */
+    public CompletableFuture<Void> onIntroduceAsync(APObjectIntroduceCallback callback) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onIntroduce(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        );
+        return tcs;
+    }
     public boolean checkIfHasErrorsAndCallHandlersNew(JObject json, CompleteCallback completeCallback) {
         return ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this.getConnector(), json, completeCallback, this);
     }
@@ -1392,12 +2065,43 @@ public class PathImpl implements IPath {
     public void getData(final GetDataCallback callback) {
         this.getData(callback, (GetDataOptions) null);
     }
-
+    /**
+     * returns the data stored in the path
+     * @param options  optional parameter to add additional datacontext to the path (Note: deprecated)
+     * @return the returned json or an error
+    */
+    public CompletableFuture<ADataAndPathContext> getDataAsync(GetDataOptions options) {
+        PathImpl self = this;
+        final CompletableFuture<ADataAndPathContext> tsc = new CompletableFuture<ADataAndPathContext>();
+        this.getData(new GetDataCallback() {
+            public void accept(ErrorInfo error, JObject json, IAPathContext context) {
+                if ((error != null)) {
+                    tsc.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    ADataAndPathContext resultContext = new ADataAndPathContext();
+                    resultContext.data = json;
+                    resultContext.context = context;
+                    tsc.complete(resultContext);
+                }
+                ;
+            }
+        }
+        , options);
+        return tsc;
+    }
+    /**
+     * returns the data stored in the path
+     * @return the returned json or an error
+    */
+    public CompletableFuture<ADataAndPathContext> getDataAsync() {
+        return this.getDataAsync((GetDataOptions) null);
+    }
     /**
      * deletes the path and child paths
      * @param completeCallback called with success or error
     */
-    public void delete(final CompleteCallback completeCallback) {
+    public void destroy(final CompleteCallback completeCallback) {
         PathImpl self = this;
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, new JObject(), new DMessageResponseHandler() {
             public void accept(JObject json, IPathAndEndpointContext context) {
@@ -1409,8 +2113,8 @@ public class PathImpl implements IPath {
     /**
      * deletes the path and child paths
     */
-    public void delete() {
-        this.delete((CompleteCallback) null);
+    public void destroy() {
+        this.destroy((CompleteCallback) null);
     }
     /**
      * Experimental feature:
@@ -1555,8 +2259,41 @@ public class PathImpl implements IPath {
     public void onMessage(APMessageCallback callback) {
         this.onMessage(callback, (CompleteCallback) null, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
-
-
+    /**
+     * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
+     * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
+     * @param callback the callback to be called when a message is sent to this path
+     * @param listenTerminationHandler an optional parameter to get informed when the listening has been ended by the server.
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onMessageAsync(APMessageCallback callback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
+        PathImpl self = this;
+        final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
+        this.onMessage(callback, new CompleteCallback() {
+            public void accept(ErrorInfo error) {
+                if ((error != null)) {
+                    tcs.completeExceptionally(new AfinityException(error));
+                }
+                else {
+                    tcs.complete(null);
+                }
+                ;
+            }
+        }
+        , listenTerminationHandler);
+        return tcs;
+    }
+    /**
+     * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
+     * the EndpointAndPath context can be used to get the sending endpoint of th received messages
+     * the handler can be deregistered by passing null as callback
+     * @param callback the callback to be called when a message is sent to this path
+     * @return a promise indicating success or error
+    */
+    public CompletableFuture<Void> onMessageAsync(APMessageCallback callback) {
+        return this.onMessageAsync(callback, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
+    }
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validtor needs to accept, change or reject the change via the responder object

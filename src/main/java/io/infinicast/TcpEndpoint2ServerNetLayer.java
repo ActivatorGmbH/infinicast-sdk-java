@@ -22,7 +22,7 @@ public class TcpEndpoint2ServerNetLayer extends IoHandlerAdapter implements IEnd
     @Override
     public String open(IEndpoint2ServerNetSettings settings) {
         handler = settings.getHandler();
-        ServerAddress address = settings.getServerAddress();
+        InfinicastServerAddress address = settings.getServerAddress();
         if (!(address instanceof TcpEndpointAddress))
             throw new IllegalArgumentException();
         SocketAddress socketAddress = ((TcpEndpointAddress) address).getSocketAddress();
