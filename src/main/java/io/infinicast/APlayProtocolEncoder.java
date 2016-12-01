@@ -24,7 +24,15 @@ public class APlayProtocolEncoder implements ProtocolEncoder {
     @Override
     public void encode(IoSession ioSession, Object o, ProtocolEncoderOutput out) throws Exception {
 
-        if (o instanceof APlayStringMessage) {
+        if (o instanceof LowLevelConnectMessage) {
+
+            int approxBufferSize = 2;
+            IoBuffer buffer = allocateBuffer(approxBufferSize);
+            buffer.put((byte) 42);
+            buffer.put((byte) 1);
+            buffer.flip();
+            out.write(buffer);
+        } else if (o instanceof APlayStringMessage) {
             APlayStringMessage msg = (APlayStringMessage) o;
 
             /*byte[] compressedData =msg.getCompressedData();

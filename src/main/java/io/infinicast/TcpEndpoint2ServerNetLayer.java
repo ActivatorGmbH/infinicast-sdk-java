@@ -34,6 +34,14 @@ public class TcpEndpoint2ServerNetLayer extends IoHandlerAdapter implements IEnd
     }
 
     @Override
+    public void sessionOpened(IoSession session) throws Exception {
+        logger.info("connection opened");
+        super.sessionOpened(session);
+
+        client.send(new LowLevelConnectMessage());
+    }
+
+    @Override
     public void sessionClosed(IoSession session) throws Exception {
         logger.info("connection closed");
         super.sessionClosed(session);

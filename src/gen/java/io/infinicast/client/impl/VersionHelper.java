@@ -2,6 +2,6 @@ package io.infinicast.client.impl;
 
 public class VersionHelper {
     public static String getClientVersion() {
-        return "v1.0.18";
+        return "v1.1.0";
     }
 }
