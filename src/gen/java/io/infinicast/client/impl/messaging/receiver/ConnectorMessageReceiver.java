@@ -173,7 +173,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
             this._receiveProtocol.decodeStringMessage(msg, this);
         }
         catch (Exception ex) {
-            this._logger.error(((("Exception in decode message " + msg.getDataAsString()) + " ") + ex.getMessage()));
+            this._logger.error(((("Exception in decode message " + msg.getDataAsString()) + " ") + InfinicastExceptionHelper.ExceptionToString(ex)));
         }
     }
     public void setConnector(IConnector connector) {
