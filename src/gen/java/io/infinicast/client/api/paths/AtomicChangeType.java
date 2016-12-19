@@ -8,7 +8,8 @@ public enum AtomicChangeType {
     DecValue(4),
     AddToSet(5),
     RemoveFromSet(6),
-    RemoveProperty(7);
+    RemoveProperty(7),
+    SetIfEmpty(8);
     private final int value;
     public int getValue() {  return value; }
     AtomicChangeType(int value) { this.value = value; }

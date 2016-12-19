@@ -49,6 +49,13 @@ public class AtomicChange {
         this.atomicChangeList.add(change);
         return change;
     }
+    InternAtomicChange _setValueIfEmpty(String jsonProperty) {
+        InternAtomicChange change = new InternAtomicChange();
+        change.setType(AtomicChangeType.SetIfEmpty);
+        change.setJsonProperty(jsonProperty);
+        this.atomicChangeList.add(change);
+        return change;
+    }
     InternAtomicChange _incValue(String jsonProperty) {
         InternAtomicChange change = new InternAtomicChange();
         change.setType(AtomicChangeType.IncValue);
@@ -184,6 +191,30 @@ public class AtomicChange {
     }
     public AtomicChange setValue(String jsonProperty, int val) {
         this._setValue(jsonProperty).setData(val);
+        return this;
+    }
+    public AtomicChange setValueIfEmpty(String jsonProperty, JObject val) {
+        this._setValueIfEmpty(jsonProperty).setData(val);
+        return this;
+    }
+    public AtomicChange setValueIfEmpty(String jsonProperty, JArray val) {
+        this._setValueIfEmpty(jsonProperty).setData(val);
+        return this;
+    }
+    public AtomicChange setValueIfEmpty(String jsonProperty, String val) {
+        this._setValueIfEmpty(jsonProperty).setData(val);
+        return this;
+    }
+    public AtomicChange setValueIfEmpty(String jsonProperty, boolean val) {
+        this._setValueIfEmpty(jsonProperty).setData(val);
+        return this;
+    }
+    public AtomicChange setValueIfEmpty(String jsonProperty, double val) {
+        this._setValueIfEmpty(jsonProperty).setData(val);
+        return this;
+    }
+    public AtomicChange setValueIfEmpty(String jsonProperty, int val) {
+        this._setValueIfEmpty(jsonProperty).setData(val);
         return this;
     }
     public AtomicChange incValue(String jsonProperty, float val) {

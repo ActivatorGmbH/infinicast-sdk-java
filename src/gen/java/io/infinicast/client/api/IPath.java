@@ -332,6 +332,13 @@ public interface IPath {
     */
     void modifyDataDecValue(String field, int value, CompletionCallback completeCallback);
     /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    CompletableFuture<Void> modifyDataSetValueAsync(String field, int value);
+    /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
      * a completion callback or a promise can be used to get an information about success or failure.
@@ -364,11 +371,12 @@ public interface IPath {
     */
     void modifyDataIncValue(String field, int value);
     /**
-     * Modifies the data by incrementing the given field of the data in this path.
-     * if the data field is not existing or not a number it will be initialized as 0.
-     * a completion callback or a promise can be used to get an information about success or failure.
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
     */
-    CompletableFuture<Void> modifyDataIncValueAsync(String field, int value);
+    CompletableFuture<Void> modifyDataSetValueIfEmptyAsync(String field, JObject value);
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -376,17 +384,84 @@ public interface IPath {
     */
     void modifyDataIncValue(String field, int value, CompletionCallback completeCallback);
     /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    CompletableFuture<Void> modifyDataSetValueIfEmptyAsync(String field, String value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+    */
+    void modifyDataSetValueIfEmpty(String field, double value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    CompletableFuture<Void> modifyDataSetValueIfEmptyAsync(String field, int value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
+    void modifyDataSetValueIfEmpty(String field, double value, CompletionCallback completeCallback);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    CompletableFuture<Void> modifyDataSetValueIfEmptyAsync(String field, boolean value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+    */
+    void modifyDataSetValueIfEmpty(String field, boolean value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @return a Promise indicating failure or success of the operation
+    */
+    CompletableFuture<Void> modifyDataSetValueIfEmptyAsync(String field, double value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
+    void modifyDataSetValueIfEmpty(String field, boolean value, CompletionCallback completeCallback);
+    /**
+     * Modifies the data by incrementing the given field of the data in this path.
+     * if the data field is not existing or not a number it will be initialized as 0.
+     * a completion callback or a promise can be used to get an information about success or failure.
+    */
+    CompletableFuture<Void> modifyDataIncValueAsync(String field, int value);
+    /**
+     * Modify Path Data by setting the field to the passed value if the field is empty
+     * @param field
+     * @param value
+    */
+    void modifyDataSetValueIfEmpty(String field, int value);
+    /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
      * a completion callback or a promise can be used to get an information about success or failure.
     */
     CompletableFuture<Void> modifyDataIncValueAsync(String field, double value);
     /**
-     * Modify Path Data by setting the field to the passed value
+     * Modify Path Data by setting the field to the passed value if the field is empty
      * @param field
      * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, double value);
+    void modifyDataSetValueIfEmpty(String field, int value, CompletionCallback completeCallback);
     /**
      * Modifies the data by decrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -394,12 +469,11 @@ public interface IPath {
     */
     CompletableFuture<Void> modifyDataDecValueAsync(String field, int value);
     /**
-     * Modify Path Data by setting the field to the passed value
+     * Modify Path Data by setting the field to the passed value if the field is empty
      * @param field
      * @param value
-     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, double value, CompletionCallback completeCallback);
+    void modifyDataSetValueIfEmpty(String field, String value);
     /**
      * Modifies the data by decrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
@@ -407,11 +481,12 @@ public interface IPath {
     */
     CompletableFuture<Void> modifyDataDecValueAsync(String field, double value);
     /**
-     * Modify Path Data by setting the field to the passed value
+     * Modify Path Data by setting the field to the passed value if the field is empty
      * @param field
      * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, boolean value);
+    void modifyDataSetValueIfEmpty(String field, String value, CompletionCallback completeCallback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -419,12 +494,11 @@ public interface IPath {
     */
     CompletableFuture<Void> modifyDataAddToSetAsync(String field, JObject value);
     /**
-     * Modify Path Data by setting the field to the passed value
+     * Modify Path Data by setting the field to the passed value if the field is empty
      * @param field
      * @param value
-     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, boolean value, CompletionCallback completeCallback);
+    void modifyDataSetValueIfEmpty(String field, JObject value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -432,11 +506,12 @@ public interface IPath {
     */
     CompletableFuture<Void> modifyDataAddToSetAsync(String field, JArray value);
     /**
-     * Modify Path Data by setting the field to the passed value
+     * Modify Path Data by setting the field to the passed value if the field is empty
      * @param field
      * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, int value);
+    void modifyDataSetValueIfEmpty(String field, JObject value, CompletionCallback completeCallback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -447,9 +522,8 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, int value, CompletionCallback completeCallback);
+    void modifyDataSetValue(String field, double value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -460,8 +534,9 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, String value);
+    void modifyDataSetValue(String field, double value, CompletionCallback completeCallback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be added only once
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -472,9 +547,8 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, String value, CompletionCallback completeCallback);
+    void modifyDataSetValue(String field, boolean value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -485,8 +559,9 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, JObject value);
+    void modifyDataSetValue(String field, boolean value, CompletionCallback completeCallback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -497,9 +572,8 @@ public interface IPath {
      * Modify Path Data by setting the field to the passed value
      * @param field
      * @param value
-     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataSetValue(String field, JObject value, CompletionCallback completeCallback);
+    void modifyDataSetValue(String field, int value);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
@@ -507,17 +581,80 @@ public interface IPath {
     */
     CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, String value);
     /**
-     * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
-     * The callback function will return if the operation was successfull or not
-     * @param data an AtomicChange object that can chain multiple atomic changes into one big atomic change
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
-    void modifyDataAtomic(AtomicChange data);
+    void modifyDataSetValue(String field, int value, CompletionCallback completeCallback);
     /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
     CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, int value);
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+    */
+    void modifyDataSetValue(String field, String value);
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, double value);
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
+    void modifyDataSetValue(String field, String value, CompletionCallback completeCallback);
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, JObject value);
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+    */
+    void modifyDataSetValue(String field, JObject value);
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, JArray value);
+    /**
+     * Modify Path Data by setting the field to the passed value
+     * @param field
+     * @param value
+     * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
+    */
+    void modifyDataSetValue(String field, JObject value, CompletionCallback completeCallback);
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, String value);
+    /**
+     * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
+     * The callback function will return if the operation was successfull or not
+     * @param data an AtomicChange object that can chain multiple atomic changes into one big atomic change
+    */
+    void modifyDataAtomic(AtomicChange data);
+    /**
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * if the data field is not existing or not a json array it will be initialized as [].
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, int value);
     /**
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return if the operation was successfull or not
@@ -526,11 +663,11 @@ public interface IPath {
     */
     void modifyDataAtomic(AtomicChange data, CompletionCallback completeCallback);
     /**
-     * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
+     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataRemoveFromSetAsync(String field, double value);
+    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, double value);
     /**
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return the resulting json
@@ -538,11 +675,11 @@ public interface IPath {
     */
     void modifyDataAtomicAndGetResult(AtomicChange data);
     /**
-     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, JObject value);
+    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, JObject value);
     /**
      * Modify Path Data by providing an AtomicChange object that allows to chain operations into one atomic operation.
      * The callback function will return the resulting json
@@ -551,22 +688,22 @@ public interface IPath {
     */
     void modifyDataAtomicAndGetResult(AtomicChange data, JsonCompletionCallback completeCallback);
     /**
-     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, JArray value);
+    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, JArray value);
     /**
      * this method is deprecated and should no longer be used
      * @param callback
     */
     void onIntroduce(APObjectIntroduceCallback callback);
     /**
-     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, String value);
+    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, String value);
     /**
      * this method is deprecated and should no longer be used
      * @param callback
@@ -574,11 +711,11 @@ public interface IPath {
     */
     void onIntroduce(APObjectIntroduceCallback callback, CompleteCallback registrationCompleteCallback);
     /**
-     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, int value);
+    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, int value);
     /**
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
@@ -587,11 +724,11 @@ public interface IPath {
     */
     void onReminder(AReminderCallback callback);
     /**
-     * Modifies the data by converting the given field in the data to an array and ensures that the json will be added.
+     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataAddToArrayAsync(String field, double value);
+    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, double value);
     /**
      * Experimental feature:
      * registers a reminder handler that will be called on one of the listeners as soon as a reminder on this path is triggered by the system.
@@ -601,11 +738,10 @@ public interface IPath {
     */
     void onReminder(AReminderCallback callback, CompleteCallback registrationCompleteCallback);
     /**
-     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
-     * if the data field is not existing or not a json array it will be initialized as [].
+     * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, JObject value);
+    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, JObject value);
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
@@ -614,11 +750,10 @@ public interface IPath {
     */
     void onRequest(APRequestCallback callback);
     /**
-     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
-     * if the data field is not existing or not a json array it will be initialized as [].
+     * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, JArray value);
+    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, String value);
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
      * the responder object needs to be used to respond to the sender.
@@ -628,11 +763,10 @@ public interface IPath {
     */
     void onRequest(APRequestCallback callback, CompleteCallback registrationCompleteCallback);
     /**
-     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
-     * if the data field is not existing or not a json array it will be initialized as [].
+     * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, String value);
+    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, int value);
     /**
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
@@ -641,11 +775,10 @@ public interface IPath {
     */
     void onValidateMessage(APValidateMessageCallback callback);
     /**
-     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
-     * if the data field is not existing or not a json array it will be initialized as [].
+     * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, int value);
+    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, boolean value);
     /**
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
      * the validtor needs to accept, change or reject the change via the responder object
@@ -655,11 +788,10 @@ public interface IPath {
     */
     void onValidateMessage(APValidateMessageCallback callback, CompleteCallback registrationCompleteCallback);
     /**
-     * Modifies the data by converting the given field in the data to an array and removes the value from the array one time
-     * if the data field is not existing or not a json array it will be initialized as [].
+     * sets the data of a given field to the value.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<Void> modifyDataRemoveFromArrayAsync(String field, double value);
+    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, double value);
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
@@ -669,10 +801,10 @@ public interface IPath {
     */
     CompletableFuture<Void> onMessageAsync(APMessageCallback callback);
     /**
-     * sets the data of a given field to the value.
+     * sets the data of a given field to the value if the field is currently empty.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, JObject value);
+    CompletableFuture<JObject> modifyDataSetValueIfEmptyAndGetResultAsync(String field, JObject value);
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
@@ -683,10 +815,10 @@ public interface IPath {
     */
     CompletableFuture<Void> onMessageAsync(APMessageCallback callback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler);
     /**
-     * sets the data of a given field to the value.
+     * sets the data of a given field to the value if the field is currently empty.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, String value);
+    CompletableFuture<JObject> modifyDataSetValueIfEmptyAndGetResultAsync(String field, String value);
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
@@ -695,10 +827,10 @@ public interface IPath {
     */
     void onMessage(APMessageCallback callback);
     /**
-     * sets the data of a given field to the value.
+     * sets the data of a given field to the value if the field is currently empty.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, int value);
+    CompletableFuture<JObject> modifyDataSetValueIfEmptyAndGetResultAsync(String field, int value);
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
@@ -708,10 +840,10 @@ public interface IPath {
     */
     void onMessage(APMessageCallback callback, CompleteCallback registrationCompleteCallback);
     /**
-     * sets the data of a given field to the value.
+     * sets the data of a given field to the value if the field is currently empty.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, boolean value);
+    CompletableFuture<JObject> modifyDataSetValueIfEmptyAndGetResultAsync(String field, boolean value);
     /**
      * registers a message handler on this path. Messages sent to this path will  cause the callback handler to be triggered
      * the EndpointAndPath context can be used to get the sending endpoint of th received messages
@@ -722,10 +854,10 @@ public interface IPath {
     */
     void onMessage(APMessageCallback callback, CompleteCallback registrationCompleteCallback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler);
     /**
-     * sets the data of a given field to the value.
+     * sets the data of a given field to the value if the field is currently empty.
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
-    CompletableFuture<JObject> modifyDataSetValueAndGetResultAsync(String field, double value);
+    CompletableFuture<JObject> modifyDataSetValueIfEmptyAndGetResultAsync(String field, double value);
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
      * the validtor needs to accept, change or reject the change via the responder object
@@ -1209,6 +1341,56 @@ public interface IPath {
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
     */
     void modifyDataSetValueAndGetResult(String field, double value);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, JObject value, JsonCompletionCallback completeCallback);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, JObject value);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, String value, JsonCompletionCallback completeCallback);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, String value);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, int value, JsonCompletionCallback completeCallback);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, int value);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, boolean value, JsonCompletionCallback completeCallback);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, boolean value);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, double value, JsonCompletionCallback completeCallback);
+    /**
+     * sets the data of a given field to the value if the field is currently empty.
+     * a completion callback or a promise can be used to get an information about the complete data after the change or error.
+    */
+    void modifyDataSetValueIfEmptyAndGetResult(String field, double value);
     /**
      * Modifies the data by incrementing the given field of the data in this path.
      * if the data field is not existing or not a number it will be initialized as 0.
