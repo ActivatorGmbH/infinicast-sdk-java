@@ -4,7 +4,6 @@ import io.infinicast.JObject;
 import io.infinicast.QuadConsumer;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.handler.lists.APListAddCallback;
 import io.infinicast.client.api.paths.handler.lists.APListQueryResultCallback;
 import io.infinicast.client.api.paths.handler.objects.CreateObjectCallback;
 import io.infinicast.client.api.paths.options.CompleteCallback;
@@ -15,7 +14,6 @@ import io.infinicast.client.api.query.Filter;
 import io.infinicast.client.api.query.SortCriteria;
 import io.infinicast.client.impl.pathAccess.IPathAndData;
 
-import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 /**
@@ -105,43 +103,35 @@ public class ChildrenQuery implements IChildrenQuery {
      * The newly added element will get a generated path id.
     */
     public CompletableFuture<ADataAndPathContext> addAsync(JObject objectData) {
-        ChildrenQuery self = this;
         final CompletableFuture<ADataAndPathContext> tcs = new CompletableFuture<ADataAndPathContext>();
-        this.add(objectData, new CreateObjectCallback() {
-            public void accept(ErrorInfo error, JObject data, IAPathContext context) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    ADataAndPathContext result = new ADataAndPathContext();
-                    result.data = data;
-                    result.context = context;
-                    tcs.complete(result);
-                }
-                ;
+        this.add(objectData, (error, data, context) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                ADataAndPathContext result = new ADataAndPathContext();
+                result.data = data;
+                result.context = context;
+                tcs.complete(result);
+            }
+            ;
+        });
         return tcs;
     }
     /**
      * sets the data of all filtered elements
     */
     public CompletableFuture<Integer> setDataAsync(JObject data) {
-        ChildrenQuery self = this;
         final CompletableFuture<Integer> tcs = new CompletableFuture<Integer>();
-        this.setData(data, new BiConsumer<ErrorInfo, Integer>() {
-            public void accept(ErrorInfo error, Integer count) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(count);
-                }
-                ;
+        this.setData(data, (error, count) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(count);
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -150,23 +140,19 @@ public class ChildrenQuery implements IChildrenQuery {
      * The newly added element will get a generated path id.
     */
     public CompletableFuture<FindOneOrAddChildResult> addOrFindOneAsync(JObject newObjectValue) {
-        ChildrenQuery self = this;
         final CompletableFuture<FindOneOrAddChildResult> tcs = new CompletableFuture<FindOneOrAddChildResult>();
-        this.addOrFindOne(newObjectValue, new QuadConsumer<ErrorInfo, JObject, IAPathContext, Boolean>() {
-            public void accept(ErrorInfo error, JObject data, IAPathContext context, Boolean isNew) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    FindOneOrAddChildResult result = new FindOneOrAddChildResult();
-                    result.context = context;
-                    result.data = data;
-                    result.isNew = isNew;
-                }
-                ;
+        this.addOrFindOne(newObjectValue, (error, data, context, isNew) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                FindOneOrAddChildResult result = new FindOneOrAddChildResult();
+                result.context = context;
+                result.data = data;
+                result.isNew = isNew;
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -174,84 +160,66 @@ public class ChildrenQuery implements IChildrenQuery {
      * a callback handler or primise can be used
     */
     public CompletableFuture<APListQueryResult> toListAsync() {
-        ChildrenQuery self = this;
         final CompletableFuture<APListQueryResult> tsc = new CompletableFuture<APListQueryResult>();
-        this.toList(new APListQueryResultCallback() {
-            public void accept(ErrorInfo error, ArrayList<IPathAndData> list, int count) {
-                if ((error != null)) {
-                    tsc.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    APListQueryResult listResult = new APListQueryResult();
-                    listResult.setFullCount(count);
-                    listResult.setList(list);
-                    tsc.complete(listResult);
-                }
-                ;
+        this.toList((error, list, count) -> {
+            if (error != null) {
+                tsc.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                APListQueryResult listResult = new APListQueryResult();
+                listResult.setFullCount(count);
+                listResult.setList(list);
+                tsc.complete(listResult);
+            }
+            ;
+        });
         return tsc;
     }
     /**
      * modifies the data via an atomicChange object that allows to chain multiple field based atomic operations
     */
     public CompletableFuture<APListQueryResult> modifyAndGetDataAsync(AtomicChange data) {
-        ChildrenQuery self = this;
         final CompletableFuture<APListQueryResult> tcs = new CompletableFuture<APListQueryResult>();
-        this.modifyAndGetData(data, new APListQueryResultCallback() {
-            public void accept(ErrorInfo error, ArrayList<IPathAndData> list, int count) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    APListQueryResult result = new APListQueryResult();
-                    result.setFullCount(count);
-                    result.setList(list);
-                    tcs.complete(result);
-                }
-                ;
+        this.modifyAndGetData(data, (error, list, count) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                APListQueryResult result = new APListQueryResult();
+                result.setFullCount(count);
+                result.setList(list);
+                tcs.complete(result);
+            }
+            ;
+        });
         return tcs;
     }
     /**
      * registers a handler that will be triggered when an element is added to the collection path
     */
     public void onAdd(final BiConsumer<JObject, IPathAndEndpointContext> handler, final CompleteCallback completeCallback) {
-        ChildrenQuery self = this;
-        this._executor.onChildAdd(new APListAddCallback() {
-            public void accept(JObject data, IPathAndEndpointContext context) {
-                handler.accept(data, context);
-                ;
-            }
+        this._executor.onChildAdd((data, context) -> {
+            handler.accept(data, context);
+            ;
         }
-        , null, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                useCompletionCallback(completeCallback, error);
-            }
-        }
-        );
+        , null, (error) -> {
+            this.useCompletionCallback(completeCallback, error);
+        });
     }
     /**
      * delets the elements fitting the filtered query and returns the amount of deleted elements or an error
     */
     public CompletableFuture<Integer> removeAsync() {
-        ChildrenQuery self = this;
         final CompletableFuture<Integer> tcs = new CompletableFuture<Integer>();
-        this.remove(new BiConsumer<ErrorInfo, Integer>() {
-            public void accept(ErrorInfo error, Integer count) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(count);
-                }
-                ;
+        this.remove((error, count) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(count);
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -259,48 +227,40 @@ public class ChildrenQuery implements IChildrenQuery {
      * a callback handler or primise can be used
     */
     public void first(final BiConsumer<ErrorInfo, IPathAndData> result) {
-        ChildrenQuery self = this;
         this._dataQuery.setLimit(1);
-        this.toList(new APListQueryResultCallback() {
-            public void accept(ErrorInfo error, ArrayList<IPathAndData> list, int count) {
-                if ((error != null)) {
-                    result.accept(error, null);
+        this.toList((error, list, count) -> {
+            if (error != null) {
+                result.accept(error, null);
+                ;
+            }
+            else {
+                if ((list == null) || (list.size() < 1)) {
+                    result.accept(null, null);
                     ;
                 }
                 else {
-                    if (((list == null) || (list.size() < 1))) {
-                        result.accept(null, null);
-                        ;
-                    }
-                    else {
-                        result.accept(null, list.get(0));
-                        ;
-                    }
+                    result.accept(null, list.get(0));
+                    ;
                 }
-                ;
             }
-        }
-        );
+            ;
+        });
     }
     /**
      * finishs the query and returns the first element that fits the filtered query or null if no element is found
      * a callback handler or primise can be used
     */
     public CompletableFuture<IPathAndData> firstAsync() {
-        ChildrenQuery self = this;
         final CompletableFuture<IPathAndData> tcs = new CompletableFuture<IPathAndData>();
-        this.first(new BiConsumer<ErrorInfo, IPathAndData>() {
-            public void accept(ErrorInfo error, IPathAndData ele) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(ele);
-                }
-                ;
+        this.first((error, ele) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(ele);
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -313,20 +273,16 @@ public class ChildrenQuery implements IChildrenQuery {
      * registers a handler that will be triggered when an element is added to the collection path
     */
     public CompletableFuture<Void> onAddAsync(BiConsumer<JObject, IPathAndEndpointContext> handler) {
-        ChildrenQuery self = this;
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.onAdd(handler, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
+        this.onAdd(handler, (error) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(null);
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -339,20 +295,16 @@ public class ChildrenQuery implements IChildrenQuery {
      * registers a handler that will be triggered when an element is changed in the collection path
     */
     public CompletableFuture<Void> onChangeAsync(BiConsumer<JObject, IPathAndEndpointContext> handler) {
-        ChildrenQuery self = this;
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.onChange(handler, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
+        this.onChange(handler, (error) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(null);
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -365,20 +317,16 @@ public class ChildrenQuery implements IChildrenQuery {
      * registers a handler that will be triggered when an element is deleted in the collection path
     */
     public CompletableFuture<Void> onDeleteAsync(BiConsumer<JObject, IPathAndEndpointContext> handler) {
-        ChildrenQuery self = this;
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.onDelete(handler, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
+        this.onDelete(handler, (error) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(null);
+            }
+            ;
+        });
         return tcs;
     }
     /**
@@ -392,33 +340,29 @@ public class ChildrenQuery implements IChildrenQuery {
      * the add handler will be triggered for all elements that fit the Filter query.
     */
     public CompletableFuture<Void> liveAsync(BiConsumer<JObject, IPathAndEndpointContext> onAdd, BiConsumer<JObject, IPathAndEndpointContext> onRemove, BiConsumer<JObject, IPathAndEndpointContext> onChange) {
-        ChildrenQuery self = this;
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
-        this.live(onAdd, onRemove, onChange, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                if ((error != null)) {
-                    tcs.completeExceptionally(new AfinityException(error));
-                }
-                else {
-                    tcs.complete(null);
-                }
-                ;
+        this.live(onAdd, onRemove, onChange, (error) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
             }
-        }
-        );
+            else {
+                tcs.complete(null);
+            }
+            ;
+        });
         return tcs;
     }
     void useCompletionCallback(CompleteCallback completeCallback, ErrorInfo error) {
-        if ((completeCallback != null)) {
+        if (completeCallback != null) {
             completeCallback.accept(error);
             ;
         }
-        else if ((error != null)) {
+        else if (error != null) {
             this._executor.unhandeledError(error);
         }
     }
     public ICDataQuery getQuery() {
-        if ((this._dataQuery == null)) {
+        if (this._dataQuery == null) {
             return new ICDataQuery();
         }
         return this._dataQuery;
@@ -427,19 +371,13 @@ public class ChildrenQuery implements IChildrenQuery {
      * registers a handler that will be triggered when an element is changed in the collection path
     */
     public void onChange(final BiConsumer<JObject, IPathAndEndpointContext> handler, final CompleteCallback completeCallback) {
-        ChildrenQuery self = this;
-        this._executor.onChildChange(new APListAddCallback() {
-            public void accept(JObject data, IPathAndEndpointContext context) {
-                handler.accept(data, context);
-                ;
-            }
+        this._executor.onChildChange((data, context) -> {
+            handler.accept(data, context);
+            ;
         }
-        , null, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                useCompletionCallback(completeCallback, error);
-            }
-        }
-        );
+        , null, (error) -> {
+            this.useCompletionCallback(completeCallback, error);
+        });
     }
     /**
      * registers a handler that will be triggered when an element is changed in the collection path
@@ -451,19 +389,13 @@ public class ChildrenQuery implements IChildrenQuery {
      * registers a handler that will be triggered when an element is deleted in the collection path
     */
     public void onDelete(final BiConsumer<JObject, IPathAndEndpointContext> handler, final CompleteCallback completeCallback) {
-        ChildrenQuery self = this;
-        this._executor.onChildDelete(new APListAddCallback() {
-            public void accept(JObject data, IPathAndEndpointContext context) {
-                handler.accept(data, context);
-                ;
-            }
+        this._executor.onChildDelete((data, context) -> {
+            handler.accept(data, context);
+            ;
         }
-        , null, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                useCompletionCallback(completeCallback, error);
-            }
-        }
-        );
+        , null, (error) -> {
+            this.useCompletionCallback(completeCallback, error);
+        });
     }
     /**
      * registers a handler that will be triggered when an element is deleted in the collection path
@@ -476,13 +408,9 @@ public class ChildrenQuery implements IChildrenQuery {
      * the add handler will be triggered for all elements that fit the Filter query.
     */
     public void live(BiConsumer<JObject, IPathAndEndpointContext> onAdd, BiConsumer<JObject, IPathAndEndpointContext> onRemove, BiConsumer<JObject, IPathAndEndpointContext> onChange, final CompleteCallback completeCallback) {
-        ChildrenQuery self = this;
-        this._executor.getAndListenOnChilden(this.getQuery(), (((onAdd == null) && (onChange == null)) && (onRemove == null)), onAdd, onChange, onRemove, false, false, new CompleteCallback() {
-            public void accept(ErrorInfo error) {
-                useCompletionCallback(completeCallback, error);
-            }
-        }
-        );
+        this._executor.getAndListenOnChilden(this.getQuery(), (((onAdd == null) && (onChange == null)) && (onRemove == null)), onAdd, onChange, onRemove, false, false, (error) -> {
+            this.useCompletionCallback(completeCallback, error);
+        });
     }
     /**
      * registers handlers for add, remove and change to the given collection path.

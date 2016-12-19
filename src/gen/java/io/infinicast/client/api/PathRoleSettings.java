@@ -81,43 +81,43 @@ public class PathRoleSettings {
     }
     public JObject toJson() {
         JObject data = new JObject();
-        if ((this.sendMessage != null)) {
+        if (this.sendMessage != null) {
             data.set("sendMessage", this.sendMessage);
         }
-        if ((this.receiveMessage != null)) {
+        if (this.receiveMessage != null) {
             data.set("receiveMessage", this.receiveMessage);
         }
-        if ((this.validateMessage != null)) {
+        if (this.validateMessage != null) {
             data.set("validateMessage", this.validateMessage);
         }
-        if ((this.requiresMessageValidation != null)) {
+        if (this.requiresMessageValidation != null) {
             data.set("requiresMessageValidation", this.requiresMessageValidation);
         }
-        if ((this.readMessageListenerList != null)) {
+        if (this.readMessageListenerList != null) {
             data.set("readMessageListenerList", this.readMessageListenerList);
         }
-        if ((this.sendRequest != null)) {
+        if (this.sendRequest != null) {
             data.set("sendRequest", this.sendRequest);
         }
-        if ((this.answerRequest != null)) {
+        if (this.answerRequest != null) {
             data.set("answerRequest", this.answerRequest);
         }
-        if ((this.readRequestListenerList != null)) {
+        if (this.readRequestListenerList != null) {
             data.set("readRequestListenerList", this.readRequestListenerList);
         }
-        if ((this.writeData != null)) {
+        if (this.writeData != null) {
             data.set("writeData", this.writeData);
         }
-        if ((this.readData != null)) {
+        if (this.readData != null) {
             data.set("readData", this.readData);
         }
-        if ((this.validateData != null)) {
+        if (this.validateData != null) {
             data.set("validateData", this.validateData);
         }
-        if ((this.requiresDataValidation != null)) {
+        if (this.requiresDataValidation != null) {
             data.set("requiresDataValidation", this.requiresDataValidation);
         }
-        if ((this.readDataListenerList != null)) {
+        if (this.readDataListenerList != null) {
             data.set("readDataListenerList", this.readDataListenerList);
         }
         return data;

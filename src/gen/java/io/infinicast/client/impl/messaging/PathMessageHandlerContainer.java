@@ -23,17 +23,17 @@ public class PathMessageHandlerContainer {
     }
     public void callHandlers(JObject data, IPathAndEndpointContext context, int requestId) {
         JObject jsonData = null;
-        if ((data != null)) {
+        if (data != null) {
             jsonData = new JObject(data);
         }
         synchronized (this._handlers) {
             for (DCloudMessageHandler handler : this._handlers) {
-                if ((handler != null)) {
+                if (handler != null) {
                     handler.accept(jsonData, context, requestId);
                     ;
                 }
                 else {
-                    PathMessageHandlerContainer.logger.error(("null handler for request " + requestId));
+                    PathMessageHandlerContainer.logger.error("null handler for request " + requestId);
                 }
             }
         }

@@ -11,7 +11,7 @@ public class RoleSettings {
     Integer _timeoutInMs;
     public JObject toJson() {
         JObject result = new JObject();
-        if ((this.getAllowConnectAsRole() != null)) {
+        if (this.getAllowConnectAsRole() != null) {
             result.set("allowConnectAsRole", this.getAllowConnectAsRole());
         }
         if (!(StringExtensions.IsNullOrEmpty(this.getAllowEps()))) {
@@ -23,10 +23,10 @@ public class RoleSettings {
         if (!(StringExtensions.IsNullOrEmpty(this.getGrantRoleAssignments()))) {
             result.set("grantRoleAssignments", this.getGrantRoleAssignments());
         }
-        if ((this.getGrantDevSetup() != null)) {
+        if (this.getGrantDevSetup() != null) {
             result.set("grantDevSetup", this.getGrantDevSetup());
         }
-        if ((this.getTimeoutInMs() != null)) {
+        if (this.getTimeoutInMs() != null) {
             result.set("timeoutInMs", this.getTimeoutInMs());
         }
         return result;

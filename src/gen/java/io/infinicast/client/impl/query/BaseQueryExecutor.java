@@ -43,7 +43,7 @@ public class BaseQueryExecutor {
     public static HashMap<String, Integer> getRoleCountDictionary(JObject json) {
         HashMap<String, Integer> roleCount = new HashMap<String, Integer>();
         JArray roleCountArray = json.getJArray("roleCount");
-        if ((roleCountArray != null)) {
+        if (roleCountArray != null) {
             for (JToken roleOb : roleCountArray) {
                 String role = roleOb.getString("role");
                 String handlerType = roleOb.getString("handlerType");

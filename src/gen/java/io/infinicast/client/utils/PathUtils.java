@@ -15,7 +15,7 @@ public class PathUtils {
         if (!(path.startsWith("/"))) {
             path = ("/" + path);
         }
-        if ((!(path.endsWith("/")) && !(path.endsWith("*")))) {
+        if (!(path.endsWith("/")) && !(path.endsWith("*"))) {
             path = (path + "/");
         }
         return path;
@@ -25,8 +25,8 @@ public class PathUtils {
         return PathUtils.getParentPath(path);
     }
     static void createWildcardSubElement(String str, List<String> splitted, int index, ArrayList<String> results) {
-        if ((index == splitted.size())) {
-            results.add((str + "/"));
+        if (index == splitted.size()) {
+            results.add(str + "/");
         }
         else {
             PathUtils.createWildcardSubElement(((str + "/") + splitted.get(index)), splitted, (index + 1), results);
@@ -47,7 +47,7 @@ public class PathUtils {
         return list;
     }
     public static String combine(String path1, String path2) {
-        return PathUtils.cleanup(((path1 + "/") + path2));
+        return PathUtils.cleanup((path1 + "/") + path2);
     }
     public static String combineId(String path, String id) {
         return PathUtils.combine(path, id);
@@ -67,8 +67,8 @@ public class PathUtils {
         if (str.endsWith("/")) {
             str = str.substring(0, (str.length() - 1));
         }
-        if ((str.lastIndexOf("/") != -1)) {
-            str = str.substring((str.lastIndexOf("/") + 1));
+        if (str.lastIndexOf("/") != -1) {
+            str = str.substring(str.lastIndexOf("/") + 1);
         }
         return str;
     }
@@ -76,7 +76,7 @@ public class PathUtils {
         return (("/~endpoints/" + endpointId) + "/");
     }
     public static String endpointDisconnectedByRolePath(String role) {
-        return PathUtils.infinicastIntern(("roleDc/" + role));
+        return PathUtils.infinicastIntern("roleDc/" + role);
     }
     static String infinicastIntern(String s) {
         return (("/~IC/" + s) + "/");
@@ -92,7 +92,7 @@ public class PathUtils {
         return StringUtils.GetStringPathEleByIdx(path, idx);
     }
     public static String pathToString(IPath path) {
-        if ((path == null)) {
+        if (path == null) {
             return "";
         }
         else {

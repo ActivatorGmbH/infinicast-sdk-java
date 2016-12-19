@@ -16,9 +16,9 @@ public class Connector2EpsMessage extends BaseMessage  {
     static Connector2EpsMessage parseInternal(JObject data) {
         Connector2EpsMessage msg = new Connector2EpsMessage();
         msg._setDataByMessage(data);
-        msg.setType(((Connector2EpsMessageType) Connector2EpsMessageType.valueOf(data.getString("type"))));
-        if ((data.get("handlerType") != null)) {
-            msg.setHandlerType(((Connector2EpsMessageType) Connector2EpsMessageType.valueOf((data.getString("handlerType")))));
+        msg.setType((Connector2EpsMessageType) Connector2EpsMessageType.valueOf(data.getString("type")));
+        if (data.get("handlerType") != null) {
+            msg.setHandlerType((Connector2EpsMessageType) Connector2EpsMessageType.valueOf(data.getString("handlerType")));
         }
         return msg;
     }
@@ -28,11 +28,11 @@ public class Connector2EpsMessage extends BaseMessage  {
             result.set("space", this.getSpace().toString());
         }
         result.set("type", this.getType().toString());
-        if ((this.getHandlerType() != null)) {
+        if (this.getHandlerType() != null) {
             result.set("handlerType", this.getHandlerType().toString());
         }
         if (!(StringExtensions.IsNullOrEmpty(this.getVersion()))) {
-            if ((super.getData() == null)) {
+            if (super.getData() == null) {
                 super.setData(new JObject());
             }
             super.getData().set("version", this.getVersion());

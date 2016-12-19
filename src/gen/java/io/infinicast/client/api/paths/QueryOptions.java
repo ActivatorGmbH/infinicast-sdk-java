@@ -23,7 +23,7 @@ public class QueryOptions extends QueryOptionsData  {
         return this;
     }
     public QueryOptions withDataContext(String path, DataContextRelativeOptions relative) {
-        if ((super.dataContextPaths == null)) {
+        if (super.dataContextPaths == null) {
             super.dataContextPaths = new ArrayList<DataContextRequest>();
         }
         DataContextRequest r = new DataContextRequest();

@@ -15,7 +15,7 @@ public class MessageSender implements IMessageSender {
         APlayStringMessage convertedMsg = data.buildStringMessage();
         if (this._logger.getIsDebugEnabled()) {
             String messageAsString = convertedMsg.getDataAsString();
-            this._logger.debug(("Send Message " + messageAsString));
+            this._logger.debug("Send Message " + messageAsString);
         }
         try {
             this._connection.SendToServer(convertedMsg);

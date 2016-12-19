@@ -23,7 +23,7 @@ public class ModifyAndGetChildrenOptions extends QueryOptionsData  {
         return this;
     }
     public ModifyAndGetChildrenOptions withDataContext(String path, DataContextRelativeOptions relative) {
-        if ((super.dataContextPaths == null)) {
+        if (super.dataContextPaths == null) {
             super.dataContextPaths = new ArrayList<DataContextRequest>();
         }
         DataContextRequest r = new DataContextRequest();

@@ -11,7 +11,7 @@ public class APListeningStartedContext extends APathContext  implements IAPathCo
     IEndpoint _endpoint;
     JObject _endpointData;
     public int getListenerCount(String role) {
-        if (((this.listenerCount == null) || !(this.listenerCount.containsKey(role)))) {
+        if ((this.listenerCount == null) || !(this.listenerCount.containsKey(role))) {
             return 0;
         }
         return this.listenerCount.get(role);

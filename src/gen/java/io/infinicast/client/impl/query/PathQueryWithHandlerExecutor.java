@@ -18,7 +18,6 @@ import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.query.ListenTerminateReason;
 import io.infinicast.client.impl.IConnector;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
 import io.infinicast.client.impl.pathAccess.RequestResponder;
 import io.infinicast.client.impl.responder.ValidationResponder;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
@@ -30,20 +29,17 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         super(connector, path, messageManager);
     }
     public void onDataChange(final TriConsumer<JObject, JObject, IPathAndEndpointContext> callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler(false, Connector2EpsMessageType.SetObjectData, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int id) {
-                JObject newOb = null;
-                JObject oldOb = null;
-                if (json.containsNonNull("new")) {
-                    newOb = json.getJObject("new");
-                }
-                if (json.containsNonNull("old")) {
-                    oldOb = json.getJObject("old");
-                }
-                callback.accept(newOb, oldOb, context);
-                ;
+        super._messageManager.addHandler(false, Connector2EpsMessageType.SetObjectData, super._path, (json, context, id) -> {
+            JObject newOb = null;
+            JObject oldOb = null;
+            if (json.containsNonNull("new")) {
+                newOb = json.getJObject("new");
             }
+            if (json.containsNonNull("old")) {
+                oldOb = json.getJObject("old");
+            }
+            callback.accept(newOb, oldOb, context);
+            ;
         }
         , completeCallback, options);
     }
@@ -54,20 +50,17 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onDataChange(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onValidateDataChange(final APValidateDataChangeCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.DataChangeValidate, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int id) {
-                JObject newOb = null;
-                JObject oldOb = null;
-                if (json.containsNonNull("new")) {
-                    newOb = json.getJObject("new");
-                }
-                if (json.containsNonNull("old")) {
-                    oldOb = json.getJObject("old");
-                }
-                callback.accept(newOb, oldOb, new ValidationResponder(Connector2EpsMessageType.DataChangeValidated, _messageManager, newOb, context.getPath(), context.getEndpoint()), context);
-                ;
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.DataChangeValidate, super._path, (json, context, id) -> {
+            JObject newOb = null;
+            JObject oldOb = null;
+            if (json.containsNonNull("new")) {
+                newOb = json.getJObject("new");
             }
+            if (json.containsNonNull("old")) {
+                oldOb = json.getJObject("old");
+            }
+            callback.accept(newOb, oldOb, new ValidationResponder(Connector2EpsMessageType.DataChangeValidated, super._messageManager, newOb, context.getPath(), context.getEndpoint()), context);
+            ;
         }
         , completeCallback, options);
     }
@@ -78,12 +71,9 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onValidateDataChange(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onValidateMessage(final APValidateMessageCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.MessageValidate, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int id) {
-                callback.accept(json, new ValidationResponder(Connector2EpsMessageType.MessageValidated, _messageManager, json, context.getPath(), context.getEndpoint()), context);
-                ;
-            }
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.MessageValidate, super._path, (json, context, id) -> {
+            callback.accept(json, new ValidationResponder(Connector2EpsMessageType.MessageValidated, super._messageManager, json, context.getPath(), context.getEndpoint()), context);
+            ;
         }
         , completeCallback, options);
     }
@@ -94,12 +84,9 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onValidateMessage(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onMessage(final APMessageCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Message, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int id) {
-                callback.accept(json, context);
-                ;
-            }
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Message, super._path, (json, context, id) -> {
+            callback.accept(json, context);
+            ;
         }
         , completeCallback, options, listenTerminationHandler);
     }
@@ -113,12 +100,9 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onMessage(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
     public void onRequest(final APRequestCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Request, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int requestId) {
-                callback.accept(json, new RequestResponder(_messageManager, context.getPath(), context.getEndpoint().getEndpointId(), requestId), context);
-                ;
-            }
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Request, super._path, (json, context, requestId) -> {
+            callback.accept(json, new RequestResponder(super._messageManager, context.getPath(), context.getEndpoint().getEndpointId(), requestId), context);
+            ;
         }
         , completeCallback, options);
     }
@@ -129,12 +113,9 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onRequest(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onReminder(final AReminderCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Reminder, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int id) {
-                callback.accept(json, context);
-                ;
-            }
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Reminder, super._path, (json, context, id) -> {
+            callback.accept(json, context);
+            ;
         }
         , completeCallback, options);
     }
@@ -145,12 +126,9 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onReminder(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onIntroduce(final APObjectIntroduceCallback callback, CompleteCallback completeCallback) {
-        PathQueryWithHandlerExecutor self = this;
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.IntroduceObject, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context, int id) {
-                callback.accept(json, context);
-                ;
-            }
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.IntroduceObject, super._path, (json, context, id) -> {
+            callback.accept(json, context);
+            ;
         }
         , completeCallback, null);
     }

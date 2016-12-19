@@ -13,7 +13,7 @@ public class ErrorInfo {
     public ErrorInfo(String message, String path) {
         this.setMessage(message);
         if (!(StringExtensions.IsNullOrEmpty(path))) {
-            this.setMessage(((this.getMessage() + " path: ") + path));
+            this.setMessage((this.getMessage() + " path: ") + path);
         }
     }
     public static ErrorInfo fromMessage(String message, String path) {

@@ -10,8 +10,6 @@ import io.infinicast.client.impl.contexts.APListeningChangedContext;
 import io.infinicast.client.impl.contexts.APListeningEndedContext;
 import io.infinicast.client.impl.contexts.APListeningStartedContext;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
-import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
 import io.infinicast.client.impl.objectState.Endpoint;
 import io.infinicast.client.impl.pathAccess.EndpointAndData;
 import io.infinicast.client.impl.pathAccess.IEndpointAndData;
@@ -25,50 +23,43 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         super(connector, path, messageManager);
     }
     public void getListenerList(final TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback, String roleFilter, ListeningType listeningType) {
-        ListenerQueryExecutor self = this;
         JObject settings = new JObject();
         if (!(StringExtensions.IsNullOrEmpty(roleFilter))) {
             settings.set("role", roleFilter);
         }
-        if ((listeningType != ListeningType.Any)) {
+        if (listeningType != ListeningType.Any) {
             settings.set("messageType", listeningType.toString());
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetListeningList, super._path, settings, new DMessageResponseHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context) {
-                if (!(checkIfHasErrorsAndCallHandlersNew(json, new CompleteCallback() {
-                    public void accept(ErrorInfo error) {
-                        callback.accept(error, null, null);
-                        ;
-                    }
-                }
-                ))) {
-                    JArray array = json.getJArray("list");
-                    if ((array != null)) {
-                        ArrayList<IEndpointAndData> resultList = new ArrayList<IEndpointAndData>();
-                        for (JToken ob : array) {
-                            Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), _connector.getRootPath());
-                            EndpointAndData endpointData = new EndpointAndData();
-                            if (ob.containsNonNull("data")) {
-                                endpointData.setData(ob.getJObject("data"));
-                            }
-                            endpointData.setEndpoint(endpointObject);
-                            resultList.add(endpointData);
-                        }
-                        callback.accept(null, resultList, getPathContext(_path));
-                        ;
-                    }
-                    else {
-                        throw new RuntimeException(new Exception("GetListeningList should always contain a list, even if it is empty"));
-                    }
-                }
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetListeningList, super._path, settings, (json, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+                callback.accept(error, null, null);
                 ;
+            }))) {
+                JArray array = json.getJArray("list");
+                if (array != null) {
+                    ArrayList<IEndpointAndData> resultList = new ArrayList<IEndpointAndData>();
+                    for (JToken ob : array) {
+                        Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), super._connector.getRootPath());
+                        EndpointAndData endpointData = new EndpointAndData();
+                        if (ob.containsNonNull("data")) {
+                            endpointData.setData(ob.getJObject("data"));
+                        }
+                        endpointData.setEndpoint(endpointObject);
+                        resultList.add(endpointData);
+                    }
+                    callback.accept(null, resultList, super.getPathContext(super._path));
+                    ;
+                }
+                else {
+                    throw new RuntimeException(new Exception("GetListeningList should always contain a list, even if it is empty"));
+                }
             }
-        }
-        );
+            ;
+        });
     }
     static APListeningStartedContext getListeningStartedContext(JObject json, IPathAndEndpointContext ctx) {
         APListeningStartedContext context = new APListeningStartedContext();
-        if ((json != null)) {
+        if (json != null) {
             context.listenerCount = BaseQueryExecutor.getRoleCountDictionary(json);
         }
         context.setPath(ctx.getPath());
@@ -78,7 +69,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     }
     static APListeningEndedContext getListeningEndedContext(JObject json, IPathAndEndpointContext ctx) {
         APListeningEndedContext context = new APListeningEndedContext();
-        if ((json != null)) {
+        if (json != null) {
             context.listenerCount = BaseQueryExecutor.getRoleCountDictionary(json);
         }
         context.setPath(ctx.getPath());
@@ -95,14 +86,14 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     }
     JObject getCustomOptionsJson(ListeningHandlerRegistrationOptions options) {
         JObject customOptions = null;
-        if (((options != null) && !(StringExtensions.IsNullOrEmpty(options.getRoleFilter())))) {
-            if ((customOptions == null)) {
+        if ((options != null) && !(StringExtensions.IsNullOrEmpty(options.getRoleFilter()))) {
+            if (customOptions == null) {
                 customOptions = new JObject();
             }
             customOptions.set("role", options.getRoleFilter());
         }
-        if (((options != null) && (options.getListenerType() != ListeningType.Any))) {
-            if ((customOptions == null)) {
+        if ((options != null) && (options.getListenerType() != ListeningType.Any)) {
+            if (customOptions == null) {
                 customOptions = new JObject();
             }
             customOptions.set("listenerType", options.getListenerType().toString());
@@ -110,100 +101,85 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         return customOptions;
     }
     public void onListeningStarted(final Consumer<IListeningStartedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        ListenerQueryExecutor self = this;
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningStarted, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
-                APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
-                handler.accept(context);
-                ;
-            }
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningStarted, super._path, (json, ctx, id) -> {
+            APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
+            handler.accept(context);
+            ;
         }
         , completeCallback, options);
     }
     public void getAndListenOnListeners(final Consumer<IListeningStartedContext> onStart, final Consumer<IListeningChangedContext> onChange, final Consumer<IListeningEndedContext> onEnd, ListeningHandlerRegistrationOptions options, final CompleteCallback registrationCompleteCallback) {
-        ListenerQueryExecutor self = this;
         JObject parameters = this.getCustomOptionsJson(options);
-        if ((parameters == null)) {
+        if (parameters == null) {
             parameters = new JObject();
         }
-        if ((((onStart == null) && (onEnd == null)) && (onChange == null))) {
+        if (((onStart == null) && (onEnd == null)) && (onChange == null)) {
             parameters.set("remove", true);
         }
-        if (((options != null) && options.getIsOncePerRole())) {
+        if ((options != null) && options.getIsOncePerRole()) {
             parameters.set("once", true);
         }
-        if (((options != null) && options.getIsSticky())) {
+        if ((options != null) && options.getIsSticky()) {
             parameters.set("sticky", true);
         }
-        if ((onChange == null)) {
+        if (onChange == null) {
             parameters.set("noChange", true);
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnListeners, super._path, parameters, new DMessageResponseHandler() {
-            public void accept(JObject json, IPathAndEndpointContext context) {
-                if (!(checkIfHasErrorsAndCallHandlersNew(json, new CompleteCallback() {
-                    public void accept(ErrorInfo error) {
-                        if ((registrationCompleteCallback != null)) {
-                            registrationCompleteCallback.accept(error);
-                            ;
-                        }
-                        ;
-                    }
-                }
-                ))) {
-                    JArray array = json.getJArray("list");
-                    if ((array != null)) {
-                        PathImpl rootPath = _connector.getRootPath();
-                        for (JToken ob : array) {
-                            Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), rootPath);
-                            EndpointAndData endpointData = new EndpointAndData();
-                            endpointData.setData(ob.getJObject("data"));
-                            endpointData.setEndpoint(endpointObject);
-                            APListeningStartedContext listeningStartedContext = new APListeningStartedContext();
-                            listeningStartedContext.setEndpoint(endpointObject);
-                            listeningStartedContext.setEndpointData(endpointData.getData());
-                            if ((onStart != null)) {
-                                onStart.accept(listeningStartedContext);
-                                ;
-                            }
-                        }
-                    }
-                    if ((registrationCompleteCallback != null)) {
-                        registrationCompleteCallback.accept(null);
-                        ;
-                    }
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnListeners, super._path, parameters, (json, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+                if (registrationCompleteCallback != null) {
+                    registrationCompleteCallback.accept(error);
+                    ;
                 }
                 ;
+            }))) {
+                JArray array = json.getJArray("list");
+                if (array != null) {
+                    PathImpl rootPath = super._connector.getRootPath();
+                    for (JToken ob : array) {
+                        Endpoint endpointObject = new Endpoint(ob.getString("path"), ob.getString("endpoint"), rootPath);
+                        EndpointAndData endpointData = new EndpointAndData();
+                        endpointData.setData(ob.getJObject("data"));
+                        endpointData.setEndpoint(endpointObject);
+                        APListeningStartedContext listeningStartedContext = new APListeningStartedContext();
+                        listeningStartedContext.setEndpoint(endpointObject);
+                        listeningStartedContext.setEndpointData(endpointData.getData());
+                        if (onStart != null) {
+                            onStart.accept(listeningStartedContext);
+                            ;
+                        }
+                    }
+                }
+                if (registrationCompleteCallback != null) {
+                    registrationCompleteCallback.accept(null);
+                    ;
+                }
             }
-        }
-        );
-        if ((((onStart != null) || (onChange != null)) || (onEnd != null))) {
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, new DCloudMessageHandler() {
-                public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
-                    APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
-                    if ((onStart != null)) {
-                        onStart.accept(context);
-                        ;
-                    }
+            ;
+        });
+        if (((onStart != null) || (onChange != null)) || (onEnd != null)) {
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, (json, ctx, id) -> {
+                APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
+                if (onStart != null) {
+                    onStart.accept(context);
+                    ;
                 }
-            });
-            if ((onChange != null)) {
-                super._messageManager.registerHandler(Connector2EpsMessageType.ListeningChanged, super._path, new DCloudMessageHandler() {
-                    public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
-                        onChange.accept(ListenerQueryExecutor.getListeningChangedContext(json, ctx));
-                        ;
-                    }
-                }
-                );
             }
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningEnded, super._path, new DCloudMessageHandler() {
-                public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
-                    APListeningEndedContext context = ListenerQueryExecutor.getListeningEndedContext(json, ctx);
-                    if ((onEnd != null)) {
-                        onEnd.accept(context);
-                        ;
-                    }
+            );
+            if (onChange != null) {
+                super._messageManager.registerHandler(Connector2EpsMessageType.ListeningChanged, super._path, (json, ctx, id) -> {
+                    onChange.accept(ListenerQueryExecutor.getListeningChangedContext(json, ctx));
+                    ;
+                });
+            }
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningEnded, super._path, (json, ctx, id) -> {
+                APListeningEndedContext context = ListenerQueryExecutor.getListeningEndedContext(json, ctx);
+                if (onEnd != null) {
+                    onEnd.accept(context);
+                    ;
                 }
-            });
+            }
+            );
         }
         else {
             super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, null);
@@ -229,11 +205,8 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         return context;
     }
     public void onListeningChanged(final Consumer<IListeningChangedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        ListenerQueryExecutor self = this;
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningChanged, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
-                ListenerQueryExecutor.forwardListeningChangedMessages(handler, json, ctx);
-            }
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningChanged, super._path, (json, ctx, id) -> {
+            ListenerQueryExecutor.forwardListeningChangedMessages(handler, json, ctx);
         }
         , completeCallback, options);
     }
@@ -244,11 +217,8 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         this.onListeningChanged(handler, (ListeningHandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onListeningEnded(final Consumer<IListeningEndedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        ListenerQueryExecutor self = this;
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningEnded, super._path, new DCloudMessageHandler() {
-            public void accept(JObject json, IPathAndEndpointContext ctx, int id) {
-                ListenerQueryExecutor.forwardListeningEndedMessages(handler, json, ctx);
-            }
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningEnded, super._path, (json, ctx, id) -> {
+            ListenerQueryExecutor.forwardListeningEndedMessages(handler, json, ctx);
         }
         , completeCallback, options);
     }

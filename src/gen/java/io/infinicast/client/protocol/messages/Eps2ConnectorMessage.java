@@ -21,26 +21,26 @@ public class Eps2ConnectorMessage extends BaseMessage  {
         Eps2ConnectorMessage result = new Eps2ConnectorMessage();
         result._setDataByMessage(data);
         result.setType((Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(data.getString("type")));
-        if ((data.get("endpointObject") != null)) {
-            result.setEndpointObject((data.getJObject("endpointObject")));
+        if (data.get("endpointObject") != null) {
+            result.setEndpointObject(data.getJObject("endpointObject"));
         }
-        if ((data.get("fullCount") != null)) {
-            result.setFullCount((data.getInt("fullCount")));
+        if (data.get("fullCount") != null) {
+            result.setFullCount(data.getInt("fullCount"));
         }
-        if ((data.get("newlyCreated") != null)) {
-            result.setNewlyCreated((data.getBoolean("newlyCreated")));
+        if (data.get("newlyCreated") != null) {
+            result.setNewlyCreated(data.getBoolean("newlyCreated"));
         }
-        if ((data.get("errorCode") != null)) {
-            result.setErrorCode((data.getInt("errorCode")));
+        if (data.get("errorCode") != null) {
+            result.setErrorCode(data.getInt("errorCode"));
         }
-        if ((data.get("errorData") != null)) {
-            result.setErrorData((data.getJObject("errorData")));
+        if (data.get("errorData") != null) {
+            result.setErrorData(data.getJObject("errorData"));
         }
-        if ((data.get("disconnected") != null)) {
-            result.setDisconnected((data.getBoolean("disconnected")));
+        if (data.get("disconnected") != null) {
+            result.setDisconnected(data.getBoolean("disconnected"));
         }
-        if ((data.get("list") != null)) {
-            result.setList((data.getJArray("list")));
+        if (data.get("list") != null) {
+            result.setList(data.getJArray("list"));
         }
         return result;
     }
@@ -48,25 +48,25 @@ public class Eps2ConnectorMessage extends BaseMessage  {
         JObject result = new JObject();
         super._fillJson(result);
         result.set("type", this.getType().toString());
-        if ((this.getEndpointObject() != null)) {
+        if (this.getEndpointObject() != null) {
             result.set("Endpoint", this.getEndpointObject());
         }
-        if ((this.getFullCount() != null)) {
+        if (this.getFullCount() != null) {
             result.set("fullCount", this.getFullCount());
         }
-        if ((this.getNewlyCreated() != null)) {
+        if (this.getNewlyCreated() != null) {
             result.set("newlyCreated", this.getNewlyCreated());
         }
-        if ((this.getErrorCode() != null)) {
+        if (this.getErrorCode() != null) {
             result.set("errorCode", this.getErrorCode());
         }
-        if ((this.getErrorData() != null)) {
+        if (this.getErrorData() != null) {
             result.set("errorData", this.getErrorData());
         }
-        if ((this.getDisconnected() != null)) {
+        if (this.getDisconnected() != null) {
             result.set("disconnected", this.getDisconnected());
         }
-        if ((this.getList() != null)) {
+        if (this.getList() != null) {
             result.set("list", this.getList());
         }
         APlayStringMessage msg = new APlayStringMessage();

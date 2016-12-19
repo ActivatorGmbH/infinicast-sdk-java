@@ -10,12 +10,12 @@ import io.infinicast.client.impl.IConnector;
 public class ErrorHandlingHelper {
     static Logger _logger = LoggerFactory.getLogger(ErrorHandlingHelper.class);
     public static void checkIfHasErrorsAndCallHandlersFull(IConnector connector, JObject json, CompleteCallback completeCallback, IPath path) {
-        if ((json != null)) {
+        if (json != null) {
             JObject errorJson = json.getJObject("error");
-            if (((json != null) && (errorJson != null))) {
-                if ((completeCallback != null)) {
+            if ((json != null) && (errorJson != null)) {
+                if (completeCallback != null) {
                     String pathAddress = "";
-                    if ((path != null)) {
+                    if (path != null) {
                         path.toString();
                     }
                     completeCallback.accept(ErrorInfo.fromJson(errorJson, pathAddress));
@@ -30,18 +30,18 @@ public class ErrorHandlingHelper {
         else {
             ErrorHandlingHelper._logger.warn("Note: no resulting json set.");
         }
-        if ((completeCallback != null)) {
+        if (completeCallback != null) {
             completeCallback.accept(null);
             ;
         }
     }
     public static boolean checkIfHasErrorsAndCallHandlersNew(IConnector connector, JObject json, CompleteCallback completeCallback, IPath path) {
-        if ((json != null)) {
+        if (json != null) {
             JObject errorJson = json.getJObject("error");
-            if (((json != null) && (errorJson != null))) {
-                if ((completeCallback != null)) {
+            if ((json != null) && (errorJson != null)) {
+                if (completeCallback != null) {
                     String pathAddress = "";
-                    if ((path != null)) {
+                    if (path != null) {
                         path.toString();
                     }
                     completeCallback.accept(ErrorInfo.fromJson(errorJson, pathAddress));

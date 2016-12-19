@@ -14,11 +14,11 @@ public class Eps2ConnectorProtocol {
     void handleMessage(IEndpoint2ConnectorProtocolHandler handler, Eps2ConnectorMessage ob) {
         Eps2ConnectorMessageType messageType = ob.getType();
         JObject endpointObject = null;
-        if ((ob.getEndpointObject() != null)) {
+        if (ob.getEndpointObject() != null) {
             endpointObject = new JObject(ob.getEndpointObject());
         }
         JObject data = null;
-        if ((ob.getData() != null)) {
+        if (ob.getData() != null) {
             data = new JObject(ob.getData());
         }
         switch (messageType) {
@@ -156,7 +156,7 @@ public class Eps2ConnectorProtocol {
                     break;}
             
             default:
-                throw new NotImplementedException(("not yet implemented messageType " + messageType));
+                throw new NotImplementedException("not yet implemented messageType " + messageType);
             
         }
     }

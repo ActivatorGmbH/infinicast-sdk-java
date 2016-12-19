@@ -23,13 +23,13 @@ public class ICDataQuery {
             filters.Add(icDataFilter.toJson());
         }
         data.set("filters", filters);
-        if ((this.getLimit() != -1)) {
+        if (this.getLimit() != -1) {
             data.set("limit", this.getLimit());
         }
-        if ((this.getStart() != -1)) {
+        if (this.getStart() != -1) {
             data.set("start", this.getStart());
         }
-        if ((this.getOrderCriteria() != null)) {
+        if (this.getOrderCriteria() != null) {
             data.set("order", this.getOrderCriteria().getField());
             if (this.getOrderCriteria().getIsAscending()) {
                 data.set("orderAsc", this.getOrderCriteria().getIsAscending());
