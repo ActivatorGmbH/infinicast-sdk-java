@@ -14,6 +14,7 @@ import io.infinicast.client.impl.objectState.Endpoint;
 import io.infinicast.client.impl.objectState.ObjectStateManager;
 import io.infinicast.client.impl.pathAccess.PathImpl;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
+import io.infinicast.client.protocol.Connector2EpsMessageTypeConverter;
 import io.infinicast.client.utils.NetFactory;
 import io.infinicast.client.utils.PathUtils;
 
@@ -40,6 +41,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public InfinicastClient() {
         super("");
         this._ClientLogger.info("Infinicast Client " + VersionHelper.getClientVersion());
+        Connector2EpsMessageTypeConverter.init();
     }
     void setCredentials(JObject credentials) {
         this._credentials = credentials;

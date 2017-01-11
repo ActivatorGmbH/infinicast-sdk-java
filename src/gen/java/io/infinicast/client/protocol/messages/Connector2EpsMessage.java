@@ -39,7 +39,7 @@ public class Connector2EpsMessage extends BaseMessage  {
         }
         super._fillJson(result);
         APlayStringMessage msg = new APlayStringMessage();
-        msg.setDataAsString(result.toString());
+        msg.setDataAsJson(result);
         return msg;
     }
     public static Connector2EpsMessage clone(Connector2EpsMessage original) {

@@ -34,7 +34,20 @@ public class APlayProtocolEncoder implements ProtocolEncoder {
             out.write(buffer);
         } else if (o instanceof APlayStringMessage) {
             APlayStringMessage msg = (APlayStringMessage) o;
+            JObject payload = msg.getDataAsDecodedJson();
+            APlayBinaryMessage binaryMessage = new APlayBinaryMessage();
+            binaryMessage.startWriting();
 
+            binaryMessage.writeJson(payload);
+
+
+            IoBuffer buffer = allocateBuffer(1 + 4 + binaryMessage.binarySize());
+
+            buffer.put(APlayCodec.MSGTYPE_PAYLOAD_BINARY_JSON);
+            buffer.putInt(binaryMessage.binarySize());
+            buffer.put(binaryMessage.getBinaryBytes());
+            buffer.flip();
+            out.write(buffer);
             /*byte[] compressedData =msg.getCompressedData();
             if(compressedData!=null){
                 //String payload = msg.getDataAsString();
@@ -48,13 +61,13 @@ public class APlayProtocolEncoder implements ProtocolEncoder {
                 buffer.flip();
                 out.write(buffer);
             }else{*/
-            String payload = msg.getDataAsString();
+/*            String payload = msg.getDataAsString();
             int approxBufferSize = 1 + 4 + payload.length();
             IoBuffer buffer = allocateBuffer(approxBufferSize);
             buffer.put(APlayCodec.MSGTYPE_PAYLOAD);
             buffer.putPrefixedString(payload, 4, charsetEncoder);
             buffer.flip();
-            out.write(buffer);
+            out.write(buffer);*/
             //}
         } else if (o instanceof LowlevelIntroductionMessage) {
             LowlevelIntroductionMessage msg = (LowlevelIntroductionMessage) o;

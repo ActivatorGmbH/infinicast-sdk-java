@@ -3,6 +3,7 @@ package io.infinicast;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import org.joda.time.DateTime;
 
 import java.util.Iterator;
 
@@ -56,7 +57,31 @@ public class JArray extends JToken implements Iterable<JToken> {
     public void add(String o) {
         getArrayNode().add(o);
     }
-
+    public void add(Object value){
+        if (value == null) {
+            add((String) null);
+        } else if (value instanceof String) {
+            add((String) value);
+        } else if (value instanceof Double) {
+            add((double) value);
+        } else if (value instanceof Float) {
+            add((float) value);
+        } else if (value instanceof Integer) {
+            add((int) value);
+        } else if (value instanceof Long) {
+            add((long) value);
+        } else if (value instanceof JArray) {
+            add((JArray) value);
+        } else if (value instanceof Boolean) {
+            add((boolean) value);
+        } else if (value instanceof DateTime) {
+            add((DateTime) value);
+        } else if (value instanceof JObject) {
+            add((JObject) value);
+        } else {
+            add(value.toString());
+        }
+    }
     public void add(int o) {
         getArrayNode().add(o);
     }

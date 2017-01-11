@@ -4,6 +4,7 @@ import io.infinicast.APlayStringMessage;
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.client.protocol.Eps2ConnectorMessageType;
+import io.infinicast.client.protocol.Eps2ConnectorMessageTypeConverter;
 public class Eps2ConnectorMessage extends BaseMessage  {
     Eps2ConnectorMessageType _type;
     JObject _endpointObject;
@@ -20,7 +21,12 @@ public class Eps2ConnectorMessage extends BaseMessage  {
     static Eps2ConnectorMessage parseFromJson(JObject data) {
         Eps2ConnectorMessage result = new Eps2ConnectorMessage();
         result._setDataByMessage(data);
-        result.setType((Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(data.getString("type")));
+        if (data.get("t") != null) {
+            result.setType(Eps2ConnectorMessageTypeConverter.intToMessageType(data.getInt("type")));
+        }
+        else {
+            result.setType((Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(data.getString("type")));
+        }
         if (data.get("endpointObject") != null) {
             result.setEndpointObject(data.getJObject("endpointObject"));
         }
@@ -70,7 +76,7 @@ public class Eps2ConnectorMessage extends BaseMessage  {
             result.set("list", this.getList());
         }
         APlayStringMessage msg = new APlayStringMessage();
-        msg.setDataAsString(result.toString());
+        msg.setDataAsJson(result);
         return msg;
     }
     public static Eps2ConnectorMessage mapFromConnectorMessage(Connector2EpsMessage msg) {

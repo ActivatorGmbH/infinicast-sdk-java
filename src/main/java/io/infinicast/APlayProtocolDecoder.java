@@ -57,6 +57,22 @@ public class APlayProtocolDecoder extends CumulativeProtocolDecoder {
                 // We need to wait for more data
                 return false;
             }
+            case APlayCodec.MSGTYPE_PAYLOAD_BINARY_JSON:
+                if (in.prefixedDataAvailable(4)) {
+                    byte[] payload = getPrefixedData(in);
+
+                    APlayBinaryMessage binaryMessage = new APlayBinaryMessage();
+                    binaryMessage.startReading(payload);
+                    JObject bsonObject = binaryMessage.readJson();
+                    APlayStringMessage msg = new APlayStringMessage();
+                    msg.setDataAsJson(bsonObject);
+                    out.write(msg);
+                    decoderState.reset();
+                    return true;
+                } else {
+                    // We need to wait for more data
+                    return false;
+                }
         case APlayCodec.MSGTYPE_PAYLOAD_GZIP:
             if (in.prefixedDataAvailable(4)) {
                 byte[] payload = getPrefixedData(in);

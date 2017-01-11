@@ -4,7 +4,7 @@
 
     <groupId>io.infinicast</groupId>
     <artifactId>infinicast-client</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <packaging>jar</packaging>
 
     <name>Infinicast SDK Java</name>
@@ -134,17 +134,17 @@
                     </execution>
 
                     <execution>
-                         <id>add-test-source</id>
-                         <phase>generate-test-sources</phase>
-                         <goals>
-                             <goal>add-test-source</goal>
-                         </goals>
-                         <configuration>
-                             <sources>
-                                 <source>src/testgen/java</source>
-                             </sources>
-                         </configuration>
-                     </execution>
+                        <id>add-test-source</id>
+                        <phase>generate-test-sources</phase>
+                        <goals>
+                            <goal>add-test-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/testgen/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
 
                 </executions>
             </plugin>

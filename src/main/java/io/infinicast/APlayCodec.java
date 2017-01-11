@@ -17,5 +17,6 @@ public class APlayCodec {
     public static final byte MSGTYPE_PAYLOAD_BINARY = 0x52;
 
 
+    public static final byte MSGTYPE_PAYLOAD_BINARY_JSON = 0x53;
 }
 
