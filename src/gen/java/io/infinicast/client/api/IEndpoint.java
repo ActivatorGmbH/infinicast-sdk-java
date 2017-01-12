@@ -115,6 +115,18 @@ public interface IEndpoint extends IPath {
      * The IPAdress is an example of the information available.
     */
     CompletableFuture<EndpointConnectionInfo> getEndpointConnectionInfoAsync();
+    /**
+     * returns the list of subscribed paths of the endpoint
+     * @param pathStartsWith path starts with
+     * @param listeningTypeFilter
+     * @param result
+    */
+    void getSubscribedPaths(String pathStartsWith, String listeningTypeFilter, BiConsumer<ErrorInfo, ArrayList<EndpointSubscription>> result);
+    /**
+     * returns the list of subscribed paths of the endpoint
+     * UNKNOWN DOC TAG 'param'UNKNOWN DOC TAG 'param'
+    */
+    CompletableFuture<ArrayList<EndpointSubscription>> getSubscribedPathsAsync(String pathStartsWith, String listeningTypeFilter);
     void setDebugName(String name);
     /**
      * adds a role to the given {@code path}.

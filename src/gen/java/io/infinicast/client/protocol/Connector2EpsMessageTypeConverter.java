@@ -54,6 +54,7 @@ public class Connector2EpsMessageTypeConverter {
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.DataChangeValidated.toString(), 46);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.EndpointDisconnected.toString(), 47);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.DebugObserverMessage.toString(), 48);
+            Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.GetEPSubscriptionList.toString(), 49);
             Connector2EpsMessageTypeConverter._intToString.put(1, Connector2EpsMessageType.Request.toString());
             Connector2EpsMessageTypeConverter._intToString.put(2, Connector2EpsMessageType.RequestResponse.toString());
             Connector2EpsMessageTypeConverter._intToString.put(3, Connector2EpsMessageType.InitConnector.toString());
@@ -102,6 +103,7 @@ public class Connector2EpsMessageTypeConverter {
             Connector2EpsMessageTypeConverter._intToString.put(46, Connector2EpsMessageType.DataChangeValidated.toString());
             Connector2EpsMessageTypeConverter._intToString.put(47, Connector2EpsMessageType.EndpointDisconnected.toString());
             Connector2EpsMessageTypeConverter._intToString.put(48, Connector2EpsMessageType.DebugObserverMessage.toString());
+            Connector2EpsMessageTypeConverter._intToString.put(49, Connector2EpsMessageType.GetEPSubscriptionList.toString());
         }
     }
     public static int messageTypeToInt(Connector2EpsMessageType messageType) {

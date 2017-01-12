@@ -1,7 +1,10 @@
 package io.infinicast.client.impl.objectState;
 
+import io.infinicast.JArray;
 import io.infinicast.JObject;
+import io.infinicast.JToken;
 import io.infinicast.client.api.DRoleListHandler;
+import io.infinicast.client.api.EndpointSubscription;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.paths.AfinityException;
@@ -236,6 +239,52 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<EndpointConnectionInfo> getEndpointConnectionInfoAsync() {
         final CompletableFuture<EndpointConnectionInfo> tcs = new CompletableFuture<EndpointConnectionInfo>();
         this.getEndpointConnectionInfo((error, info) -> {
+            if (error != null) {
+                tcs.completeExceptionally(new AfinityException(error));
+            }
+            else {
+                tcs.complete(info);
+            }
+            ;
+        });
+        return tcs;
+    }
+    public void getSubscribedPaths(String pathStartsWith, String messageFilter, final BiConsumer<ErrorInfo, ArrayList<EndpointSubscription>> result) {
+        JObject message = new JObject();
+        message.set("target", this.getEndpointId());
+        message.set("path", pathStartsWith);
+        message.set("typeFilter", messageFilter);
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetEPSubscriptionList, "", message, (json, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+                result.accept(error, null);
+                ;
+            }))) {
+                ArrayList<EndpointSubscription> resultList = new ArrayList<EndpointSubscription>();
+                JArray array = json.getJArray("list");
+                for (JToken jToken : array) {
+                    JObject ob = (JObject) jToken;
+                    EndpointSubscription epSubscription = new EndpointSubscription();
+                    epSubscription.setPath(ob.getString("path"));
+                    if (ob.get("roles") != null) {
+                        ArrayList<String> roles = new ArrayList<String>();
+                        JArray rolesArray = ob.getJArray("roles");
+                        for (JToken role : rolesArray) {
+                            String roleStr = role.toString();
+                            roles.add(roleStr);
+                        }
+                        epSubscription.setRoles(roles);
+                    }
+                    resultList.add(epSubscription);
+                }
+                result.accept(null, resultList);
+                ;
+            }
+            ;
+        });
+    }
+    public CompletableFuture<ArrayList<EndpointSubscription>> getSubscribedPathsAsync(String pathStartsWith, String messageFilter) {
+        final CompletableFuture<ArrayList<EndpointSubscription>> tcs = new CompletableFuture<ArrayList<EndpointSubscription>>();
+        this.getSubscribedPaths(pathStartsWith, messageFilter, (error, info) -> {
             if (error != null) {
                 tcs.completeExceptionally(new AfinityException(error));
             }
