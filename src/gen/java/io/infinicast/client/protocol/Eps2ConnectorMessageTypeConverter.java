@@ -1,9 +1,11 @@
 package io.infinicast.client.protocol;
 
 import java.util.HashMap;
+
 public class Eps2ConnectorMessageTypeConverter {
     static HashMap<String, Integer> _stringToInt = new HashMap<String, Integer>();
     static HashMap<Integer, String> _intToString = new HashMap<Integer, String>();
+
     public static void init() {
         if (Eps2ConnectorMessageTypeConverter._stringToInt.size() == 0) {
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.Request.toString(), 1);
@@ -30,6 +32,16 @@ public class Eps2ConnectorMessageTypeConverter {
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.DataChangeValidate.toString(), 45);
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.EndpointDisconnected.toString(), 47);
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.DebugObserverMessage.toString(), 48);
+
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.JsonQueryResult.toString(), 1001);
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.CreateChildSuccess.toString(), 1002);
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.GetRoleForPathResult.toString(), 1003);
+            /*Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.GetAndListenOnListeners.toString(), 1004);
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.MessageValidated.toString(), 1005);
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.GetObjectData.toString(), 1006);
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.RequestAnswer.toString(), 1007);
+            Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.DataChangeValidated.toString(), 1008);*/
+
             Eps2ConnectorMessageTypeConverter._intToString.put(1, Eps2ConnectorMessageType.Request.toString());
             Eps2ConnectorMessageTypeConverter._intToString.put(2, Eps2ConnectorMessageType.RequestResponse.toString());
             Eps2ConnectorMessageTypeConverter._intToString.put(3, Eps2ConnectorMessageType.InitConnector.toString());
@@ -54,11 +66,22 @@ public class Eps2ConnectorMessageTypeConverter {
             Eps2ConnectorMessageTypeConverter._intToString.put(45, Eps2ConnectorMessageType.DataChangeValidate.toString());
             Eps2ConnectorMessageTypeConverter._intToString.put(47, Eps2ConnectorMessageType.EndpointDisconnected.toString());
             Eps2ConnectorMessageTypeConverter._intToString.put(48, Eps2ConnectorMessageType.DebugObserverMessage.toString());
+
+            Eps2ConnectorMessageTypeConverter._intToString.put(1001, Eps2ConnectorMessageType.JsonQueryResult.toString());
+            Eps2ConnectorMessageTypeConverter._intToString.put(1002, Eps2ConnectorMessageType.CreateChildSuccess.toString());
+            Eps2ConnectorMessageTypeConverter._intToString.put(1003, Eps2ConnectorMessageType.GetRoleForPathResult.toString());
+            /*Eps2ConnectorMessageTypeConverter._intToString.put(1004, Eps2ConnectorMessageType.GetAndListenOnListeners.toString());
+            Eps2ConnectorMessageTypeConverter._intToString.put(1005, Eps2ConnectorMessageType.MessageValidated.toString());
+            Eps2ConnectorMessageTypeConverter._intToString.put(1006, Eps2ConnectorMessageType.GetObjectData.toString());
+            Eps2ConnectorMessageTypeConverter._intToString.put(1007, Eps2ConnectorMessageType.RequestAnswer.toString());
+            Eps2ConnectorMessageTypeConverter._intToString.put(1008, Eps2ConnectorMessageType.DataChangeValidated.toString());*/
         }
     }
+
     public static int messageTypeToInt(Eps2ConnectorMessageType messageType) {
         return Eps2ConnectorMessageTypeConverter._stringToInt.get(messageType.toString());
     }
+
     public static Eps2ConnectorMessageType intToMessageType(int message) {
         return (Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(Eps2ConnectorMessageTypeConverter._intToString.get(message));
     }

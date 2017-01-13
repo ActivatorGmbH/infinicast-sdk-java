@@ -22,7 +22,7 @@ public class Eps2ConnectorMessage extends BaseMessage  {
         Eps2ConnectorMessage result = new Eps2ConnectorMessage();
         result._setDataByMessage(data);
         if (data.get("t") != null) {
-            result.setType(Eps2ConnectorMessageTypeConverter.intToMessageType(data.getInt("type")));
+            result.setType(Eps2ConnectorMessageTypeConverter.intToMessageType(data.getInt("t")));
         }
         else {
             result.setType((Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(data.getString("type")));
