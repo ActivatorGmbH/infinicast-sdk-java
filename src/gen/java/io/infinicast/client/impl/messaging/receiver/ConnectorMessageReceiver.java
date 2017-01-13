@@ -160,6 +160,10 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
             }
         }
     }
+    public void destroy() {
+        this._handlerMap.clear();
+        this.handlerPool.destroy();
+    }
     public void addResponseHandler(Connector2EpsMessageType messageType, String requestId, DCloudMessageHandler handler) {
         String messageTypeAsString = messageType.toString();
         PathHandlerContainer messageHandlerBag = this.ensureMessageHandlerBag(((messageTypeAsString + "_") + requestId), null);

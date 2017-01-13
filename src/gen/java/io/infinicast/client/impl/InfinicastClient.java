@@ -142,10 +142,17 @@ public class InfinicastClient extends PathImpl implements IPath, IInfinicastClie
      * Disconnects the client from the cloud.
      */
     public void disconnect() {
+        this.whenDisconnected();
+    }
+
+    void whenDisconnected() {
         if (this._disconnectManager != null) {
             this._disconnectManager.StopDisconnectChecker();
             this._disconnectManager = null;
         }
+        super.messageManager.destroy();
+        this._credentials = null;
+        this._thisEndpoint = null;
         if (this._endpoint2ServerNetLayer != null) {
             this._endpoint2ServerNetLayer.Close();
         }
@@ -322,6 +329,7 @@ public class InfinicastClient extends PathImpl implements IPath, IInfinicastClie
 
     public void triggerDisconnect() {
         this._ClientLogger.info("disconnected");
+        whenDisconnected();
         Console.WriteLine("Disconnect triggered");
         if (this._onDisconnect != null) {
             this._onDisconnect.accept();

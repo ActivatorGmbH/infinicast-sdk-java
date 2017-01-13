@@ -81,7 +81,7 @@ public interface IPath {
     */
     void modifyDataRemoveFromSet(String field, JArray value);
     /**
-     * deletes the path and all listeners on the path
+     * deletes the path and all listeners on the path as well as the roles directly added to this path
      * @return promise containg success or error
     */
     CompletableFuture<Void> deleteDataAndListenersAsync();
@@ -1013,7 +1013,7 @@ public interface IPath {
     */
     CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, String value);
     /**
-     * deletes the path and all listeners on the path
+     * deletes the path and all listeners on the path as well as the roles directly added to this path
     */
     void deleteDataAndListeners();
     /**
@@ -1023,7 +1023,7 @@ public interface IPath {
     */
     CompletableFuture<JObject> modifyDataRemoveFromSetAndGetResultAsync(String field, int value);
     /**
-     * deletes the path and all listeners on the path
+     * deletes the path and all listeners on the path as well as the roles directly added to this path
      * @param completeCallback called with success or error
     */
     void deleteDataAndListeners(CompleteCallback completeCallback);
@@ -1157,10 +1157,16 @@ public interface IPath {
     */
     String getId();
     /**
-     * basically allows to use this path as a collection.
+     * basically allows to use this path as a data collection.
      * returns the reference to a IChildrenQuery element that can be used to modify, query, delete.. children of this path.
     */
     IChildrenQuery getChildren();
+    /**
+     * basically allows to use this path as a collection based on listeners.
+     * All fitting paths that currently have listeners will be added.
+     * returns the reference to a IMatchingPathsWithListenersQuery element that can be used to filter and get children of this path.
+    */
+    IMatchingPathsWithListenersQuery getMatchingPathsWithListeners();
     /**
      * returns the reference to a IListenerQuery element that can be used to get informations about the listening endpoints on a given path.
     */

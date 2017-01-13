@@ -4,6 +4,7 @@ import io.infinicast.APlayStringMessage;
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
+import io.infinicast.client.protocol.Connector2EpsMessageTypeConverter;
 public class Connector2EpsMessage extends BaseMessage  {
     String _space;
     Connector2EpsMessageType _type;
@@ -27,7 +28,7 @@ public class Connector2EpsMessage extends BaseMessage  {
         if (!(StringExtensions.IsNullOrEmpty(this.getSpace()))) {
             result.set("space", this.getSpace().toString());
         }
-        result.set("type", this.getType().toString());
+        result.set("t", Connector2EpsMessageTypeConverter.messageTypeToInt(this.getType()));
         if (this.getHandlerType() != null) {
             result.set("handlerType", this.getHandlerType().toString());
         }

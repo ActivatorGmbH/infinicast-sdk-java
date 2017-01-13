@@ -24,4 +24,6 @@ public class MessageSender implements IMessageSender {
             this._logger.error("Could not send ", ex);
         }
     }
+    public void destroy() {
+    }
 }

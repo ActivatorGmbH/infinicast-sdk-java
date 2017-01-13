@@ -35,6 +35,7 @@ import java.util.function.BiConsumer;
 */
 public class PathImpl implements IPath {
     ChildQueryExecutor _childQueryExecutor = null;
+    ChildrenWithListenersQueryExecutor _childWithListenersQueryExecutor = null;
     PathQueryWithHandlerExecutor _pathQueryWithHandlerExecutor = null;
     Logger _logger = LoggerFactory.getLogger(PathImpl.class);
     ListenerQueryExecutor _listenerQueryExecutor = null;
@@ -1308,7 +1309,7 @@ public class PathImpl implements IPath {
         this.modifyDataSetValue(field, value, (CompletionCallback) null);
     }
     /**
-     * deletes the path and all listeners on the path
+     * deletes the path and all listeners on the path as well as the roles directly added to this path
      * @return promise containg success or error
     */
     public CompletableFuture<Void> deleteDataAndListenersAsync() {
@@ -1751,7 +1752,7 @@ public class PathImpl implements IPath {
         return this._pathQueryWithHandlerExecutor;
     }
     /**
-     * basically allows to use this path as a collection.
+     * basically allows to use this path as a data collection.
      * returns the reference to a IChildrenQuery element that can be used to modify, query, delete.. children of this path.
     */
     public IChildrenQuery getChildren() {
@@ -1759,6 +1760,17 @@ public class PathImpl implements IPath {
             this._childQueryExecutor = new ChildQueryExecutor(this.getRoot().getConnector(), this, this.messageManager);
         }
         return new ChildrenQuery(this, this._childQueryExecutor);
+    }
+    /**
+     * basically allows to use this path as a collection based on listeners.
+     * All fitting paths that currently have listeners will be added.
+     * returns the reference to a IMatchingPathsWithListenersQuery element that can be used to filter and get children of this path.
+    */
+    public IMatchingPathsWithListenersQuery getMatchingPathsWithListeners() {
+        if (this._childWithListenersQueryExecutor == null) {
+            this._childWithListenersQueryExecutor = new ChildrenWithListenersQueryExecutor(this.getRoot().getConnector(), this, this.messageManager);
+        }
+        return new MatchingPathsWithListenersQuery(this, this._childWithListenersQueryExecutor);
     }
     /**
      * returns the reference to a IListenerQuery element that can be used to get informations about the listening endpoints on a given path.
@@ -2283,7 +2295,7 @@ public class PathImpl implements IPath {
         this.deleteData((CompleteCallback) null);
     }
     /**
-     * deletes the path and all listeners on the path
+     * deletes the path and all listeners on the path as well as the roles directly added to this path
      * @param completeCallback called with success or error
     */
     public void deleteDataAndListeners(final CompleteCallback completeCallback) {
@@ -2294,7 +2306,7 @@ public class PathImpl implements IPath {
         });
     }
     /**
-     * deletes the path and all listeners on the path
+     * deletes the path and all listeners on the path as well as the roles directly added to this path
     */
     public void deleteDataAndListeners() {
         this.deleteDataAndListeners((CompleteCallback) null);

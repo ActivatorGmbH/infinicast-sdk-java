@@ -9,4 +9,6 @@ public class HandlerPool {
             ;
         });
     }
+    public void destroy() {
+    }
 }

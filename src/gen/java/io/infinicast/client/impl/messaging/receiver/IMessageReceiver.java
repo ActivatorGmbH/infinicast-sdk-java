@@ -11,4 +11,5 @@ public interface IMessageReceiver {
     void receive(APlayStringMessage stringMessage);
     void setConnector(IConnector connector);
     void removeHandlers(String messageType, String path);
+    void destroy();
 }

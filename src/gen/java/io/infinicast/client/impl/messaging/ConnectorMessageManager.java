@@ -170,6 +170,10 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
         });
         this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithResponse(Connector2EpsMessageType.DebugStatistics, "", filters, messageRequestId));
     }
+    public void destroy() {
+        this._receiver.destroy();
+        this._sender.destroy();
+    }
     public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options) {
         this.addHandler(isDelete, messageType, path, handler, completeCallback, options, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
