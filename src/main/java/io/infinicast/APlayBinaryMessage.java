@@ -121,6 +121,12 @@ public class APlayBinaryMessage implements Serializable {
             case 7:
                 value = msg.readLong();
                 break;
+            case 8:
+                value = msg.readFloat();
+                break;
+            case 9:
+                value = msg.readDouble();
+                break;
         }
         return value;
     }
@@ -151,6 +157,12 @@ public class APlayBinaryMessage implements Serializable {
         } else if (value instanceof Long) {
             msg.writeByte((byte) 7);
             msg.writeLong((Long) value);
+        } else if (value instanceof Float) {
+            msg.writeByte((byte) 8);
+            msg.writeFloat((Float) value);
+        } else if (value instanceof Double) {
+            msg.writeByte((byte) 9);
+            msg.writeDouble((Double) value);
         }
     }
 
@@ -190,6 +202,29 @@ public class APlayBinaryMessage implements Serializable {
         return null;
     }
 
+    public Float readFloat() {
+        try {
+            float val = inputStream.readFloat();
+            if (val == NULL_VALUE)
+                return null;
+            return val;
+        } catch (IOException e) {
+            handleIoException(e);
+        }
+        return null;
+    }
+
+    public Double readDouble() {
+        try {
+            double val = inputStream.readDouble();
+            if (val == NULL_VALUE)
+                return null;
+            return val;
+        } catch (IOException e) {
+            handleIoException(e);
+        }
+        return null;
+    }
 
     public Boolean readBoolean() {
         try {
@@ -282,6 +317,29 @@ public class APlayBinaryMessage implements Serializable {
         }
     }
 
+    public void writeFloat(Float requestId) {
+        try {
+            if (requestId == null) {
+                outputStream.writeFloat(NULL_VALUE);
+            } else {
+                outputStream.writeFloat(requestId);
+            }
+        } catch (IOException e) {
+            handleIoException(e);
+        }
+    }
+
+    public void writeDouble(Double requestId) {
+        try {
+            if (requestId == null) {
+                outputStream.writeDouble(NULL_VALUE);
+            } else {
+                outputStream.writeDouble(requestId);
+            }
+        } catch (IOException e) {
+            handleIoException(e);
+        }
+    }
 
     public void writeBoolean(Boolean newlyCreated) {
         try {
