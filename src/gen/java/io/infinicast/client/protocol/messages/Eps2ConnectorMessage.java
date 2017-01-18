@@ -3,6 +3,8 @@ package io.infinicast.client.protocol.messages;
 import io.infinicast.APlayStringMessage;
 import io.infinicast.JArray;
 import io.infinicast.JObject;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICErrorType;
 import io.infinicast.client.protocol.Eps2ConnectorMessageType;
 import io.infinicast.client.protocol.Eps2ConnectorMessageTypeConverter;
 public class Eps2ConnectorMessage extends BaseMessage  {
@@ -14,6 +16,7 @@ public class Eps2ConnectorMessage extends BaseMessage  {
     JObject _errorData;
     Boolean _disconnected;
     JArray _list;
+    ICError _error;
     public static Eps2ConnectorMessage parseString(APlayStringMessage message) {
         JObject data = JObject.Parse(message.getDataAsString());
         return Eps2ConnectorMessage.parseFromJson(data);
@@ -26,6 +29,13 @@ public class Eps2ConnectorMessage extends BaseMessage  {
         }
         else {
             result.setType((Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(data.getString("type")));
+        }
+        if (data.get("errorReason") != null) {
+            String reason = data.getString("errorReason");
+            String msg = data.getString("errorMsg");
+            String path = data.getString("errorPath");
+            ICError error = new ICError((ICErrorType) ICErrorType.valueOf(reason), msg, path, null);
+            result.setError(error);
         }
         if (data.get("endpointObject") != null) {
             result.setEndpointObject(data.getJObject("endpointObject"));
@@ -132,5 +142,11 @@ public class Eps2ConnectorMessage extends BaseMessage  {
     }
     public void setList(JArray value) {
         this._list = value;
+    }
+    public ICError getError() {
+        return this._error;
+    }
+    public void setError(ICError value) {
+        this._error = value;
     }
 }

@@ -4,6 +4,7 @@ import io.infinicast.JObject;
 import io.infinicast.Logger;
 import io.infinicast.LoggerFactory;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
 import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
 
@@ -21,7 +22,7 @@ public class PathMessageHandlerContainer {
             this._handlers.add(handler);
         }
     }
-    public void callHandlers(JObject data, IPathAndEndpointContext context, int requestId) {
+    public void callHandlers(ICError error, JObject data, IPathAndEndpointContext context, int requestId) {
         JObject jsonData = null;
         if (data != null) {
             jsonData = new JObject(data);
@@ -29,7 +30,7 @@ public class PathMessageHandlerContainer {
         synchronized (this._handlers) {
             for (DCloudMessageHandler handler : this._handlers) {
                 if (handler != null) {
-                    handler.accept(jsonData, context, requestId);
+                    handler.accept(jsonData, error, context, requestId);
                     ;
                 }
                 else {

@@ -5,7 +5,7 @@ import io.infinicast.JObject;
 import io.infinicast.JToken;
 import io.infinicast.StringExtensions;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
 import io.infinicast.client.api.paths.options.CompleteCallback;
@@ -34,11 +34,11 @@ public class BaseQueryExecutor {
         context.setPath(path);
         return context;
     }
-    public boolean checkIfHasErrorsAndCallHandlersNew(JObject json, CompleteCallback completeCallback) {
-        return ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._connector, json, completeCallback, this._path);
+    public boolean checkIfHasErrorsAndCallHandlersNew(ICError error, CompleteCallback completeCallback) {
+        return ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._connector, error, completeCallback, this._path);
     }
-    public void checkIfHasErrorsAndCallHandlersFull(JObject json, CompleteCallback completeCallback) {
-        ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(this._connector, json, completeCallback, this._path);
+    public void checkIfHasErrorsAndCallHandlersFull(ICError error, CompleteCallback completeCallback) {
+        ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(this._connector, error, completeCallback, this._path);
     }
     public static HashMap<String, Integer> getRoleCountDictionary(JObject json) {
         HashMap<String, Integer> roleCount = new HashMap<String, Integer>();
@@ -55,7 +55,7 @@ public class BaseQueryExecutor {
         }
         return roleCount;
     }
-    public void unhandeledError(ErrorInfo errorResults) {
-        this._connector.unhandeledErrorInfo(this._path, errorResults);
+    public void unhandeledError(ICError icErrorResults) {
+        this._connector.unhandeledErrorInfo(this._path, icErrorResults);
     }
 }

@@ -3,7 +3,7 @@ package io.infinicast.client.impl;
 import io.infinicast.JObject;
 import io.infinicast.client.api.IStormSettings;
 import io.infinicast.client.api.RoleSettings;
-import io.infinicast.client.api.paths.AfinityException;
+import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.helper.ErrorHandlingHelper;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
@@ -22,7 +22,7 @@ public class StormSettings implements IStormSettings {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.createOrUpdateRole(name, roleSettings, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -35,8 +35,8 @@ public class StormSettings implements IStormSettings {
         JObject message = new JObject();
         message.set("data", data.toJson());
         message.set("name", name);
-        this._messageManager.sendMessageWithResponse(Connector2EpsMessageType.CreateOrUpdateRole, null, message, (json, context) -> {
-            if (!(ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._messageManager.getConnector(), json, completeCallback, context.getPath()))) {
+        this._messageManager.sendMessageWithResponse(Connector2EpsMessageType.CreateOrUpdateRole, null, message, (json, error, context) -> {
+            if (!(ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._messageManager.getConnector(), error, completeCallback, context.getPath()))) {
                 if (completeCallback != null) {
                     completeCallback.accept(null);
                     ;
@@ -49,7 +49,7 @@ public class StormSettings implements IStormSettings {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.destroyRole(name, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -61,8 +61,8 @@ public class StormSettings implements IStormSettings {
     public void destroyRole(String name, final CompleteCallback completeCallback) {
         JObject message = new JObject();
         message.set("name", name);
-        this._messageManager.sendMessageWithResponse(Connector2EpsMessageType.DestroyRole, null, message, (json, context) -> {
-            if (!(ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._messageManager.getConnector(), json, completeCallback, context.getPath()))) {
+        this._messageManager.sendMessageWithResponse(Connector2EpsMessageType.DestroyRole, null, message, (json, error, context) -> {
+            if (!(ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._messageManager.getConnector(), error, completeCallback, context.getPath()))) {
                 if (completeCallback != null) {
                     completeCallback.accept(null);
                     ;

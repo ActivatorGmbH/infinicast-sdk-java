@@ -2,8 +2,8 @@ package io.infinicast.client.impl.query;
 
 import io.infinicast.TriConsumer;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.AfinityException;
-import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.api.paths.IMatchingPathsWithListenersQuery;
 import io.infinicast.client.api.paths.taskObjects.PathListResult;
@@ -39,7 +39,7 @@ public class MatchingPathsWithListenersQuery implements IMatchingPathsWithListen
     /**
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */
-    public void toList(TriConsumer<ErrorInfo, ArrayList<IPath>, IAPathContext> callback) {
+    public void toList(TriConsumer<ICError, ArrayList<IPath>, IAPathContext> callback) {
         this._executor.getChildrenWithListeners(callback, this.startPosition, this.limitPosition);
     }
     /**
@@ -49,7 +49,7 @@ public class MatchingPathsWithListenersQuery implements IMatchingPathsWithListen
         final CompletableFuture<PathListResult> tcs = new CompletableFuture<PathListResult>();
         this.toList((error, list, context) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 PathListResult result = new PathListResult();

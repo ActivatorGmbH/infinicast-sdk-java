@@ -1,6 +1,7 @@
 package io.infinicast.client.api.paths;
 
 import io.infinicast.TriConsumer;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
 import io.infinicast.client.api.query.ListeningType;
@@ -26,7 +27,7 @@ public interface IListenerQuery {
     /**
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */
-    void toList(TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback);
+    void toList(TriConsumer<ICError, ArrayList<IEndpointAndData>, IAPathContext> callback);
     /**
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */

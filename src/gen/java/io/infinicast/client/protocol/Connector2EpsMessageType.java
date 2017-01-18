@@ -50,7 +50,8 @@ public enum Connector2EpsMessageType {
     EndpointDisconnected(46),
     DebugObserverMessage(47),
     GetEPSubscriptionList(48),
-    GetMatchingPathsWithListeners(49);
+    GetMatchingPathsWithListeners(49),
+    RequestResponseFailed(50);
     private final int value;
     public int getValue() {  return value; }
     Connector2EpsMessageType(int value) { this.value = value; }

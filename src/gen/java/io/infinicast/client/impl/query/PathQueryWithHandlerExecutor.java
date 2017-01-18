@@ -29,7 +29,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         super(connector, path, messageManager);
     }
     public void onDataChange(final TriConsumer<JObject, JObject, IPathAndEndpointContext> callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler(false, Connector2EpsMessageType.SetObjectData, super._path, (json, context, id) -> {
+        super._messageManager.addHandler(false, Connector2EpsMessageType.SetObjectData, super._path, (json, err, context, id) -> {
             JObject newOb = null;
             JObject oldOb = null;
             if (json.containsNonNull("new")) {
@@ -50,7 +50,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onDataChange(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onValidateDataChange(final APValidateDataChangeCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.DataChangeValidate, super._path, (json, context, id) -> {
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.DataChangeValidate, super._path, (json, err, context, id) -> {
             JObject newOb = null;
             JObject oldOb = null;
             if (json.containsNonNull("new")) {
@@ -71,7 +71,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onValidateDataChange(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onValidateMessage(final APValidateMessageCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.MessageValidate, super._path, (json, context, id) -> {
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.MessageValidate, super._path, (json, err, context, id) -> {
             callback.accept(json, new ValidationResponder(Connector2EpsMessageType.MessageValidated, super._messageManager, json, context.getPath(), context.getEndpoint()), context);
             ;
         }
@@ -84,7 +84,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onValidateMessage(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onMessage(final APMessageCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Message, super._path, (json, context, id) -> {
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Message, super._path, (json, err, context, id) -> {
             callback.accept(json, context);
             ;
         }
@@ -100,7 +100,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onMessage(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
     public void onRequest(final APRequestCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Request, super._path, (json, context, requestId) -> {
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Request, super._path, (json, err, context, requestId) -> {
             callback.accept(json, new RequestResponder(super._messageManager, context.getPath(), context.getEndpoint().getEndpointId(), requestId), context);
             ;
         }
@@ -113,7 +113,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onRequest(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onReminder(final AReminderCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Reminder, super._path, (json, context, id) -> {
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Reminder, super._path, (json, err, context, id) -> {
             callback.accept(json, context);
             ;
         }
@@ -126,7 +126,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         this.onReminder(callback, (HandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onIntroduce(final APObjectIntroduceCallback callback, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.IntroduceObject, super._path, (json, context, id) -> {
+        super._messageManager.addHandler((callback == null), Connector2EpsMessageType.IntroduceObject, super._path, (json, err, context, id) -> {
             callback.accept(json, context);
             ;
         }

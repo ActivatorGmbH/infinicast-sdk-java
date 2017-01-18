@@ -2,6 +2,8 @@ package io.infinicast.client.impl.pathAccess;
 
 import io.infinicast.*;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.*;
 import io.infinicast.client.api.paths.handler.CompletionCallback;
 import io.infinicast.client.api.paths.handler.JsonCompletionCallback;
@@ -141,7 +143,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<JObject> tsc = new CompletableFuture<JObject>();
         this.modifyDataAtomicAndGetResult(atomicChangeChange, (error, data) -> {
             if (error != null) {
-                tsc.completeExceptionally(new AfinityException(error));
+                tsc.completeExceptionally(new ICException(error));
             }
             else {
                 tsc.complete(data);
@@ -161,7 +163,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
         this.modifyDataAtomic(atomicChangeChange, (error) -> {
             if (error != null) {
-                tsc.completeExceptionally(new AfinityException(error));
+                tsc.completeExceptionally(new ICException(error));
             }
             else {
                 tsc.complete(null);
@@ -1389,8 +1391,9 @@ public class PathImpl implements IPath {
         return tcs;
     }
     public void sendRequest(JObject data, final APRequestAnswerCallback answer) {
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Request, this, data, (json, context) -> {
-            if (!(this.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Request, this, data, (json, err, context) -> {
+            if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
+                err.setCustomJson(json);
                 answer.accept(error, null, null);
                 ;
             }))) {
@@ -1404,7 +1407,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<ADataAndPathAndEndpointContext> tcs = new CompletableFuture<ADataAndPathAndEndpointContext>();
         this.sendRequest(data, (error, json, context) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 ADataAndPathAndEndpointContext res = new ADataAndPathAndEndpointContext();
@@ -1456,9 +1459,9 @@ public class PathImpl implements IPath {
         path._advancedOptions = obj;
         return path;
     }
-    static void handleCompleteHandlerAsyncVoid(CompletableFuture<Void> tcs, ErrorInfo error) {
-        if (error != null) {
-            tcs.completeExceptionally(new AfinityException(error));
+    static void handleCompleteHandlerAsyncVoid(CompletableFuture<Void> tcs, ICError icError) {
+        if (icError != null) {
+            tcs.completeExceptionally(new ICException(icError));
         }
         else {
             tcs.complete(null);
@@ -1505,7 +1508,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onDataChange(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -1544,8 +1547,8 @@ public class PathImpl implements IPath {
             json.set("named", data.getNamedQueryJson());
         }
         json.set("returnData", false);
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.UpdateData, this, json, (resultJson, context) -> {
-            if (!(this.checkIfHasErrorsAndCallHandlersNew(resultJson, (error) -> {
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.UpdateData, this, json, (resultJson, err, context) -> {
+            if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 if (completeCallback != null) {
                     completeCallback.accept(error);
                     ;
@@ -1574,7 +1577,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onValidateDataChange(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -1602,7 +1605,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onValidateMessage(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -1623,8 +1626,8 @@ public class PathImpl implements IPath {
         if (data.hasNamedQueries()) {
             json.set("named", data.getNamedQueryJson());
         }
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.UpdateData, this, json, (resultJson, context) -> {
-            if (!(this.checkIfHasErrorsAndCallHandlersNew(resultJson, (error) -> {
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.UpdateData, this, json, (resultJson, err, context) -> {
+            if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 if (completeCallback != null) {
                     completeCallback.accept(error, null);
                     ;
@@ -1653,7 +1656,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onRequest(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -1680,7 +1683,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onReminder(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -1695,8 +1698,8 @@ public class PathImpl implements IPath {
      * @param completeCallback a result that indicates success or failure
     */
     public void setData(JObject json, final CompleteCallback completeCallback) {
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetObjectData, this, json, (resultJson, context) -> {
-            if (!(this.checkIfHasErrorsAndCallHandlersNew(resultJson, completeCallback))) {
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetObjectData, this, json, (resultJson, error, context) -> {
+            if (!(this.checkIfHasErrorsAndCallHandlersNew(error, completeCallback))) {
                 if (completeCallback != null) {
                     completeCallback.accept(null);
                     ;
@@ -1713,7 +1716,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onIntroduce(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -1722,11 +1725,11 @@ public class PathImpl implements IPath {
         });
         return tcs;
     }
-    public boolean checkIfHasErrorsAndCallHandlersNew(JObject json, CompleteCallback completeCallback) {
-        return ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this.getConnector(), json, completeCallback, this);
+    public boolean checkIfHasErrorsAndCallHandlersNew(ICError error, CompleteCallback completeCallback) {
+        return ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this.getConnector(), error, completeCallback, this);
     }
-    public void checkIfHasErrorsAndCallHandlersFull(JObject json, CompleteCallback completeCallback) {
-        ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(this.getConnector(), json, completeCallback, this);
+    public void checkIfHasErrorsAndCallHandlersFull(ICError error, CompleteCallback completeCallback) {
+        ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(this.getConnector(), error, completeCallback, this);
     }
     IAPathContext getPathAndEndpointContext(IPathAndEndpointContext ctx) {
         APathContext context = new APathContext();
@@ -2232,8 +2235,8 @@ public class PathImpl implements IPath {
             data = new JObject();
         }
         data = this.applyAdvancedOptions(data);
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetObjectData, this, data, (json, context) -> {
-            if (!(this.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetObjectData, this, data, (json, err, context) -> {
+            if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, null);
                 ;
             }))) {
@@ -2259,7 +2262,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<ADataAndPathContext> tsc = new CompletableFuture<ADataAndPathContext>();
         this.getData((error, json, context) -> {
             if (error != null) {
-                tsc.completeExceptionally(new AfinityException(error));
+                tsc.completeExceptionally(new ICException(error));
             }
             else {
                 ADataAndPathContext resultContext = new ADataAndPathContext();
@@ -2284,8 +2287,8 @@ public class PathImpl implements IPath {
      * @param completeCallback called with success or error
     */
     public void deleteData(final CompleteCallback completeCallback) {
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, new JObject(), (json, context) -> {
-            this.checkIfHasErrorsAndCallHandlersFull(json, completeCallback);
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, new JObject(), (json, err, context) -> {
+            this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
         });
     }
     /**
@@ -2301,8 +2304,8 @@ public class PathImpl implements IPath {
     public void deleteDataAndListeners(final CompleteCallback completeCallback) {
         JObject options = new JObject();
         options.set("listeners", true);
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, options, (json, context) -> {
-            this.checkIfHasErrorsAndCallHandlersFull(json, completeCallback);
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, options, (json, err, context) -> {
+            this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
         });
     }
     /**
@@ -2319,8 +2322,8 @@ public class PathImpl implements IPath {
         JObject options = new JObject();
         options.set("listeners", true);
         options.set("data", false);
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, options, (json, context) -> {
-            this.checkIfHasErrorsAndCallHandlersFull(json, completeCallback);
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, options, (json, err, context) -> {
+            this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
         });
     }
     /**
@@ -2355,16 +2358,16 @@ public class PathImpl implements IPath {
         }
         data.set("data", json);
         data.set("scheduled", schedulingOptions.toJson());
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.AddReminder, this, data, (resultJson, context) -> {
-            this.checkIfHasErrorsAndCallHandlersFull(resultJson, completeCallback);
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.AddReminder, this, data, (resultJson, err, context) -> {
+            this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
         });
     }
     public void addOrReplaceReminder(JObject queryJson, ReminderSchedulingOptions schedulingOptions, JObject json) {
         this.addOrReplaceReminder(queryJson, schedulingOptions, json, (CompleteCallback) null);
     }
     public void deleteReminder(JObject queryJson, final CompleteCallback completeCallback) {
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteReminder, this, queryJson, (resultJson, context) -> {
-            this.checkIfHasErrorsAndCallHandlersFull(resultJson, completeCallback);
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteReminder, this, queryJson, (resultJson, error, context) -> {
+            this.checkIfHasErrorsAndCallHandlersFull(error, completeCallback);
         });
     }
     public void deleteReminder(JObject queryJson) {
@@ -2376,8 +2379,8 @@ public class PathImpl implements IPath {
      * @param completeCallback a callback triggered when the message  has been received by the cloud
     */
     public void sendMessage(JObject json, final CompleteCallback completeCallback) {
-        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Message, this, json, (resultJson, context) -> {
-            this.checkIfHasErrorsAndCallHandlersFull(resultJson, completeCallback);
+        this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Message, this, json, (resultJson, err, context) -> {
+            this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
         });
     }
     /**
@@ -2465,7 +2468,7 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onMessage(callback, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);

@@ -7,9 +7,9 @@ import io.infinicast.client.api.DRoleListHandler;
 import io.infinicast.client.api.EndpointSubscription;
 import io.infinicast.client.api.IEndpoint;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.AfinityException;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.EndpointConnectionInfo;
-import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.pathAccess.PathImpl;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
@@ -71,7 +71,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addRole(path, role, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -91,7 +91,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addRoleToStringPath(pathString, role, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -126,7 +126,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.removeRole(path, role, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -147,7 +147,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.removeRoleFromStringPath(pathString, role, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -167,8 +167,8 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public void getRolesForStringPath(String pathString, final DRoleListHandler roleListHandler) {
         JObject message = new JObject();
         message.set("target", this.getEndpointId());
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetRoleForPath, pathString, message, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetRoleForPath, pathString, message, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 roleListHandler.accept(error, null);
                 ;
             }))) {
@@ -194,7 +194,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<ArrayList<String>> tcs = new CompletableFuture<ArrayList<String>>();
         this.getRolesForStringPath(pathString, (error, roles) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(roles);
@@ -214,15 +214,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
      * The IPAdress is an example of the information available.
      * @param result
     */
-    public void getEndpointConnectionInfo(final BiConsumer<ErrorInfo, EndpointConnectionInfo> result) {
+    public void getEndpointConnectionInfo(final BiConsumer<ICError, EndpointConnectionInfo> result) {
         JObject message = new JObject();
         message.set("target", this.getEndpointId());
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetEndpointConnectionInfo, "", message, (json, context) -> {
-            this.onGetEndpointConnectionInfoResponse(result, json);
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetEndpointConnectionInfo, "", message, (json, err, context) -> {
+            this.onGetEndpointConnectionInfoResponse(err, result, json);
         });
     }
-    void onGetEndpointConnectionInfoResponse(final BiConsumer<ErrorInfo, EndpointConnectionInfo> result, JObject json) {
-        if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+    void onGetEndpointConnectionInfoResponse(ICError err, final BiConsumer<ICError, EndpointConnectionInfo> result, JObject json) {
+        if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
             result.accept(error, null);
             ;
         }))) {
@@ -240,7 +240,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<EndpointConnectionInfo> tcs = new CompletableFuture<EndpointConnectionInfo>();
         this.getEndpointConnectionInfo((error, info) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(info);
@@ -249,13 +249,13 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         });
         return tcs;
     }
-    public void getSubscribedPaths(String pathStartsWith, String messageFilter, final BiConsumer<ErrorInfo, ArrayList<EndpointSubscription>> result) {
+    public void getSubscribedPaths(String pathStartsWith, String messageFilter, final BiConsumer<ICError, ArrayList<EndpointSubscription>> result) {
         JObject message = new JObject();
         message.set("target", this.getEndpointId());
         message.set("path", pathStartsWith);
         message.set("typeFilter", messageFilter);
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetEPSubscriptionList, "", message, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetEPSubscriptionList, "", message, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 result.accept(error, null);
                 ;
             }))) {
@@ -286,7 +286,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<ArrayList<EndpointSubscription>> tcs = new CompletableFuture<ArrayList<EndpointSubscription>>();
         this.getSubscribedPaths(pathStartsWith, messageFilter, (error, info) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(info);
@@ -360,8 +360,8 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         data.set("modifier", modifier);
         data.set("role", role);
         data.set("target", this.getEndpointId());
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.ModifyRoleForPath, pathString, data, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, onComplete))) {
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.ModifyRoleForPath, pathString, data, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, onComplete))) {
                 if (onComplete != null) {
                     onComplete.accept(null);
                     ;

@@ -5,7 +5,7 @@ import io.infinicast.JObject;
 import io.infinicast.JToken;
 import io.infinicast.TriConsumer;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.impl.IConnector;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
@@ -16,7 +16,7 @@ public class ChildrenWithListenersQueryExecutor extends BaseQueryExecutor  {
     public ChildrenWithListenersQueryExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
         super(connector, path, messageManager);
     }
-    public void getChildrenWithListeners(final TriConsumer<ErrorInfo, ArrayList<IPath>, IAPathContext> callback, int start, int limit) {
+    public void getChildrenWithListeners(final TriConsumer<ICError, ArrayList<IPath>, IAPathContext> callback, int start, int limit) {
         JObject settings = new JObject();
         if (start >= 0) {
             settings.set("start", start);
@@ -24,8 +24,8 @@ public class ChildrenWithListenersQueryExecutor extends BaseQueryExecutor  {
         if (limit >= 0) {
             settings.set("limit", limit);
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetMatchingPathsWithListeners, super._path, settings, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetMatchingPathsWithListeners, super._path, settings, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, null);
                 ;
             }))) {

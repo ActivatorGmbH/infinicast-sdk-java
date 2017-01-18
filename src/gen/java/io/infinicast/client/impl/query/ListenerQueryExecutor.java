@@ -2,6 +2,7 @@ package io.infinicast.client.impl.query;
 
 import io.infinicast.*;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.*;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.query.ListeningType;
@@ -22,7 +23,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
     public ListenerQueryExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
         super(connector, path, messageManager);
     }
-    public void getListenerList(final TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback, String roleFilter, ListeningType listeningType) {
+    public void getListenerList(final TriConsumer<ICError, ArrayList<IEndpointAndData>, IAPathContext> callback, String roleFilter, ListeningType listeningType) {
         JObject settings = new JObject();
         if (!(StringExtensions.IsNullOrEmpty(roleFilter))) {
             settings.set("role", roleFilter);
@@ -30,8 +31,8 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         if (listeningType != ListeningType.Any) {
             settings.set("messageType", listeningType.toString());
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetListeningList, super._path, settings, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetListeningList, super._path, settings, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, null);
                 ;
             }))) {
@@ -101,7 +102,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         return customOptions;
     }
     public void onListeningStarted(final Consumer<IListeningStartedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningStarted, super._path, (json, ctx, id) -> {
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningStarted, super._path, (json, err, ctx, id) -> {
             APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
             handler.accept(context);
             ;
@@ -125,8 +126,8 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         if (onChange == null) {
             parameters.set("noChange", true);
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnListeners, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnListeners, super._path, parameters, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 if (registrationCompleteCallback != null) {
                     registrationCompleteCallback.accept(error);
                     ;
@@ -158,7 +159,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
             ;
         });
         if (((onStart != null) || (onChange != null)) || (onEnd != null)) {
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, (json, ctx, id) -> {
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningStarted, super._path, (json, err, ctx, id) -> {
                 APListeningStartedContext context = ListenerQueryExecutor.getListeningStartedContext(json, ctx);
                 if (onStart != null) {
                     onStart.accept(context);
@@ -167,12 +168,12 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
             }
             );
             if (onChange != null) {
-                super._messageManager.registerHandler(Connector2EpsMessageType.ListeningChanged, super._path, (json, ctx, id) -> {
+                super._messageManager.registerHandler(Connector2EpsMessageType.ListeningChanged, super._path, (json, err, ctx, id) -> {
                     onChange.accept(ListenerQueryExecutor.getListeningChangedContext(json, ctx));
                     ;
                 });
             }
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningEnded, super._path, (json, ctx, id) -> {
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListeningEnded, super._path, (json, err, ctx, id) -> {
                 APListeningEndedContext context = ListenerQueryExecutor.getListeningEndedContext(json, ctx);
                 if (onEnd != null) {
                     onEnd.accept(context);
@@ -205,7 +206,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         return context;
     }
     public void onListeningChanged(final Consumer<IListeningChangedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningChanged, super._path, (json, ctx, id) -> {
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningChanged, super._path, (json, err, ctx, id) -> {
             ListenerQueryExecutor.forwardListeningChangedMessages(handler, json, ctx);
         }
         , completeCallback, options);
@@ -217,7 +218,7 @@ public class ListenerQueryExecutor extends BaseQueryExecutor  {
         this.onListeningChanged(handler, (ListeningHandlerRegistrationOptions) null, (CompleteCallback) null);
     }
     public void onListeningEnded(final Consumer<IListeningEndedContext> handler, ListeningHandlerRegistrationOptions options, CompleteCallback completeCallback) {
-        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningEnded, super._path, (json, ctx, id) -> {
+        super._messageManager.addHandler((handler == null), Connector2EpsMessageType.ListeningEnded, super._path, (json, err, ctx, id) -> {
             ListenerQueryExecutor.forwardListeningEndedMessages(handler, json, ctx);
         }
         , completeCallback, options);

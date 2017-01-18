@@ -2,7 +2,6 @@ package io.infinicast.client.impl.messaging;
 
 import io.infinicast.*;
 import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.HandlerRegistrationOptionsData;
 import io.infinicast.client.api.paths.IAPathContext;
 import io.infinicast.client.api.paths.options.CompleteCallback;
@@ -45,8 +44,8 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
     }
     public void sendMessageWithResponseString(Connector2EpsMessageType messageType, String pathString, JObject data, final DMessageResponseHandler responseHandler) {
         int messageRequestId = this.getRequestId();
-        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, context, requestedId) -> {
-            responseHandler.accept(json, context);
+        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, error, context, requestedId) -> {
+            responseHandler.accept(json, error, context);
             ;
         });
         this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithResponse(messageType, pathString, data, messageRequestId));
@@ -99,18 +98,14 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
             roleFilter = options.getRoleFilter();
         }
         int messageRequestId = this.getRequestId();
-        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, context, requestedId) -> {
-            JObject errorJson = null;
-            if (json != null) {
-                errorJson = json.getJObject("error");
-            }
-            if ((json != null) && (errorJson != null)) {
+        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, error, context, requestedId) -> {
+            if (error != null) {
                 if (completeCallback != null) {
-                    completeCallback.accept(ErrorInfo.fromJson(errorJson, path.toString()));
+                    completeCallback.accept(error);
                     ;
                 }
                 else {
-                    this.getConnector().unhandeledError(path, errorJson);
+                    this.getConnector().unhandeledErrorInfo(path, error);
                 }
             }
             else {
@@ -119,12 +114,13 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
                     ;
                 }
             }
+            ;
         });
         if (!(isDelete)) {
             this._sender.sendMessage(this._connector2EpsProtocol.encodeRegisterHandlerMessage(messageType, path.toString(), messageRequestId, consomeOnePerRole, sticky, listeningType, roleFilter, terminationHandler));
             this._receiver.addHandler(messageType.toString(), path, handler);
             if (listenTerminationHandler != null) {
-                this._receiver.addHandler((messageType.toString() + "_ListenTerminate"), path, (json, context, id) -> {
+                this._receiver.addHandler((messageType.toString() + "_ListenTerminate"), path, (json, error, context, id) -> {
                     Console.WriteLine("Listenterminate received " + json.toString());
                     APathContext ctx = new APathContext();
                     ctx.setPath(context.getPath());
@@ -165,7 +161,7 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
     }
     public void sendUpdateDebugStatistics(JObject filters, final Consumer<JObject> handler) {
         int messageRequestId = this.getRequestId();
-        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, context, requestedId) -> {
+        this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, error, context, requestedId) -> {
             handler.accept(json);
         });
         this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithResponse(Connector2EpsMessageType.DebugStatistics, "", filters, messageRequestId));

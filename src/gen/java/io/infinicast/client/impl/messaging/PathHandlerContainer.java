@@ -2,6 +2,7 @@ package io.infinicast.client.impl.messaging;
 
 import io.infinicast.JObject;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
 import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
 
@@ -19,9 +20,9 @@ public class PathHandlerContainer {
         }
         this._handlersByType.get(type).addHandler(handler);
     }
-    public void callHandlers(String type, JObject data, IPathAndEndpointContext context, int requestId) {
+    public void callHandlers(ICError error, String type, JObject data, IPathAndEndpointContext context, int requestId) {
         if (this._handlersByType.containsKey(type)) {
-            this._handlersByType.get(type).callHandlers(data, context, requestId);
+            this._handlersByType.get(type).callHandlers(error, data, context, requestId);
         }
     }
     public IPath getPath() {

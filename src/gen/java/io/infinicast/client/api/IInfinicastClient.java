@@ -3,7 +3,7 @@ package io.infinicast.client.api;
 import io.infinicast.Action;
 import io.infinicast.JObject;
 import io.infinicast.LogLevel;
-import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IEndpointContext;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 
@@ -28,9 +28,9 @@ public interface IInfinicastClient {
      * @param space Your Space name. A space is similar to a database name in usual databases.
      * @param connectRole The connection Role this client should be connected to. Article:ConnectRole
      * @param credentials Json credentials that can be passed to the authorisation service you defined
-     * @param onResult Callback that gets triggered when the connection has been successfull or failed. ErrorInfo is null if the connection is sucessful.
+     * @param onResult Callback that gets triggered when the connection has been successfull or failed. ICError is null if the connection is sucessful.
     */
-    void connectWithCredentials(String address, String space, String connectRole, JObject credentials, Consumer<ErrorInfo> onResult);
+    void connectWithCredentials(String address, String space, String connectRole, JObject credentials, Consumer<ICError> onResult);
     /**
      * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole} and the provided {@code credentials}
      * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
@@ -45,9 +45,9 @@ public interface IInfinicastClient {
      * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771
      * @param space Your Space name. A space is similar to a database name in usual databases.
      * @param conntectRole The connection Role this client should be connected to. Article:ConnectRole
-     * @param onResult Callback that gets triggered when the connection has been successfull or failed. ErrorInfo is null if the connection is sucessful.
+     * @param onResult Callback that gets triggered when the connection has been successfull or failed. ICError is null if the connection is sucessful.
     */
-    void connect(String address, String space, String conntectRole, Consumer<ErrorInfo> onResult);
+    void connect(String address, String space, String conntectRole, Consumer<ICError> onResult);
     /**
      * Connects to Infinicast cloud to a given {@code space} via the specified {@code conntectRole}
      * @param address Adress of Infinicast Cloud. This specifies if you want to use the staging or live cloud. E.g. service.aplaypowered.com:7771

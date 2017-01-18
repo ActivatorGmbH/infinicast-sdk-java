@@ -4,6 +4,7 @@ import io.infinicast.APlayStringMessage;
 import io.infinicast.JArray;
 import io.infinicast.JObject;
 import io.infinicast.NotImplementedException;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.protocol.messages.Eps2ConnectorMessage;
 import io.infinicast.client.utils.PathUtils;
 public class Eps2ConnectorProtocol {
@@ -21,138 +22,139 @@ public class Eps2ConnectorProtocol {
         if (ob.getData() != null) {
             data = new JObject(ob.getData());
         }
+        ICError err = ob.getError();
         switch (messageType) {
             case InitConnector:
              {
-                    handler.onInitConnector(data, endpointObject);
+                    handler.onInitConnector(err, data, endpointObject);
                     break;}
             
             case IntroduceObject:
              {
-                    handler.onIntroduceObject(data, ob.getPath(), endpointObject);
+                    handler.onIntroduceObject(err, data, ob.getPath(), endpointObject);
                     break;}
             
             case Message:
              {
-                    handler.onReceiveMessage(data, ob.getPath(), endpointObject);
+                    handler.onReceiveMessage(err, data, ob.getPath(), endpointObject);
                     break;}
             
             case MessageValidate:
              {
-                    handler.onReceiveMessageValidate(data, ob.getPath(), endpointObject);
+                    handler.onReceiveMessageValidate(err, data, ob.getPath(), endpointObject);
                     break;}
             
             case DataChangeValidate:
              {
-                    handler.onReceiveDataChangeValidate(data, ob.getPath(), endpointObject);
+                    handler.onReceiveDataChangeValidate(err, data, ob.getPath(), endpointObject);
                     break;}
             
             case Request:
              {
-                    handler.onReceiveRequest(data, ob.getPath(), (int) ob.getRequestId(), endpointObject);
+                    handler.onReceiveRequest(err, data, ob.getPath(), (int) ob.getRequestId(), endpointObject);
                     break;}
             
             case RequestResponse:
              {
-                    handler.onReceiveRequestResponse(data, (int) ob.getRequestId(), endpointObject);
+                    handler.onReceiveRequestResponse(err, data, (int) ob.getRequestId(), endpointObject);
                     break;}
             
             case JsonQueryResult:
              {
-                    handler.onReceiveJsonQueryResult(new JArray(ob.getList()), (int) ob.getFullCount(), (int) ob.getRequestId());
+                    handler.onReceiveJsonQueryResult(err, new JArray(ob.getList()), (int) ob.getFullCount(), (int) ob.getRequestId());
                     break;}
             
             case CreateChildSuccess:
              {
-                    handler.onCreateChildSuccess(data, ob.getPath(), (int) ob.getRequestId());
+                    handler.onCreateChildSuccess(err, data, ob.getPath(), (int) ob.getRequestId());
                     break;}
             
             case SetObjectData:
              {
-                    handler.onSetObjectData(data, ob.getPath(), endpointObject);
+                    handler.onSetObjectData(err, data, ob.getPath(), endpointObject);
                     break;}
             
             case ListAdd:
              {
-                    handler.onListAdd(data, PathUtils.getParentPath(ob.getPath()), ob.getPath(), endpointObject);
+                    handler.onListAdd(err, data, PathUtils.getParentPath(ob.getPath()), ob.getPath(), endpointObject);
                     break;}
             
             case ListRemove:
              {
-                    handler.onListRemove(data, PathUtils.getParentPath(ob.getPath()), ob.getPath(), endpointObject);
+                    handler.onListRemove(err, data, PathUtils.getParentPath(ob.getPath()), ob.getPath(), endpointObject);
                     break;}
             
             case ListChange:
              {
-                    handler.onListChange(data, PathUtils.getParentPath(ob.getPath()), ob.getPath(), endpointObject);
+                    handler.onListChange(err, data, PathUtils.getParentPath(ob.getPath()), ob.getPath(), endpointObject);
                     break;}
             
             case GetOrCreate:
              {
-                    handler.onGetOrCreate(data, ob.getPath(), (int) ob.getRequestId(), (boolean) ob.getNewlyCreated());
+                    handler.onGetOrCreate(err, data, ob.getPath(), (int) ob.getRequestId(), (boolean) ob.getNewlyCreated());
                     break;}
             
             case PathRoleSetup:
              {
-                    handler.onPathRoleSetup(data, (int) ob.getRequestId());
+                    handler.onPathRoleSetup(err, data, (int) ob.getRequestId());
                     break;}
             
             case CreateOrUpdateRole:
              {
                     // this should be ob?
-                    handler.onCreateOrUpdateRole(data, (int) ob.getRequestId());
+                    handler.onCreateOrUpdateRole(err, data, (int) ob.getRequestId());
                     break;}
             
             case DestroyRole:
              {
                     // this should be ob?
-                    handler.onDestroyRole(data, (int) ob.getRequestId());
+                    handler.onDestroyRole(err, data, (int) ob.getRequestId());
                     break;}
             
             case GetRoleForPathResult:
              {
                     // this should be ob?
-                    handler.onGetRoleForPathResult(new JArray(ob.getList()), data, (int) ob.getRequestId());
+                    handler.onGetRoleForPathResult(err, new JArray(ob.getList()), data, (int) ob.getRequestId());
                     break;}
             
             case ListeningStarted:
              {
-                    handler.onListeningStarted(ob.getPath(), endpointObject, ob.getData());
+                    handler.onListeningStarted(err, ob.getPath(), endpointObject, ob.getData());
                     break;}
             
             case ListeningEnded:
              {
-                    handler.onListeningEnded(ob.getPath(), endpointObject, (boolean) ob.getDisconnected(), ob.getData());
+                    handler.onListeningEnded(err, ob.getPath(), endpointObject, (boolean) ob.getDisconnected(), ob.getData());
                     break;}
             
             case EndpointDisconnected:
              {
-                    handler.onEndpointDisconnected(ob.getPath(), endpointObject);
+                    handler.onEndpointDisconnected(err, ob.getPath(), endpointObject);
                     break;}
             
             case ListenTerminate:
              {
-                    handler.onListenTerminate(ob.getData());
+                    handler.onListenTerminate(err, ob.getData());
                     break;}
             
             case DebugObserverMessage:
              {
-                    handler.onDebugObserverMessage(ob.getPath(), ob.getData());
+                    handler.onDebugObserverMessage(err, ob.getPath(), ob.getData());
                     break;}
             
             case ListeningChanged:
              {
-                    handler.onListeningChanged(ob.getPath(), endpointObject, ob.getData());
+                    handler.onListeningChanged(err, ob.getPath(), endpointObject, ob.getData());
                     break;}
             
             case Reminder:
              {
-                    handler.onReminderTriggered(ob.getPath(), ob.getData());
+                    handler.onReminderTriggered(err, ob.getPath(), ob.getData());
                     break;}
             
             case DebugStatistics:
              {
-                    handler.onDebugStatistics(ob.getData(), (int) ob.getRequestId());
+                    handler.onDebugStatistics(err, ob.getData(), (int) ob.getRequestId());
                     break;}
             
             default:

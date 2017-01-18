@@ -2,6 +2,7 @@ package io.infinicast.client.api.paths;
 
 import io.infinicast.TriConsumer;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.taskObjects.PathListResult;
 
 import java.util.ArrayList;
@@ -21,7 +22,7 @@ public interface IMatchingPathsWithListenersQuery {
     /**
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */
-    void toList(TriConsumer<ErrorInfo, ArrayList<IPath>, IAPathContext> callback);
+    void toList(TriConsumer<ICError, ArrayList<IPath>, IAPathContext> callback);
     /**
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */

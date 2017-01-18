@@ -2,6 +2,7 @@ package io.infinicast.client.api.paths;
 
 import io.infinicast.JObject;
 import io.infinicast.QuadConsumer;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.handler.lists.APListQueryResultCallback;
 import io.infinicast.client.api.paths.handler.objects.CreateObjectCallback;
 import io.infinicast.client.api.paths.options.CompleteCallback;
@@ -66,7 +67,7 @@ public interface IChildrenQuery {
      * if no result has been returned it adds a child object to the collection containing the passed data.
      * The newly added element will get a generated path id.
     */
-    void addOrFindOne(JObject newObjectValue, QuadConsumer<ErrorInfo, JObject, IAPathContext, Boolean> action);
+    void addOrFindOne(JObject newObjectValue, QuadConsumer<ICError, JObject, IAPathContext, Boolean> action);
     /**
      * Searches an element in the collection that fits the previously filtered Data.
      * if no result has been returned it adds a child object to the collection containing the passed data.
@@ -101,7 +102,7 @@ public interface IChildrenQuery {
      * finishs the query and returns the first element that fits the filtered query or null if no element is found
      * a callback handler or primise can be used
     */
-    void first(BiConsumer<ErrorInfo, IPathAndData> result);
+    void first(BiConsumer<ICError, IPathAndData> result);
     /**
      * finishs the query and returns the first element that fits the filtered query or null if no element is found
      * a callback handler or primise can be used
@@ -128,7 +129,7 @@ public interface IChildrenQuery {
     /**
      * delets the elements fitting the filtered query and returns the amount of deleted elements or an error
     */
-    void remove(BiConsumer<ErrorInfo, Integer> completeCallback);
+    void remove(BiConsumer<ICError, Integer> completeCallback);
     /**
      * registers a handler that will be triggered when an element is changed in the collection path
     */
@@ -144,7 +145,7 @@ public interface IChildrenQuery {
     /**
      * sets the data of all filtered elements
     */
-    void setData(JObject data, BiConsumer<ErrorInfo, Integer> completeCallback);
+    void setData(JObject data, BiConsumer<ICError, Integer> completeCallback);
     /**
      * registers handlers for add, remove and change to the given collection path.
      * the add handler will be triggered for all elements that fit the Filter query.

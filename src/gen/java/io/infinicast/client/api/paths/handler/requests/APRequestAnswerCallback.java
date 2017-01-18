@@ -1,9 +1,9 @@
 package io.infinicast.client.api.paths.handler.requests;
 
 import io.infinicast.JObject;
-import io.infinicast.client.api.paths.ErrorInfo;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
 @FunctionalInterface
 public interface APRequestAnswerCallback {
-    void accept(ErrorInfo error, JObject json, IPathAndEndpointContext context);
+    void accept(ICError icError, JObject json, IPathAndEndpointContext context);
 }

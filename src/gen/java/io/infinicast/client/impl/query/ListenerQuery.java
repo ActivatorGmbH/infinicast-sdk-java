@@ -2,6 +2,8 @@ package io.infinicast.client.impl.query;
 
 import io.infinicast.TriConsumer;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.*;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
@@ -46,7 +48,7 @@ public class ListenerQuery implements IListenerQuery {
     /**
      * finishs the query and returns the list of listeners on a given path filtered by role or type filters.
     */
-    public void toList(TriConsumer<ErrorInfo, ArrayList<IEndpointAndData>, IAPathContext> callback) {
+    public void toList(TriConsumer<ICError, ArrayList<IEndpointAndData>, IAPathContext> callback) {
         this._executor.getListenerList(callback, this._roleFilter, this._listeningType);
     }
     /**
@@ -56,7 +58,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<ListenerListResult> tcs = new CompletableFuture<ListenerListResult>();
         this.toList((error, list, context) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 ListenerListResult result = new ListenerListResult();
@@ -97,7 +99,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onStart(handler, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -119,7 +121,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onDataChange(handler, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -154,7 +156,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onEnd(handler, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
@@ -238,7 +240,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.live(onStart, onEnd, onChange, (error) -> {
             if (error != null) {
-                tcs.completeExceptionally(new AfinityException(error));
+                tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);

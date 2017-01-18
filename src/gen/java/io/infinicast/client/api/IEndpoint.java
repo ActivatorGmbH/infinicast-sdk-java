@@ -1,8 +1,8 @@
 package io.infinicast.client.api;
 
 import io.infinicast.JObject;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.EndpointConnectionInfo;
-import io.infinicast.client.api.paths.ErrorInfo;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 
 import java.util.ArrayList;
@@ -109,7 +109,7 @@ public interface IEndpoint extends IPath {
      * The IPAdress is an example of the information available.
      * @param result
     */
-    void getEndpointConnectionInfo(BiConsumer<ErrorInfo, EndpointConnectionInfo> result);
+    void getEndpointConnectionInfo(BiConsumer<ICError, EndpointConnectionInfo> result);
     /**
      * returns the endpointconnectinfo of the given endpoint.
      * The IPAdress is an example of the information available.
@@ -121,7 +121,7 @@ public interface IEndpoint extends IPath {
      * @param listeningTypeFilter
      * @param result
     */
-    void getSubscribedPaths(String pathStartsWith, String listeningTypeFilter, BiConsumer<ErrorInfo, ArrayList<EndpointSubscription>> result);
+    void getSubscribedPaths(String pathStartsWith, String listeningTypeFilter, BiConsumer<ICError, ArrayList<EndpointSubscription>> result);
     /**
      * returns the list of subscribed paths of the endpoint
      * UNKNOWN DOC TAG 'param'UNKNOWN DOC TAG 'param'

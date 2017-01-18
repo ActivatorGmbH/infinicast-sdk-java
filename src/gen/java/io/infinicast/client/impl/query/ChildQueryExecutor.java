@@ -2,6 +2,7 @@ package io.infinicast.client.impl.query;
 
 import io.infinicast.*;
 import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.*;
 import io.infinicast.client.api.paths.handler.lists.APListAddCallback;
 import io.infinicast.client.api.paths.handler.lists.APListQueryResultCallback;
@@ -27,8 +28,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         JObject data = new JObject();
         data.set("query", query.toJson());
         ConnectorMessageManager messageManager = super._messageManager;
-        messageManager.sendMessageWithResponse(Connector2EpsMessageType.JsonQuery, super._path, new JObject(data), (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        messageManager.sendMessageWithResponse(Connector2EpsMessageType.JsonQuery, super._path, new JObject(data), (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, 0);
                 ;
             }))) {
@@ -51,8 +52,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         JObject data = new JObject();
         data.set("requestedIdentifier", requestedIdentifier);
         data.set("data", objectData);
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.CreateChildRequest, super._path, new JObject(data), (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.CreateChildRequest, super._path, new JObject(data), (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, null);
                 ;
             }))) {
@@ -62,12 +63,12 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             ;
         });
     }
-    public void findOneOrAddChild(ICDataQuery query, JObject newObjectValue, final QuadConsumer<ErrorInfo, JObject, IAPathContext, Boolean> action) {
+    public void findOneOrAddChild(ICDataQuery query, JObject newObjectValue, final QuadConsumer<ICError, JObject, IAPathContext, Boolean> action) {
         JObject parameters = new JObject();
         parameters.set("data", newObjectValue);
         parameters.set("query", query.toJson());
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetOrCreate, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetOrCreate, super._path, parameters, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 action.accept(error, null, null, false);
                 ;
             }))) {
@@ -86,8 +87,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             parameters.set("named", data.getNamedQueryJson());
         }
         ConnectorMessageManager messageManager = super._messageManager;
-        messageManager.sendMessageWithResponse(Connector2EpsMessageType.ModifyChildData, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        messageManager.sendMessageWithResponse(Connector2EpsMessageType.ModifyChildData, super._path, parameters, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, 0);
                 ;
             }))) {
@@ -118,8 +119,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         if (isSticky) {
             parameters.set("sticky", true);
         }
-        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnChildren, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnChildren, super._path, parameters, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 if (registrationCompleteCallback != null) {
                     registrationCompleteCallback.accept(error);
                     ;
@@ -141,21 +142,21 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             ;
         });
         if (!(isRemove)) {
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListAdd, super._path, (json, context, id) -> {
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListAdd, super._path, (json, err, context, id) -> {
                 if (onAdd != null) {
                     onAdd.accept(json, context);
                     ;
                 }
                 ;
             });
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListChange, super._path, (json, context, id) -> {
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListChange, super._path, (json, err, context, id) -> {
                 if (onChange != null) {
                     onChange.accept(json, context);
                     ;
                 }
                 ;
             });
-            super._messageManager.registerHandler(Connector2EpsMessageType.ListRemove, super._path, (json, context, id) -> {
+            super._messageManager.registerHandler(Connector2EpsMessageType.ListRemove, super._path, (json, err, context, id) -> {
                 if (onRemove != null) {
                     onRemove.accept(json, context);
                     ;
@@ -170,14 +171,14 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         }
     }
     public void removeChildren(ICDataQuery query) {
-        this.removeChildren(query, (BiConsumer<ErrorInfo, Integer>) null);
+        this.removeChildren(query, (BiConsumer<ICError, Integer>) null);
     }
-    public void removeChildren(ICDataQuery query, final BiConsumer<ErrorInfo, Integer> completeCallback) {
+    public void removeChildren(ICDataQuery query, final BiConsumer<ICError, Integer> completeCallback) {
         JObject parameters = new JObject();
         parameters.set("query", query.toJson());
         ConnectorMessageManager messageManager = super._messageManager;
-        messageManager.sendMessageWithResponse(Connector2EpsMessageType.RemoveChildren, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        messageManager.sendMessageWithResponse(Connector2EpsMessageType.RemoveChildren, super._path, parameters, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 if (completeCallback != null) {
                     completeCallback.accept(error, 0);
                     ;
@@ -196,15 +197,15 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         });
     }
     public void setChildrenData(ICDataQuery query, JObject data) {
-        this.setChildrenData(query, data, (BiConsumer<ErrorInfo, Integer>) null);
+        this.setChildrenData(query, data, (BiConsumer<ICError, Integer>) null);
     }
-    public void setChildrenData(ICDataQuery query, JObject data, final BiConsumer<ErrorInfo, Integer> completeCallback) {
+    public void setChildrenData(ICDataQuery query, JObject data, final BiConsumer<ICError, Integer> completeCallback) {
         JObject parameters = new JObject();
         parameters.set("query", query.toJson());
         parameters.set("data", data);
         ConnectorMessageManager messageManager = super._messageManager;
-        messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetChildData, super._path, parameters, (json, context) -> {
-            if (!(super.checkIfHasErrorsAndCallHandlersNew(json, (error) -> {
+        messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetChildData, super._path, parameters, (json, err, context) -> {
+            if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 if (completeCallback != null) {
                     completeCallback.accept(error, 0);
                     ;
@@ -223,7 +224,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         });
     }
     void onChildHandler(final APListAddCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback, final Connector2EpsMessageType connector2EpsMessageType) {
-        super._messageManager.addHandler((callback == null), connector2EpsMessageType, super._path, (json, context, id) -> {
+        super._messageManager.addHandler((callback == null), connector2EpsMessageType, super._path, (json, err, context, id) -> {
             if (json != null) {
                 Console.WriteLine((((connector2EpsMessageType.toString() + " ") + json.toString()) + " ") + context.getPath().toString());
             }
