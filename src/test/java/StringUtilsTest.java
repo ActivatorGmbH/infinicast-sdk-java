@@ -12,8 +12,8 @@ public class StringUtilsTest {
     public void testStringUtils() {
         assertEquals("defg", PathUtils.getPathAddressElement("/abc/defg/dfgdfg/dfg/", 1));
 
-        assertEquals("",PathUtils.getPathAddressElement("/",0));
-        assertEquals("",PathUtils.getPathAddressElement(null,0));
-        assertEquals("",PathUtils.getPathAddressElement("/dfgdfg/",1));
+        assertEquals("", PathUtils.getPathAddressElement("/", 0));
+        assertEquals("", PathUtils.getPathAddressElement(null, 0));
+        assertEquals("", PathUtils.getPathAddressElement("/dfgdfg/", 1));
     }
 }

@@ -2,10 +2,11 @@ package io.infinicast.client.protocol;
 
 import java.util.HashMap;
 public class Connector2EpsMessageTypeConverter {
-    static HashMap<String, Integer> _stringToInt = new HashMap<String, Integer>();
-    static HashMap<Integer, String> _intToString = new HashMap<Integer, String>();
+    static HashMap<String, Integer> _stringToInt = null;
+    static HashMap<Integer, String> _intToString = null;
     public static void init() {
-        if (Connector2EpsMessageTypeConverter._stringToInt.size() == 0) {
+        if (Connector2EpsMessageTypeConverter._stringToInt == null) {
+            Connector2EpsMessageTypeConverter._stringToInt = new HashMap<String, Integer>();
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.Request.toString(), 1);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.RequestResponse.toString(), 2);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.InitConnector.toString(), 3);
@@ -57,6 +58,7 @@ public class Connector2EpsMessageTypeConverter {
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.GetEPSubscriptionList.toString(), 49);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.GetMatchingPathsWithListeners.toString(), 50);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.RequestResponseFailed.toString(), 51);
+            Connector2EpsMessageTypeConverter._intToString = new HashMap<Integer, String>();
             Connector2EpsMessageTypeConverter._intToString.put(1, Connector2EpsMessageType.Request.toString());
             Connector2EpsMessageTypeConverter._intToString.put(2, Connector2EpsMessageType.RequestResponse.toString());
             Connector2EpsMessageTypeConverter._intToString.put(3, Connector2EpsMessageType.InitConnector.toString());

@@ -45,18 +45,18 @@ public class APlayProtocolDecoder extends CumulativeProtocolDecoder {
 		dann zeichen lesen, dann in.prefixedDataAvailable(8+len);
 		wenn da true rauskommt kannst du dann getLong() und getBytes(len) machen*/
         switch (decoderState.messageType) {
-        case APlayCodec.MSGTYPE_PAYLOAD:
-            if (in.prefixedDataAvailable(4)) {
-                String payload = in.getPrefixedString(4, charsetDecoder);
-                APlayStringMessage msg = new APlayStringMessage();
-                msg.setDataAsString(payload);
-                out.write(msg);
-                decoderState.reset();
-                return true;
-            } else {
-                // We need to wait for more data
-                return false;
-            }
+            case APlayCodec.MSGTYPE_PAYLOAD:
+                if (in.prefixedDataAvailable(4)) {
+                    String payload = in.getPrefixedString(4, charsetDecoder);
+                    APlayStringMessage msg = new APlayStringMessage();
+                    msg.setDataAsString(payload);
+                    out.write(msg);
+                    decoderState.reset();
+                    return true;
+                } else {
+                    // We need to wait for more data
+                    return false;
+                }
             case APlayCodec.MSGTYPE_PAYLOAD_BINARY_JSON:
                 if (in.prefixedDataAvailable(4)) {
                     byte[] payload = getPrefixedData(in);
@@ -73,60 +73,60 @@ public class APlayProtocolDecoder extends CumulativeProtocolDecoder {
                     // We need to wait for more data
                     return false;
                 }
-        case APlayCodec.MSGTYPE_PAYLOAD_GZIP:
-            if (in.prefixedDataAvailable(4)) {
-                byte[] payload = getPrefixedData(in);
-                APlayStringMessage msg = new APlayStringMessage();
-                msg.setDataAsString(StringCompressor.decompress(payload));
-                out.write(msg);
-                decoderState.reset();
-                return true;
-            } else {
-                // We need to wait for more data
-                return false;
+            case APlayCodec.MSGTYPE_PAYLOAD_GZIP:
+                if (in.prefixedDataAvailable(4)) {
+                    byte[] payload = getPrefixedData(in);
+                    APlayStringMessage msg = new APlayStringMessage();
+                    msg.setDataAsString(StringCompressor.decompress(payload));
+                    out.write(msg);
+                    decoderState.reset();
+                    return true;
+                } else {
+                    // We need to wait for more data
+                    return false;
+                }
+            case APlayCodec.MSGTYPE_LOWLEVEL_PING: {
+                if (in.prefixedDataAvailable(4)) {
+                    DataInputStream inputStream = getPrefixedDataInputStream(in);
+                    LowLevelPingMessage msg = new LowLevelPingMessage();
+                    msg.setPingTime(inputStream.readLong());
+                    msg.setLastRoundTripTime(inputStream.readInt());
+                    out.write(msg);
+                    decoderState.reset();
+                    return true;
+                } else {
+                    // We need to wait for more data
+                    return false;
+                }
             }
-        case APlayCodec.MSGTYPE_LOWLEVEL_PING: {
-            if (in.prefixedDataAvailable(4)) {
-                DataInputStream inputStream = getPrefixedDataInputStream(in);
-                LowLevelPingMessage msg = new LowLevelPingMessage();
-                msg.setPingTime(inputStream.readLong());
-                msg.setLastRoundTripTime(inputStream.readInt());
-                out.write(msg);
-                decoderState.reset();
-                return true;
-            } else {
-                // We need to wait for more data
-                return false;
+            case APlayCodec.MSGTYPE_LOWLEVEL_PONG: {
+                if (in.prefixedDataAvailable(4)) {
+                    DataInputStream inputStream = getPrefixedDataInputStream(in);
+                    LowLevelPongMessage msg = new LowLevelPongMessage();
+                    msg.setPingTime(inputStream.readLong());
+                    out.write(msg);
+                    decoderState.reset();
+                    return true;
+                } else {
+                    // We need to wait for more data
+                    return false;
+                }
             }
-        }
-        case APlayCodec.MSGTYPE_LOWLEVEL_PONG: {
-            if (in.prefixedDataAvailable(4)) {
-                DataInputStream inputStream = getPrefixedDataInputStream(in);
-                LowLevelPongMessage msg = new LowLevelPongMessage();
-                msg.setPingTime(inputStream.readLong());
-                out.write(msg);
-                decoderState.reset();
-                return true;
-            } else {
-                // We need to wait for more data
-                return false;
-            }
-        }
-        case APlayCodec.MSGTYPE_LOWLEVEL_INTRODUCTION:
-            if (in.prefixedDataAvailable(4)) {
-                String address = in.getPrefixedString(4, charsetDecoder);
-                LowlevelIntroductionMessage msg = new LowlevelIntroductionMessage(address);
-                out.write(msg);
-                decoderState.reset();
-                return true;
-            } else {
-                return false;
-            }
+            case APlayCodec.MSGTYPE_LOWLEVEL_INTRODUCTION:
+                if (in.prefixedDataAvailable(4)) {
+                    String address = in.getPrefixedString(4, charsetDecoder);
+                    LowlevelIntroductionMessage msg = new LowlevelIntroductionMessage(address);
+                    out.write(msg);
+                    decoderState.reset();
+                    return true;
+                } else {
+                    return false;
+                }
 
-        default:
-            // Skip all bytes currently read
-            in.position(in.limit());
-            return true;
+            default:
+                // Skip all bytes currently read
+                in.position(in.limit());
+                return true;
         }
 
     }

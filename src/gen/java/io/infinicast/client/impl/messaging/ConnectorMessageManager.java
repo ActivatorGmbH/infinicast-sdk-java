@@ -79,7 +79,7 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
     public void sendValidatedMessage(Connector2EpsMessageType messageType, IPath path, JObject data, String originalEndpoint) {
         this._sender.sendMessage(this._connector2EpsProtocol.encodeValidatedMessage(messageType, path.toString(), data, originalEndpoint));
     }
-    public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options, final BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
+    public void addHandler(boolean isDelete, final Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options, final BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
         Boolean consomeOnePerRole = null;
         if (options != null) {
             consomeOnePerRole = options.getIsOncePerRole();
@@ -97,7 +97,22 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
         if ((options != null) && !(StringExtensions.IsNullOrEmpty(options.getRoleFilter()))) {
             roleFilter = options.getRoleFilter();
         }
-        int messageRequestId = this.getRequestId();
+        int messageRequestId;
+        if (isDelete) {
+            this._receiver.removeHandlers((messageType.toString() + "_ListenTerminate"), path.toString());
+            if (this._receiver.removeHandlers(messageType.toString(), path.toString())) {
+                messageRequestId = this.getRequestId();
+                this._sender.sendMessage(this._connector2EpsProtocol.encodeRemoveHandlerMessage(path.toString(), messageType, messageRequestId, ""));
+            }
+            else {
+                completeCallback.accept(null);
+                ;
+                return ;
+            }
+        }
+        else {
+            messageRequestId = this.getRequestId();
+        }
         this._receiver.addResponseHandler(Connector2EpsMessageType.RequestResponse, String.valueOf(messageRequestId), (json, error, context, requestedId) -> {
             if (error != null) {
                 if (completeCallback != null) {
@@ -121,6 +136,7 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
             this._receiver.addHandler(messageType.toString(), path, handler);
             if (listenTerminationHandler != null) {
                 this._receiver.addHandler((messageType.toString() + "_ListenTerminate"), path, (json, error, context, id) -> {
+                    this._receiver.removeHandlers(messageType.toString(), path.toString());
                     Console.WriteLine("Listenterminate received " + json.toString());
                     APathContext ctx = new APathContext();
                     ctx.setPath(context.getPath());
@@ -129,11 +145,6 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
                     ;
                 });
             }
-        }
-        else {
-            this._sender.sendMessage(this._connector2EpsProtocol.encodeRemoveHandlerMessage(path.toString(), messageType, messageRequestId, ""));
-            this._receiver.removeHandlers(messageType.toString(), path.toString());
-            this._receiver.removeHandlers((messageType.toString() + "_ListenTerminate"), path.toString());
         }
     }
     public void registerHandler(Connector2EpsMessageType messageType, IPath path, DCloudMessageHandler handler) {
@@ -170,7 +181,7 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
         this._receiver.destroy();
         this._sender.destroy();
     }
-    public void addHandler(boolean isDelete, Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options) {
+    public void addHandler(boolean isDelete, final Connector2EpsMessageType messageType, final IPath path, DCloudMessageHandler handler, final CompleteCallback completeCallback, HandlerRegistrationOptionsData options) {
         this.addHandler(isDelete, messageType, path, handler, completeCallback, options, (BiConsumer<ListenTerminateReason, IAPathContext>) null);
     }
 }

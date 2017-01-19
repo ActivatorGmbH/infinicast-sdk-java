@@ -5,7 +5,7 @@ package io.infinicast;
  */
 public class DisconnectManager {
     public void StopDisconnectChecker() {
-        
+
     }
 
     public void ReceivedPing() {

@@ -161,24 +161,24 @@ public class JToken {
         if (null == subNode)
             return false;
         switch (subNode.getNodeType()) {
-        case ARRAY:
-            return 0 < subNode.size();
-        case OBJECT:
-            return 0 < subNode.size();
-        case STRING:
-            return 0 < subNode.asText().length();
-        case NULL:
-            return false;
-        case MISSING:
-            return false;
-        default:
-            return true;
+            case ARRAY:
+                return 0 < subNode.size();
+            case OBJECT:
+                return 0 < subNode.size();
+            case STRING:
+                return 0 < subNode.asText().length();
+            case NULL:
+                return false;
+            case MISSING:
+                return false;
+            default:
+                return true;
         }
     }
 
     public ArrayList<String> getStringArray(String key) {
         ArrayList<String> result = new ArrayList<String>();
-        JArray array= getJArray(key);
+        JArray array = getJArray(key);
         for (JToken t : array) {
             result.add(t.toString());
         }

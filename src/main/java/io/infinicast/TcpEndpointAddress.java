@@ -12,11 +12,15 @@ public class TcpEndpointAddress implements IEndpointAddress, Serializable {
     SocketAddress address;
 
     String addressString;
+
     public TcpEndpointAddress(SocketAddress socketAddress) {
         address = socketAddress;
         addressString = cleanupAddress(address.toString());
     }
-    public TcpEndpointAddress(){}
+
+    public TcpEndpointAddress() {
+    }
+
     /**
      * Construct an address from a describing string
      *
@@ -25,6 +29,7 @@ public class TcpEndpointAddress implements IEndpointAddress, Serializable {
     public TcpEndpointAddress(String addressString) {
         setAddress(addressString);
     }
+
     protected void setAddress(String addressString) {
         String[] parts = addressString.split(":");
         String hostname = parts[0];
@@ -32,6 +37,7 @@ public class TcpEndpointAddress implements IEndpointAddress, Serializable {
         address = new InetSocketAddress(hostname, port);
         this.addressString = cleanupAddress(address.toString());
     }
+
     public SocketAddress getSocketAddress() {
         return address;
     }
@@ -42,19 +48,20 @@ public class TcpEndpointAddress implements IEndpointAddress, Serializable {
     }
 
     private String cleanupAddress(String addr) {
-        if(addr.contains("/")){
-            if(addr.indexOf("/")==0){
-                addr = addr.substring(addr.indexOf("/")+1);
-            }else{
+        if (addr.contains("/")) {
+            if (addr.indexOf("/") == 0) {
+                addr = addr.substring(addr.indexOf("/") + 1);
+            } else {
 
                 String port = addr.substring(addr.indexOf(":"));
-                addr = addr.substring(0,addr.indexOf("/"))+port;
+                addr = addr.substring(0, addr.indexOf("/")) + port;
             }
         }
         return addr;
     }
 
-    @Override public String serializedString() {
+    @Override
+    public String serializedString() {
         return getAddress();
     }
 

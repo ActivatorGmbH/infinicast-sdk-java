@@ -2,7 +2,7 @@ package io.infinicast;
 
 import java.io.Serializable;
 
-public class LowLevelPingMessage implements Serializable,IMessage {
+public class LowLevelPingMessage implements Serializable, IMessage {
     private long pingTime;
     private int lastRoundTripTime;
 

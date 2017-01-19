@@ -35,6 +35,7 @@ public class APlayStringMessage implements Serializable, IMessage {
         decodedData = json;
         payload = null;
     }
+
     public String getDataAsString() {
         if (payload != null) {
             return payload;

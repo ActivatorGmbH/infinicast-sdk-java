@@ -149,16 +149,20 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         PathHandlerContainer messageHandlerBag = this.ensureMessageHandlerBag(messageType, path);
         messageHandlerBag.addHandler(messageType, handler);
     }
-    public void removeHandlers(String messageType, String path) {
+    public boolean removeHandlers(String messageType, String path) {
+        boolean found = false;
         if (this._handlerMap.containsKey(path)) {
             PathHandlerContainer bag = this._handlerMap.get(path);
             if (bag != null) {
-                bag.removeHandler(messageType);
+                if (bag.removeHandler(messageType)) {
+                    found = true;
+                }
                 if (bag.isEmpty()) {
                     this._handlerMap.remove(path);
                 }
             }
         }
+        return found;
     }
     public void destroy() {
         this._handlerMap.clear();

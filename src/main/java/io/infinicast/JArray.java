@@ -57,7 +57,8 @@ public class JArray extends JToken implements Iterable<JToken> {
     public void add(String o) {
         getArrayNode().add(o);
     }
-    public void add(Object value){
+
+    public void add(Object value) {
         if (value == null) {
             add((String) null);
         } else if (value instanceof String) {
@@ -82,6 +83,7 @@ public class JArray extends JToken implements Iterable<JToken> {
             add(value.toString());
         }
     }
+
     public void add(int o) {
         getArrayNode().add(o);
     }

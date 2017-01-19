@@ -10,6 +10,6 @@ public interface IMessageReceiver {
     void addResponseHandler(Connector2EpsMessageType messageType, String requestId, DCloudMessageHandler handler);
     void receive(APlayStringMessage stringMessage);
     void setConnector(IConnector connector);
-    void removeHandlers(String messageType, String path);
+    boolean removeHandlers(String messageType, String path);
     void destroy();
 }

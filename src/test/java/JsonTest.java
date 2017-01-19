@@ -37,7 +37,7 @@ public class JsonTest {
     @Test
     public void preservesNullAttribute() {
         JObject json = new JObject();
-        json.set("null_key", (String)null);
+        json.set("null_key", (String) null);
         assertEquals(json.get("null_key"), null);
     }
 }

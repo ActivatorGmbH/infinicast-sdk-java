@@ -4,7 +4,7 @@ package io.infinicast;
  * Created by ASG on 28.07.2015.
  */
 public interface IEndpointAddress {
-	String getAddress();
+    String getAddress();
 
-	String serializedString();
+    String serializedString();
 }

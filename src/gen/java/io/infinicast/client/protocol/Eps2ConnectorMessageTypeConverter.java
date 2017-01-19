@@ -2,10 +2,12 @@ package io.infinicast.client.protocol;
 
 import java.util.HashMap;
 public class Eps2ConnectorMessageTypeConverter {
-    static HashMap<String, Integer> _stringToInt = new HashMap<String, Integer>();
-    static HashMap<Integer, String> _intToString = new HashMap<Integer, String>();
+    static HashMap<String, Integer> _stringToInt;
+    static HashMap<Integer, String> _intToString;
     public static void init() {
-        if (Eps2ConnectorMessageTypeConverter._stringToInt.size() == 0) {
+        if (Eps2ConnectorMessageTypeConverter._stringToInt == null) {
+            Eps2ConnectorMessageTypeConverter._stringToInt = new HashMap<String, Integer>();
+            Eps2ConnectorMessageTypeConverter._intToString = new HashMap<Integer, String>();
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.Request.toString(), 1);
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.RequestResponse.toString(), 2);
             Eps2ConnectorMessageTypeConverter._stringToInt.put(Eps2ConnectorMessageType.InitConnector.toString(), 3);

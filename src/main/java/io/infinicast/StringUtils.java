@@ -5,7 +5,7 @@ package io.infinicast;
  */
 public class StringUtils {
     public static String GetStringPathEleByIdx(String path, int idx) {
-        if(StringExtensions.IsNullOrEmpty(path)) return "";
+        if (StringExtensions.IsNullOrEmpty(path)) return "";
         StringBuilder sb = new StringBuilder();
 
         int count = 0;
