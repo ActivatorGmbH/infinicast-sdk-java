@@ -1483,6 +1483,15 @@ public class PathImpl implements IPath {
         return roleCount;
     }
     /**
+     * returns a map of key value pairs via the passed paramString.
+     * Example: on a path /my/foo/bar/ ExtractPathParams with a string /my/$var1/$var2/ would return a map:{var1:foo, var2: bar}
+     * @param paramString a param string path e.g. /my/$var2/$anyVariableName/
+     * @return
+    */
+    public HashMap<String, String> extractPathParams(String paramString) {
+        return PathUtils.parsePath(paramString, this.toString());
+    }
+    /**
      * returns an element of this path address as a string.
      * Example: on a path /my/foo/bar/ idx = 0 would return my, idx = 1 would return foo and idx = 2 would return bar
      * @param idx
@@ -1767,13 +1776,13 @@ public class PathImpl implements IPath {
     /**
      * basically allows to use this path as a collection based on listeners.
      * All fitting paths that currently have listeners will be added.
-     * returns the reference to a IMatchingPathsWithListenersQuery element that can be used to filter and get children of this path.
+     * returns the reference to a IPathByListenersQuery element that can be used to filter and get children of this path.
     */
-    public IMatchingPathsWithListenersQuery getMatchingPathsWithListeners() {
+    public IPathByListenersQuery getPathByListeners() {
         if (this._childWithListenersQueryExecutor == null) {
             this._childWithListenersQueryExecutor = new ChildrenWithListenersQueryExecutor(this.getRoot().getConnector(), this, this.messageManager);
         }
-        return new MatchingPathsWithListenersQuery(this, this._childWithListenersQueryExecutor);
+        return new PathByListenersQuery(this, this._childWithListenersQueryExecutor);
     }
     /**
      * returns the reference to a IListenerQuery element that can be used to get informations about the listening endpoints on a given path.

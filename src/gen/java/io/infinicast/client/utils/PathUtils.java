@@ -5,9 +5,25 @@ import io.infinicast.StringUtils;
 import io.infinicast.client.api.IPath;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 public class PathUtils {
     public static String infinicastInternStart = "/~IC/";
+    public static HashMap<String, String> parsePath(String pathVariables, String path) {
+        HashMap<String, String> result = new HashMap<String, String>();
+        List<String> splittedVariables = StringExtensions.splitAsPath(pathVariables);
+        List<String> splittedPath = StringExtensions.splitAsPath(path);
+        for (int i = 0;
+         (i < splittedPath.size()); i++) {
+            if (splittedVariables.size() > i) {
+                String variable = splittedVariables.get(i);
+                if (variable.startsWith("$")) {
+                    result.put(variable.substring(1), splittedPath.get(i));
+                }
+            }
+        }
+        return result;
+    }
     public static String cleanup(String path) {
         while (path.contains("//")) {
             path = path.replace("//", "/");
