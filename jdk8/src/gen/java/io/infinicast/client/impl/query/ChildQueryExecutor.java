@@ -32,7 +32,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, 0);
                 ;
-            }))) {
+            }
+            ))) {
                 ArrayList<IPathAndData> list = new ArrayList<IPathAndData>();
                 int fullCount = json.getInt("fullCount");
                 JArray array = json.getJArray("list");
@@ -46,7 +47,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                 ;
             }
             ;
-        });
+        }
+        );
     }
     public void addChild(JObject objectData, String requestedIdentifier, final CreateObjectCallback callback) {
         JObject data = new JObject();
@@ -56,12 +58,14 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, null);
                 ;
-            }))) {
+            }
+            ))) {
                 callback.accept(null, json.getJObject("data"), super.getPathAndEndpointContext(context));
                 ;
             }
             ;
-        });
+        }
+        );
     }
     public void findOneOrAddChild(ICDataQuery query, JObject newObjectValue, final QuadConsumer<ICError, JObject, IAPathContext, Boolean> action) {
         JObject parameters = new JObject();
@@ -71,13 +75,15 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 action.accept(error, null, null, false);
                 ;
-            }))) {
+            }
+            ))) {
                 JObject data = json.getJObject("data");
                 action.accept(null, data.getJObject("data"), super.getPathAndEndpointContext(context), json.getBoolean("newlyCreated"));
                 ;
             }
             ;
-        });
+        }
+        );
     }
     public void modifyAndGetChildrenData(ICDataQuery query, AtomicChange data, final APListQueryResultCallback callback) {
         JObject parameters = new JObject();
@@ -91,7 +97,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, 0);
                 ;
-            }))) {
+            }
+            ))) {
                 ArrayList<IPathAndData> list = new ArrayList<IPathAndData>();
                 int fullCount = json.getInt("fullCount");
                 JArray array = json.getJArray("list");
@@ -105,7 +112,8 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                 ;
             }
             ;
-        });
+        }
+        );
     }
     public void getAndListenOnChilden(ICDataQuery query, boolean isRemove, final BiConsumer<JObject, IPathAndEndpointContext> onAdd, final BiConsumer<JObject, IPathAndEndpointContext> onChange, final BiConsumer<JObject, IPathAndEndpointContext> onRemove, boolean isOncePerRole, boolean isSticky, final CompleteCallback registrationCompleteCallback) {
         JObject parameters = new JObject();
@@ -121,12 +129,13 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         }
         super._messageManager.sendMessageWithResponse(Connector2EpsMessageType.GetAndListenOnChildren, super._path, parameters, (json, err, context) -> {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
-                if (registrationCompleteCallback != null) {
+                if ((registrationCompleteCallback != null)) {
                     registrationCompleteCallback.accept(error);
                     ;
                 }
                 ;
-            }))) {
+            }
+            ))) {
                 JArray array = json.getJArray("list");
                 for (JToken ob : array) {
                     PathAndEndpointContext ctx = new PathAndEndpointContext(super._connector.path(ob.getString("path")), context.getEndpoint(), context.getEndpointData());
@@ -134,35 +143,39 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                     onAdd.accept(d, ctx);
                     ;
                 }
-                if (registrationCompleteCallback != null) {
+                if ((registrationCompleteCallback != null)) {
                     registrationCompleteCallback.accept(null);
                     ;
                 }
             }
             ;
-        });
+        }
+        );
         if (!(isRemove)) {
             super._messageManager.registerHandler(Connector2EpsMessageType.ListAdd, super._path, (json, err, context, id) -> {
-                if (onAdd != null) {
+                if ((onAdd != null)) {
                     onAdd.accept(json, context);
                     ;
                 }
                 ;
-            });
+            }
+            );
             super._messageManager.registerHandler(Connector2EpsMessageType.ListChange, super._path, (json, err, context, id) -> {
-                if (onChange != null) {
+                if ((onChange != null)) {
                     onChange.accept(json, context);
                     ;
                 }
                 ;
-            });
+            }
+            );
             super._messageManager.registerHandler(Connector2EpsMessageType.ListRemove, super._path, (json, err, context, id) -> {
-                if (onRemove != null) {
+                if ((onRemove != null)) {
                     onRemove.accept(json, context);
                     ;
                 }
                 ;
-            });
+            }
+            );
         }
         else {
             super._messageManager.registerHandler(Connector2EpsMessageType.ListAdd, super._path, null);
@@ -179,7 +192,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         ConnectorMessageManager messageManager = super._messageManager;
         messageManager.sendMessageWithResponse(Connector2EpsMessageType.RemoveChildren, super._path, parameters, (json, err, context) -> {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(error, 0);
                     ;
                 }
@@ -187,14 +200,16 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                     super._connector.unhandeledErrorInfo(super._path, error);
                 }
                 ;
-            }))) {
-                if (completeCallback != null) {
+            }
+            ))) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null, json.getInt("count"));
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     public void setChildrenData(ICDataQuery query, JObject data) {
         this.setChildrenData(query, data, (BiConsumer<ICError, Integer>) null);
@@ -206,7 +221,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         ConnectorMessageManager messageManager = super._messageManager;
         messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetChildData, super._path, parameters, (json, err, context) -> {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(error, 0);
                     ;
                 }
@@ -214,22 +229,24 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                     super._connector.unhandeledErrorInfo(super._path, error);
                 }
                 ;
-            }))) {
-                if (completeCallback != null) {
+            }
+            ))) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null, json.getInt("fullCount"));
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     void onChildHandler(final APListAddCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback, final Connector2EpsMessageType connector2EpsMessageType) {
         super._messageManager.addHandler((callback == null), connector2EpsMessageType, super._path, (json, err, context, id) -> {
-            if (json != null) {
-                Console.WriteLine((((connector2EpsMessageType.toString() + " ") + json.toString()) + " ") + context.getPath().toString());
+            if ((json != null)) {
+                Console.WriteLine(((((connector2EpsMessageType.toString() + " ") + json.toString()) + " ") + context.getPath().toString()));
             }
             else {
-                Console.WriteLine((connector2EpsMessageType.toString() + " null ") + context.getPath().toString());
+                Console.WriteLine(((connector2EpsMessageType.toString() + " null ") + context.getPath().toString()));
             }
             callback.accept(json, context);
             ;

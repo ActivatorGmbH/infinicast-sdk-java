@@ -26,19 +26,19 @@ public class ListenOnDataHandler implements IListenOnDataHandler {
         return this;
     }
     public void onAdd(JObject data, IPath context) {
-        if (this._onAdd != null) {
+        if ((this._onAdd != null)) {
             this._onAdd.accept(data, context);
             ;
         }
     }
     public void onChange(JObject data, IPath context) {
-        if (this._onChange != null) {
+        if ((this._onChange != null)) {
             this._onChange.accept(data, context);
             ;
         }
     }
     public void onRemove(JObject data, IPath context) {
-        if (this._onRemove != null) {
+        if ((this._onRemove != null)) {
             this._onRemove.accept(data, context);
             ;
         }

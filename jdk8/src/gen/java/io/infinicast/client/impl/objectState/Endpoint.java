@@ -70,14 +70,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<Void> addRoleAsync(IPath path, String role) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addRole(path, role, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -90,14 +91,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<Void> addRoleToStringPathAsync(String pathString, String role) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addRoleToStringPath(pathString, role, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -125,14 +127,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<Void> removeRoleAsync(IPath path, String role) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.removeRole(path, role, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -146,14 +149,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<Void> removeRoleFromStringPathAsync(String pathString, String role) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.removeRoleFromStringPath(pathString, role, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public void getRoles(IPath rolePath, DRoleListHandler roleListHandler) {
@@ -171,13 +175,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 roleListHandler.accept(error, null);
                 ;
-            }))) {
+            }
+            ))) {
                 ArrayList<String> list = json.getStringArray("list");
                 roleListHandler.accept(null, list);
                 ;
             }
             ;
-        });
+        }
+        );
     }
     /**
      * returns a list of the roles the endpoint fullfills for the given {@code path}
@@ -193,14 +199,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<ArrayList<String>> getRolesForStringPathAsync(String pathString) {
         final CompletableFuture<ArrayList<String>> tcs = new CompletableFuture<ArrayList<String>>();
         this.getRolesForStringPath(pathString, (error, roles) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(roles);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public void setDebugName(String name) {
@@ -219,13 +226,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         message.set("target", this.getEndpointId());
         super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.GetEndpointConnectionInfo, "", message, (json, err, context) -> {
             this.onGetEndpointConnectionInfoResponse(err, result, json);
-        });
+        }
+        );
     }
     void onGetEndpointConnectionInfoResponse(ICError err, final BiConsumer<ICError, EndpointConnectionInfo> result, JObject json) {
         if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
             result.accept(error, null);
             ;
-        }))) {
+        }
+        ))) {
             EndpointConnectionInfo info = new EndpointConnectionInfo();
             info.ipAddress = json.getString("ipAddress");
             result.accept(null, info);
@@ -239,14 +248,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
     public CompletableFuture<EndpointConnectionInfo> getEndpointConnectionInfoAsync() {
         final CompletableFuture<EndpointConnectionInfo> tcs = new CompletableFuture<EndpointConnectionInfo>();
         this.getEndpointConnectionInfo((error, info) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(info);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public void getSubscribedPaths(String pathStartsWith, String messageFilter, final BiConsumer<ICError, ArrayList<EndpointSubscription>> result) {
@@ -258,14 +268,15 @@ public class Endpoint extends PathImpl  implements IEndpoint {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 result.accept(error, null);
                 ;
-            }))) {
+            }
+            ))) {
                 ArrayList<EndpointSubscription> resultList = new ArrayList<EndpointSubscription>();
                 JArray array = json.getJArray("list");
                 for (JToken jToken : array) {
                     JObject ob = (JObject) jToken;
                     EndpointSubscription epSubscription = new EndpointSubscription();
                     epSubscription.setPath(ob.getString("path"));
-                    if (ob.get("roles") != null) {
+                    if ((ob.get("roles") != null)) {
                         ArrayList<String> roles = new ArrayList<String>();
                         JArray rolesArray = ob.getJArray("roles");
                         for (JToken role : rolesArray) {
@@ -280,19 +291,21 @@ public class Endpoint extends PathImpl  implements IEndpoint {
                 ;
             }
             ;
-        });
+        }
+        );
     }
     public CompletableFuture<ArrayList<EndpointSubscription>> getSubscribedPathsAsync(String pathStartsWith, String messageFilter) {
         final CompletableFuture<ArrayList<EndpointSubscription>> tcs = new CompletableFuture<ArrayList<EndpointSubscription>>();
         this.getSubscribedPaths(pathStartsWith, messageFilter, (error, info) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(info);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public void introduce(IPath objekt, JObject infoJson) {
@@ -362,13 +375,14 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         data.set("target", this.getEndpointId());
         super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.ModifyRoleForPath, pathString, data, (json, err, context) -> {
             if (!(super.checkIfHasErrorsAndCallHandlersNew(err, onComplete))) {
-                if (onComplete != null) {
+                if ((onComplete != null)) {
                     onComplete.accept(null);
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     void sendModifyRole(String modifier, String pathString, String role) {
         this.sendModifyRole(modifier, pathString, role, (CompleteCallback) null);

@@ -23,19 +23,19 @@ public class ListenOnListenersHandler implements IListenOnListenersHandler {
         return this;
     }
     public void onListeningStarted(IListeningStartedContext context) {
-        if (this._OnListeningStarted != null) {
+        if ((this._OnListeningStarted != null)) {
             this._OnListeningStarted.accept(context);
             ;
         }
     }
     public void onListeningChanged(IListeningChangedContext context) {
-        if (this._OnListeningChanged != null) {
+        if ((this._OnListeningChanged != null)) {
             this._OnListeningChanged.accept(context);
             ;
         }
     }
     public void onListeningEnded(IListeningEndedContext context) {
-        if (this._OnListeningEnded != null) {
+        if ((this._OnListeningEnded != null)) {
             this._OnListeningEnded.accept(context);
             ;
         }

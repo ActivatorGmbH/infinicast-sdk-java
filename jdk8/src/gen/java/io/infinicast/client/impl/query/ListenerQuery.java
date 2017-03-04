@@ -57,7 +57,7 @@ public class ListenerQuery implements IListenerQuery {
     public CompletableFuture<ListenerListResult> toListAsync() {
         final CompletableFuture<ListenerListResult> tcs = new CompletableFuture<ListenerListResult>();
         this.toList((error, list, context) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
@@ -67,7 +67,8 @@ public class ListenerQuery implements IListenerQuery {
                 tcs.complete(result);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public String getFilteredRole() {
@@ -82,15 +83,16 @@ public class ListenerQuery implements IListenerQuery {
             ;
         }
         , this.getHandlerRegistrationOptions(), (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this._executor.unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will begin to listen on this path.
@@ -98,14 +100,15 @@ public class ListenerQuery implements IListenerQuery {
     public CompletableFuture<Void> onStartAsync(Consumer<IListeningStartedContext> handler) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onStart(handler, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -120,14 +123,15 @@ public class ListenerQuery implements IListenerQuery {
     public CompletableFuture<Void> onDataChangeAsync(Consumer<IListeningChangedContext> handler) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onDataChange(handler, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -139,15 +143,16 @@ public class ListenerQuery implements IListenerQuery {
             ;
         }
         , this.getHandlerRegistrationOptions(), (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this._executor.unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will stop to listen on this path.
@@ -155,14 +160,15 @@ public class ListenerQuery implements IListenerQuery {
     public CompletableFuture<Void> onEndAsync(Consumer<IListeningEndedContext> handler) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onEnd(handler, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     ListeningHandlerRegistrationOptions getHandlerRegistrationOptions() {
@@ -186,15 +192,16 @@ public class ListenerQuery implements IListenerQuery {
             ;
         }
         , this.getHandlerRegistrationOptions(), (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this._executor.unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * adds a listener that will be informed as soon as an endpoint that fits the filters will stop to listen on this path.
@@ -208,15 +215,16 @@ public class ListenerQuery implements IListenerQuery {
     */
     public void live(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd, Consumer<IListeningChangedContext> onChange, final CompleteCallback registrationCompleteCallback) {
         this._executor.getAndListenOnListeners(onStart, onChange, onEnd, this.getHandlerRegistrationOptions(), (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this._executor.unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * adds listeners to start, end and change of endpoint listeners on this path.
@@ -239,14 +247,15 @@ public class ListenerQuery implements IListenerQuery {
     public CompletableFuture<Void> liveAsync(Consumer<IListeningStartedContext> onStart, Consumer<IListeningEndedContext> onEnd, Consumer<IListeningChangedContext> onChange) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.live(onStart, onEnd, onChange, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**

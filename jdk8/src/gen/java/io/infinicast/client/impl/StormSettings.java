@@ -21,14 +21,15 @@ public class StormSettings implements IStormSettings {
     public CompletableFuture<Void> createOrUpdateRoleAsync(String name, RoleSettings roleSettings) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.createOrUpdateRole(name, roleSettings, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public void createOrUpdateRole(String name, RoleSettings data, final CompleteCallback completeCallback) {
@@ -37,25 +38,27 @@ public class StormSettings implements IStormSettings {
         message.set("name", name);
         this._messageManager.sendMessageWithResponse(Connector2EpsMessageType.CreateOrUpdateRole, null, message, (json, error, context) -> {
             if (!(ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._messageManager.getConnector(), error, completeCallback, context.getPath()))) {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null);
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     public CompletableFuture<Void> destroyRoleAsync(String name) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.destroyRole(name, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public void destroyRole(String name, final CompleteCallback completeCallback) {
@@ -63,13 +66,14 @@ public class StormSettings implements IStormSettings {
         message.set("name", name);
         this._messageManager.sendMessageWithResponse(Connector2EpsMessageType.DestroyRole, null, message, (json, error, context) -> {
             if (!(ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersNew(this._messageManager.getConnector(), error, completeCallback, context.getPath()))) {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null);
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     public void destroyRole(String name) {
         this.destroyRole(name, (CompleteCallback) null);

@@ -76,7 +76,7 @@ public class PathImpl implements IPath {
         this.messageManager = messageManager;
     }
     public IConnector getConnector() {
-        if (this._root == null) {
+        if ((this._root == null)) {
             return this._connector;
         }
         return this.getRoot().getConnector();
@@ -86,7 +86,7 @@ public class PathImpl implements IPath {
         this.messageManager = root.messageManager;
     }
     public PathImpl getRoot() {
-        if (this._root == null) {
+        if ((this._root == null)) {
             return this;
         }
         return this._root;
@@ -129,7 +129,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
         this.setData(json, (error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tsc, error);
-        });
+        }
+        );
         return tsc;
     }
     /**
@@ -142,14 +143,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<JObject> modifyDataAtomicAndGetResultAsync(AtomicChange atomicChangeChange) {
         final CompletableFuture<JObject> tsc = new CompletableFuture<JObject>();
         this.modifyDataAtomicAndGetResult(atomicChangeChange, (error, data) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tsc.completeExceptionally(new ICException(error));
             }
             else {
                 tsc.complete(data);
             }
             ;
-        });
+        }
+        );
         return tsc;
     }
     /**
@@ -162,14 +164,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> modifyDataAtomicAsync(AtomicChange atomicChangeChange) {
         final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
         this.modifyDataAtomic(atomicChangeChange, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tsc.completeExceptionally(new ICException(error));
             }
             else {
                 tsc.complete(null);
             }
             ;
-        });
+        }
+        );
         return tsc;
     }
     /**
@@ -1264,11 +1267,11 @@ public class PathImpl implements IPath {
     }
     JObject applyAdvancedOptions(JObject data) {
         JObject realData = data;
-        if (this._advancedOptions != null) {
-            if (realData == null) {
+        if ((this._advancedOptions != null)) {
+            if ((realData == null)) {
                 realData = new JObject();
             }
-            if (this._advancedOptions.get("accessId") != null) {
+            if ((this._advancedOptions.get("accessId") != null)) {
                 data.set("accessId", this._advancedOptions.getString("accessId"));
             }
         }
@@ -1299,7 +1302,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.deleteData((error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1318,7 +1322,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.deleteDataAndListeners((error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1338,7 +1343,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.deleteListeners((error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1372,7 +1378,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addReminder(schedulingOptions, json, (error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1387,7 +1394,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.deleteReminder(queryJson, (error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
-        });
+        }
+        );
         return tcs;
     }
     public void sendRequest(JObject data, final APRequestAnswerCallback answer) {
@@ -1396,17 +1404,19 @@ public class PathImpl implements IPath {
                 err.setCustomJson(json);
                 answer.accept(error, null, null);
                 ;
-            }))) {
+            }
+            ))) {
                 answer.accept(null, json, context);
                 ;
             }
             ;
-        });
+        }
+        );
     }
     public CompletableFuture<ADataAndPathAndEndpointContext> sendRequestAsync(JObject data) {
         final CompletableFuture<ADataAndPathAndEndpointContext> tcs = new CompletableFuture<ADataAndPathAndEndpointContext>();
         this.sendRequest(data, (error, json, context) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
@@ -1416,7 +1426,8 @@ public class PathImpl implements IPath {
                 tcs.complete(res);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1437,7 +1448,8 @@ public class PathImpl implements IPath {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.sendMessage(json, (error) -> {
             PathImpl.handleCompleteHandlerAsyncVoid(tcs, error);
-        });
+        }
+        );
         return tcs;
     }
     public void addDebugPingInfo(int pingInMs) {
@@ -1460,7 +1472,7 @@ public class PathImpl implements IPath {
         return path;
     }
     static void handleCompleteHandlerAsyncVoid(CompletableFuture<Void> tcs, ICError icError) {
-        if (icError != null) {
+        if ((icError != null)) {
             tcs.completeExceptionally(new ICException(icError));
         }
         else {
@@ -1470,7 +1482,7 @@ public class PathImpl implements IPath {
     static HashMap<String, Integer> getRoleCountDictionary(JObject json) {
         HashMap<String, Integer> roleCount = new HashMap<String, Integer>();
         JArray roleCountArray = json.getJArray("roleCount");
-        if (roleCountArray != null) {
+        if ((roleCountArray != null)) {
             for (JToken roleOb : roleCountArray) {
                 String role = roleOb.getString("role");
                 String handlerType = roleOb.getString("handlerType");
@@ -1516,14 +1528,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onDataChangeAsync(TriConsumer<JObject, JObject, IPathAndEndpointContext> callback) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onDataChange(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1558,7 +1571,7 @@ public class PathImpl implements IPath {
         json.set("returnData", false);
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.UpdateData, this, json, (resultJson, err, context) -> {
             if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(error);
                     ;
                 }
@@ -1566,14 +1579,16 @@ public class PathImpl implements IPath {
                     this.getConnector().unhandeledErrorInfo(this, error);
                 }
                 ;
-            }))) {
-                if (completeCallback != null) {
+            }
+            ))) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null);
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
@@ -1585,14 +1600,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onValidateDataChangeAsync(APValidateDataChangeCallback callback) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onValidateDataChange(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1613,14 +1629,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onValidateMessageAsync(APValidateMessageCallback callback) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onValidateMessage(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1637,7 +1654,7 @@ public class PathImpl implements IPath {
         }
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.UpdateData, this, json, (resultJson, err, context) -> {
             if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(error, null);
                     ;
                 }
@@ -1645,14 +1662,16 @@ public class PathImpl implements IPath {
                     this.getConnector().unhandeledErrorInfo(this, error);
                 }
                 ;
-            }))) {
-                if (completeCallback != null) {
+            }
+            ))) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null, resultJson.getJObject("data"));
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
@@ -1664,14 +1683,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onRequestAsync(APRequestCallback callback) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onRequest(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1691,14 +1711,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onReminderAsync(AReminderCallback callback) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onReminder(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     /**
@@ -1709,13 +1730,14 @@ public class PathImpl implements IPath {
     public void setData(JObject json, final CompleteCallback completeCallback) {
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetObjectData, this, json, (resultJson, error, context) -> {
             if (!(this.checkIfHasErrorsAndCallHandlersNew(error, completeCallback))) {
-                if (completeCallback != null) {
+                if ((completeCallback != null)) {
                     completeCallback.accept(null);
                     ;
                 }
             }
             ;
-        });
+        }
+        );
     }
     /**
      * this method is deprecated and should no longer be used
@@ -1724,14 +1746,15 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onIntroduceAsync(APObjectIntroduceCallback callback) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onIntroduce(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
                 tcs.complete(null);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
     public boolean checkIfHasErrorsAndCallHandlersNew(ICError error, CompleteCallback completeCallback) {
@@ -1758,7 +1781,7 @@ public class PathImpl implements IPath {
         return this.getPathAddress();
     }
     PathQueryWithHandlerExecutor getExecutorForPathHandler() {
-        if (this._pathQueryWithHandlerExecutor == null) {
+        if ((this._pathQueryWithHandlerExecutor == null)) {
             this._pathQueryWithHandlerExecutor = new PathQueryWithHandlerExecutor(this.getRoot().getConnector(), this, this.messageManager);
         }
         return this._pathQueryWithHandlerExecutor;
@@ -1768,7 +1791,7 @@ public class PathImpl implements IPath {
      * returns the reference to a IChildrenQuery element that can be used to modify, query, delete.. children of this path.
     */
     public IChildrenQuery getChildren() {
-        if (this._childQueryExecutor == null) {
+        if ((this._childQueryExecutor == null)) {
             this._childQueryExecutor = new ChildQueryExecutor(this.getRoot().getConnector(), this, this.messageManager);
         }
         return new ChildrenQuery(this, this._childQueryExecutor);
@@ -1779,7 +1802,7 @@ public class PathImpl implements IPath {
      * returns the reference to a IPathByListenersQuery element that can be used to filter and get children of this path.
     */
     public IPathByListenersQuery getPathByListeners() {
-        if (this._childWithListenersQueryExecutor == null) {
+        if ((this._childWithListenersQueryExecutor == null)) {
             this._childWithListenersQueryExecutor = new ChildrenWithListenersQueryExecutor(this.getRoot().getConnector(), this, this.messageManager);
         }
         return new PathByListenersQuery(this, this._childWithListenersQueryExecutor);
@@ -1788,7 +1811,7 @@ public class PathImpl implements IPath {
      * returns the reference to a IListenerQuery element that can be used to get informations about the listening endpoints on a given path.
     */
     public IListenerQuery getListeners() {
-        if (this._listenerQueryExecutor == null) {
+        if ((this._listenerQueryExecutor == null)) {
             this._listenerQueryExecutor = new ListenerQueryExecutor(this.getRoot().getConnector(), this, this.messageManager);
         }
         return new ListenerQuery(this, this._listenerQueryExecutor);
@@ -2240,7 +2263,7 @@ public class PathImpl implements IPath {
     */
     public void getData(final GetDataCallback callback, GetDataOptions options) {
         JObject data = null;
-        if (options != null) {
+        if ((options != null)) {
             data = new JObject();
         }
         data = this.applyAdvancedOptions(data);
@@ -2248,12 +2271,14 @@ public class PathImpl implements IPath {
             if (!(this.checkIfHasErrorsAndCallHandlersNew(err, (error) -> {
                 callback.accept(error, null, null);
                 ;
-            }))) {
+            }
+            ))) {
                 callback.accept(null, json, this.getPathAndEndpointContext(context));
                 ;
             }
             ;
-        });
+        }
+        );
     }
     /**
      * returns the data stored in the path
@@ -2270,7 +2295,7 @@ public class PathImpl implements IPath {
     public CompletableFuture<ADataAndPathContext> getDataAsync(GetDataOptions options) {
         final CompletableFuture<ADataAndPathContext> tsc = new CompletableFuture<ADataAndPathContext>();
         this.getData((error, json, context) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tsc.completeExceptionally(new ICException(error));
             }
             else {
@@ -2298,7 +2323,8 @@ public class PathImpl implements IPath {
     public void deleteData(final CompleteCallback completeCallback) {
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, new JObject(), (json, err, context) -> {
             this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
-        });
+        }
+        );
     }
     /**
      * deletes the path. Does not affect child paths!
@@ -2315,7 +2341,8 @@ public class PathImpl implements IPath {
         options.set("listeners", true);
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, options, (json, err, context) -> {
             this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
-        });
+        }
+        );
     }
     /**
      * deletes the path and all listeners on the path as well as the roles directly added to this path
@@ -2333,7 +2360,8 @@ public class PathImpl implements IPath {
         options.set("data", false);
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteFromCollection, this, options, (json, err, context) -> {
             this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
-        });
+        }
+        );
     }
     /**
      * deletes all listeners on the path
@@ -2362,14 +2390,15 @@ public class PathImpl implements IPath {
     }
     public void addOrReplaceReminder(JObject queryJson, ReminderSchedulingOptions schedulingOptions, JObject json, final CompleteCallback completeCallback) {
         JObject data = new JObject();
-        if (queryJson != null) {
+        if ((queryJson != null)) {
             data.set("query", queryJson);
         }
         data.set("data", json);
         data.set("scheduled", schedulingOptions.toJson());
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.AddReminder, this, data, (resultJson, err, context) -> {
             this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
-        });
+        }
+        );
     }
     public void addOrReplaceReminder(JObject queryJson, ReminderSchedulingOptions schedulingOptions, JObject json) {
         this.addOrReplaceReminder(queryJson, schedulingOptions, json, (CompleteCallback) null);
@@ -2377,7 +2406,8 @@ public class PathImpl implements IPath {
     public void deleteReminder(JObject queryJson, final CompleteCallback completeCallback) {
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.DeleteReminder, this, queryJson, (resultJson, error, context) -> {
             this.checkIfHasErrorsAndCallHandlersFull(error, completeCallback);
-        });
+        }
+        );
     }
     public void deleteReminder(JObject queryJson) {
         this.deleteReminder(queryJson, (CompleteCallback) null);
@@ -2390,7 +2420,8 @@ public class PathImpl implements IPath {
     public void sendMessage(JObject json, final CompleteCallback completeCallback) {
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Message, this, json, (resultJson, err, context) -> {
             this.checkIfHasErrorsAndCallHandlersFull(err, completeCallback);
-        });
+        }
+        );
     }
     /**
      * Sends a Json Message to a Path. All Endpoints currently listening on Messages on this path will receive it.
@@ -2407,15 +2438,16 @@ public class PathImpl implements IPath {
     */
     public void onDataChange(TriConsumer<JObject, JObject, IPathAndEndpointContext> callback, final CompleteCallback registrationCompleteCallback) {
         this.getExecutorForPathHandler().onDataChange(callback, null, (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * registers a listener on data changes on this path
@@ -2435,11 +2467,11 @@ public class PathImpl implements IPath {
     */
     public void onMessage(APMessageCallback callback, final CompleteCallback registrationCompleteCallback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
         this.getExecutorForPathHandler().onMessage(callback, null, (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
@@ -2476,7 +2508,7 @@ public class PathImpl implements IPath {
     public CompletableFuture<Void> onMessageAsync(APMessageCallback callback, BiConsumer<ListenTerminateReason, IAPathContext> listenTerminationHandler) {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onMessage(callback, (error) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
@@ -2506,15 +2538,16 @@ public class PathImpl implements IPath {
     */
     public void onValidateDataChange(APValidateDataChangeCallback callback, final CompleteCallback registrationCompleteCallback) {
         this.getExecutorForPathHandler().onValidateDataChange(callback, null, (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * registers a data validator on this path. A validator will be called before the data change is applied to the system
@@ -2534,15 +2567,16 @@ public class PathImpl implements IPath {
     */
     public void onValidateMessage(APValidateMessageCallback callback, final CompleteCallback registrationCompleteCallback) {
         this.getExecutorForPathHandler().onValidateMessage(callback, null, (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * registers a message validator on this path. A validator will be called before the message is actually sent to the system
@@ -2566,15 +2600,16 @@ public class PathImpl implements IPath {
             ;
         }
         , null, (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * registers a request handler that will be called on one of the listeners as soon as a request on this path is sent.
@@ -2594,15 +2629,16 @@ public class PathImpl implements IPath {
     */
     public void onReminder(AReminderCallback callback, final CompleteCallback registrationCompleteCallback) {
         this.getExecutorForPathHandler().onReminder(callback, null, (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * Experimental feature:
@@ -2624,15 +2660,16 @@ public class PathImpl implements IPath {
             ;
         }
         , (error) -> {
-            if (registrationCompleteCallback != null) {
+            if ((registrationCompleteCallback != null)) {
                 registrationCompleteCallback.accept(error);
                 ;
             }
-            else if (error != null) {
+            else if ((error != null)) {
                 this.getExecutorForPathHandler().unhandeledError(error);
             }
             ;
-        });
+        }
+        );
     }
     /**
      * this method is deprecated and should no longer be used

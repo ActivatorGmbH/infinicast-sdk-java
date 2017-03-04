@@ -17,13 +17,13 @@ public class ListenOnListenersHandlerWithoutChange implements IListenOnListeners
         return this;
     }
     public void onListeningStarted(IListeningStartedContext context) {
-        if (this._OnListeningStarted != null) {
+        if ((this._OnListeningStarted != null)) {
             this._OnListeningStarted.accept(context);
             ;
         }
     }
     public void onListeningEnded(IListeningEndedContext context) {
-        if (this._OnListeningEnded != null) {
+        if ((this._OnListeningEnded != null)) {
             this._OnListeningEnded.accept(context);
             ;
         }

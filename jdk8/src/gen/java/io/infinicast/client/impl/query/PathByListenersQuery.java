@@ -51,7 +51,7 @@ public class PathByListenersQuery implements IPathByListenersQuery {
     public CompletableFuture<PathListWithCountResult> toListAsync() {
         final CompletableFuture<PathListWithCountResult> tcs = new CompletableFuture<PathListWithCountResult>();
         this.toList((error, list, context, count) -> {
-            if (error != null) {
+            if ((error != null)) {
                 tcs.completeExceptionally(new ICException(error));
             }
             else {
@@ -62,7 +62,8 @@ public class PathByListenersQuery implements IPathByListenersQuery {
                 tcs.complete(result);
             }
             ;
-        });
+        }
+        );
         return tcs;
     }
 }

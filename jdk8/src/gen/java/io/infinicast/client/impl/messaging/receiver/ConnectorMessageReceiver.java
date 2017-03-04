@@ -56,7 +56,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         this.callHandlersLimited(error, "", Connector2EpsMessageType.RequestResponse, data, this.getEndpointContext(null, ""), requestId, 1);
     }
     public void onGetRoleForPathResult(ICError error, JArray list, JObject data, int requestId) {
-        if (data == null) {
+        if ((data == null)) {
             data = new JObject();
         }
         data.set("list", list);
@@ -153,7 +153,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         boolean found = false;
         if (this._handlerMap.containsKey(path)) {
             PathHandlerContainer bag = this._handlerMap.get(path);
-            if (bag != null) {
+            if ((bag != null)) {
                 if (bag.removeHandler(messageType)) {
                     found = true;
                 }
@@ -175,20 +175,20 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     public void receive(APlayStringMessage msg) {
         if (this._logger.getIsDebugEnabled()) {
-            this._logger.debug("received " + msg.getDataAsString());
+            this._logger.debug(("received " + msg.getDataAsString()));
         }
         try {
             this._receiveProtocol.decodeStringMessage(msg, this);
         }
         catch (Exception ex) {
-            this._logger.error((("Exception in decode message " + msg.getDataAsString()) + " ") + InfinicastExceptionHelper.ExceptionToString(ex));
+            this._logger.error(((("Exception in decode message " + msg.getDataAsString()) + " ") + InfinicastExceptionHelper.ExceptionToString(ex)));
         }
     }
     public void setConnector(IConnector connector) {
         this._connector = connector;
     }
     PathHandlerContainer ensureMessageHandlerBag(String name, IPath path) {
-        if (path != null) {
+        if ((path != null)) {
             name = path.toString();
         }
         PathHandlerContainer bag = new PathHandlerContainer(path);
@@ -203,7 +203,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
                 n = p;
             }
             PathHandlerContainer bag = this._handlerMap.get(n);
-            if (bag != null) {
+            if ((bag != null)) {
                 bags.add(bag);
             }
         }
@@ -212,15 +212,15 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     void callHandlersLimitedByString(ICError error, String path, String type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
         int callCount = 0;
         ArrayList<PathHandlerContainer> bags;
-        if ((requestId != 0) && StringExtensions.IsNullOrEmpty(path)) {
+        if (((requestId != 0) && StringExtensions.IsNullOrEmpty(path))) {
             bags = this.getMessageHandlerBags(((type + "_") + requestId), "");
-            this._handlerMap.remove((type + "_") + requestId);
+            this._handlerMap.remove(((type + "_") + requestId));
         }
         else {
             bags = this.getMessageHandlerBags(type.toString(), path);
         }
         for (PathHandlerContainer bag : bags) {
-            if ((handlerCount == 0) || (callCount < handlerCount)) {
+            if (((handlerCount == 0) || (callCount < handlerCount))) {
                 callCount++;
                 try {
                     this.queueInHandlerPool(error, bag, type, data, context, requestId);
@@ -231,14 +231,15 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
                 }
             }
         }
-        if (bags.size() == 0) {
-            this._logger.warn(((("request without handler " + path) + " '") + type) + "'");
+        if ((bags.size() == 0)) {
+            this._logger.warn((((("request without handler " + path) + " '") + type) + "'"));
         }
     }
     void queueInHandlerPool(final ICError error, final PathHandlerContainer bag, final String type, final JObject data, final IPathAndEndpointContext context, final int requestId) {
         this.handlerPool.queueHandlerCall(() -> {
             bag.callHandlers(error, type, data, context, requestId);
-        });
+        }
+        );
     }
     void callHandlersLimited(ICError error, String path, Connector2EpsMessageType type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
         this.callHandlersLimitedByString(error, path, type.toString(), data, context, requestId, handlerCount);
@@ -251,11 +252,11 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     PathAndEndpointContext getEndpointContext(JObject senderEndpointObject, String pathStr) {
         Endpoint endpoint = null;
-        if (senderEndpointObject != null) {
+        if ((senderEndpointObject != null)) {
             endpoint = new Endpoint(senderEndpointObject.getString("path"), senderEndpointObject.getString("endpoint"), this._connector.getRootPath());
         }
         JObject endpointData = null;
-        if ((senderEndpointObject != null) && (senderEndpointObject.get("data") != null)) {
+        if (((senderEndpointObject != null) && (senderEndpointObject.get("data") != null))) {
             endpointData = senderEndpointObject.getJObject("data");
         }
         IPath path = null;
