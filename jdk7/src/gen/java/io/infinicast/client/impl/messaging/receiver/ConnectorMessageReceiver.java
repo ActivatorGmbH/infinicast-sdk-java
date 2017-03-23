@@ -166,7 +166,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     public void destroy() {
         this._handlerMap.clear();
-        this.handlerPool.destroy();
+        this.handlerPool.Destroy();
     }
     public void addResponseHandler(Connector2EpsMessageType messageType, String requestId, DCloudMessageHandler handler) {
         String messageTypeAsString = messageType.toString();
@@ -237,7 +237,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     void queueInHandlerPool(final ICError error, final PathHandlerContainer bag, final String type, final JObject data, final IPathAndEndpointContext context, final int requestId) {
         ConnectorMessageReceiver self = this;
-        this.handlerPool.queueHandlerCall(new Action() {
+        this.handlerPool.QueueHandlerCall(new Action() {
             public void accept() {
                 bag.callHandlers(error, type, data, context, requestId);
             }
