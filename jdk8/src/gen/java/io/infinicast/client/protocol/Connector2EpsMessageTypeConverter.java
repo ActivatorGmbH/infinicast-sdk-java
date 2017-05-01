@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -87,6 +87,8 @@ public class Connector2EpsMessageTypeConverter {
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.GetEPSubscriptionList.toString(), 49);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.GetMatchingPathsWithListeners.toString(), 50);
             Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.RequestResponseFailed.toString(), 51);
+            Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.RequestHandlingStarted.toString(), 52);
+            Connector2EpsMessageTypeConverter._stringToInt.put(Connector2EpsMessageType.RequestHandlingFailed.toString(), 53);
             Connector2EpsMessageTypeConverter._intToString = new HashMap<Integer, String>();
             Connector2EpsMessageTypeConverter._intToString.put(1, Connector2EpsMessageType.Request.toString());
             Connector2EpsMessageTypeConverter._intToString.put(2, Connector2EpsMessageType.RequestResponse.toString());
@@ -139,6 +141,8 @@ public class Connector2EpsMessageTypeConverter {
             Connector2EpsMessageTypeConverter._intToString.put(49, Connector2EpsMessageType.GetEPSubscriptionList.toString());
             Connector2EpsMessageTypeConverter._intToString.put(50, Connector2EpsMessageType.GetMatchingPathsWithListeners.toString());
             Connector2EpsMessageTypeConverter._intToString.put(51, Connector2EpsMessageType.RequestResponseFailed.toString());
+            Connector2EpsMessageTypeConverter._intToString.put(52, Connector2EpsMessageType.RequestHandlingStarted.toString());
+            Connector2EpsMessageTypeConverter._intToString.put(53, Connector2EpsMessageType.RequestHandlingFailed.toString());
         }
     }
     public static int messageTypeToInt(Connector2EpsMessageType messageType) {

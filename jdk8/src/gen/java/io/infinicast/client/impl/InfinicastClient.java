@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -47,6 +47,8 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     Action _onDisconnect;
     BiConsumer<IPath, String> _unhandeledErrorHandler;
     DisconnectManager _disconnectManager;
+    IntervalChecker _requestResponseChecker;
+    RequestResponseManager _responseManager = new RequestResponseManager();
     public InfinicastClient() {
         super("");
         this._ClientLogger.info(("Infinicast Client " + VersionHelper.getClientVersion()));
@@ -146,6 +148,11 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         if ((discMan != null)) {
             discMan.StopDisconnectChecker();
             this._disconnectManager = null;
+        }
+        IntervalChecker responseChecker = this._requestResponseChecker;
+        if ((responseChecker != null)) {
+            responseChecker.StopChecker();
+            this._requestResponseChecker = null;
         }
         super.messageManager.destroy();
         this._credentials = null;
@@ -358,6 +365,9 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             discMan.ReceivedPing();
         }
     }
+    public RequestResponseManager getRequestResponseManager() {
+        return this._responseManager;
+    }
     public void onInitConnector(ICError error, JObject data, JObject endPoint) {
         if (((data != null) && (data.get("error") != null))) {
             this._onConnect.accept(ICError.fromJson(data.getJObject("error")));
@@ -381,6 +391,8 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             this._objectStateManager = new ObjectStateManager(this);
             if ((this._disconnectManager == null)) {
                 this.initDisconnectDetection();
+                this._requestResponseChecker = new IntervalChecker();
+                this._responseManager.initChecker(this._requestResponseChecker);
             }
             super.setConnector(this);
         }

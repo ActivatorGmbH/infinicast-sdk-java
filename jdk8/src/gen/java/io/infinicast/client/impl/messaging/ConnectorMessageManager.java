@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -32,11 +32,14 @@ import io.infinicast.client.impl.messaging.sender.*;
 import io.infinicast.client.protocol.messages.*;
 public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler {
     Connector2EpsProtocol _connector2EpsProtocol = new Connector2EpsProtocol();
-    IMessageReceiver _receiver = new ConnectorMessageReceiver();
+    IMessageReceiver _receiver;
     IConnector _connector;
     int _requestId = 1;
     IMessageSender _sender;
     LockObject requestIdLock = new LockObject();
+    public ConnectorMessageManager() {
+        this._receiver = new ConnectorMessageReceiver(this);
+    }
     public void onConnect() {
         this.sendInitMessage(this._connector.getSpace(), this._connector.getRole(), this._connector.getCredentials());
     }
@@ -79,7 +82,10 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
         this._sender.sendMessage(this._connector2EpsProtocol.encodeInitConnector(space, type, credentials));
     }
     public void sendRequestAnswer(Connector2EpsMessageType messageType, IPath path, JObject data, String targetEndpoint, int requestId) {
-        this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithRequestId(messageType, path.toString(), data, targetEndpoint, requestId));
+        this.sendRequestAnswerString(messageType, path.toString(), data, targetEndpoint, requestId);
+    }
+    public void sendRequestAnswerString(Connector2EpsMessageType messageType, String path, JObject data, String targetEndpoint, int requestId) {
+        this._sender.sendMessage(this._connector2EpsProtocol.encodeMessageWithRequestId(messageType, path, data, targetEndpoint, requestId));
     }
     public void sendMessageString(Connector2EpsMessageType messageType, String pathStr, JObject data) {
         this._sender.sendMessage(this._connector2EpsProtocol.encodeMessage(messageType, pathStr, data));

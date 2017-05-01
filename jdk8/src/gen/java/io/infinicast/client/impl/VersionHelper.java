@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -32,6 +32,6 @@ import io.infinicast.client.impl.messaging.sender.*;
 import io.infinicast.client.protocol.messages.*;
 public class VersionHelper {
     public static String getClientVersion() {
-        return ("v1.03.04" + LanguageVersion.Version);
+        return ("v1.04.01" + LanguageVersion.Version);
     }
 }

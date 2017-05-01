@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -42,4 +42,5 @@ public interface IConnector {
     void unhandeledErrorInfo(IPath iaPath, ICError icErrorJson);
     JObject getCredentials();
     void receivedPing(int msgLastRoundTrip, long msgSendTime);
+    RequestResponseManager getRequestResponseManager();
 }

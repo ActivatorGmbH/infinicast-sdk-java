@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -81,7 +81,9 @@ public enum Connector2EpsMessageType {
     DebugObserverMessage(47),
     GetEPSubscriptionList(48),
     GetMatchingPathsWithListeners(49),
-    RequestResponseFailed(50);
+    RequestResponseFailed(50),
+    RequestHandlingStarted(51),
+    RequestHandlingFailed(52);
     private final int value;
     public int getValue() {  return value; }
     Connector2EpsMessageType(int value) { this.value = value; }

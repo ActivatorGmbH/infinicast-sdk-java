@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -33,6 +33,12 @@ import io.infinicast.client.protocol.messages.*;
 public class SortCriteria {
     String _field;
     boolean _isAscending;
+    public static SortCriteria byField(String field, boolean isAscending) {
+        SortCriteria sort = new SortCriteria();
+        sort.setField(field);
+        sort.setIsAscending(isAscending);
+        return sort;
+    }
     public String getField() {
         return this._field;
     }
@@ -44,5 +50,8 @@ public class SortCriteria {
     }
     public void setIsAscending(boolean value) {
         this._isAscending = value;
+    }
+    public static SortCriteria byField(String field) {
+        return SortCriteria.byField(field, true);
     }
 }

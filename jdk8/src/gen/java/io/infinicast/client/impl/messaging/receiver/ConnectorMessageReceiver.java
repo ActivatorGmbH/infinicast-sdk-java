@@ -23,8 +23,8 @@ import io.infinicast.client.impl.contexts.*;
 import io.infinicast.client.impl.helper.*;
 import io.infinicast.client.impl.pathAccess.*;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
 import io.infinicast.client.impl.objectState.*;
 import io.infinicast.client.impl.messaging.handlers.*;
 import io.infinicast.client.impl.messaging.receiver.*;
@@ -36,6 +36,10 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     Eps2ConnectorProtocol _receiveProtocol = new Eps2ConnectorProtocol();
     HandlerPool handlerPool = new HandlerPool();
     IConnector _connector;
+    ConnectorMessageManager _connectorMessageManager;
+    public ConnectorMessageReceiver(ConnectorMessageManager connectorMessageManager) {
+        this._connectorMessageManager = connectorMessageManager;
+    }
     public void onInitConnector(ICError error, JObject data, JObject senderEndpoint) {
         this._connector.onInitConnector(error, data, senderEndpoint);
     }
@@ -45,7 +49,12 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     public void onReceiveRequest(ICError error, JObject data, String path, int requestId, JObject senderEndpointObject) {
         PathAndEndpointContext endpointOb = this.getEndpointContext(senderEndpointObject, path);
-        this.callHandlers(error, path, Connector2EpsMessageType.Request, data, endpointOb, requestId);
+        boolean wasSomethingCalled = this.callHandlers(error, path, Connector2EpsMessageType.Request, data, endpointOb, requestId);
+        String endpointId = endpointOb.getEndpoint().getEndpointId();
+        if (!(wasSomethingCalled)) {
+            this._logger.error((((("did not find a handler for the request " + path) + " ") + endpointId) + requestId));
+            this._connectorMessageManager.sendRequestAnswerString(Connector2EpsMessageType.RequestHandlingFailed, path, null, endpointId, requestId);
+        }
     }
     public void onReceiveJsonQueryResult(ICError error, JArray list, int fullCount, int requestId) {
         JObject data = new JObject();
@@ -222,7 +231,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         }
         return bags;
     }
-    void callHandlersLimitedByString(ICError error, String path, String type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
+    int callHandlersLimitedByString(ICError error, String path, String type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
         int callCount = 0;
         ArrayList<PathHandlerContainer> bags;
         if (((requestId != 0) && StringExtensions.IsNullOrEmpty(path))) {
@@ -234,9 +243,9 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         }
         for (PathHandlerContainer bag : bags) {
             if (((handlerCount == 0) || (callCount < handlerCount))) {
-                callCount++;
                 try {
                     this.queueInHandlerPool(error, bag, type, data, context, requestId);
+                    callCount++;
                 }
                 catch (Exception ex) {
                     ICError icError = ICError.fromException(ex, path);
@@ -244,9 +253,10 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
                 }
             }
         }
-        if ((bags.size() == 0)) {
-            this._logger.warn((((("request without handler " + path) + " '") + type) + "'"));
+        if ((callCount == 0)) {
+            this._logger.warn(((((("request without handler " + path) + " '") + type) + "'") + callCount));
         }
+        return callCount;
     }
     void queueInHandlerPool(final ICError error, final PathHandlerContainer bag, final String type, final JObject data, final IPathAndEndpointContext context, final int requestId) {
         this.handlerPool.QueueHandlerCall(() -> {
@@ -254,11 +264,11 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         }
         );
     }
-    void callHandlersLimited(ICError error, String path, Connector2EpsMessageType type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
-        this.callHandlersLimitedByString(error, path, type.toString(), data, context, requestId, handlerCount);
+    int callHandlersLimited(ICError error, String path, Connector2EpsMessageType type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
+        return this.callHandlersLimitedByString(error, path, type.toString(), data, context, requestId, handlerCount);
     }
-    void callHandlers(ICError error, String path, Connector2EpsMessageType type, JObject data, IPathAndEndpointContext context, int requestId) {
-        this.callHandlersLimited(error, path, type, data, context, requestId, 0);
+    boolean callHandlers(ICError error, String path, Connector2EpsMessageType type, JObject data, IPathAndEndpointContext context, int requestId) {
+        return (this.callHandlersLimited(error, path, type, data, context, requestId, 0) > 0);
     }
     void callHandlersByString(ICError error, String path, String type, JObject data, IPathAndEndpointContext context, int requestId) {
         this.callHandlersLimitedByString(error, path, type, data, context, requestId, 0);
