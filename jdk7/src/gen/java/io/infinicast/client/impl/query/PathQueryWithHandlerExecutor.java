@@ -1,25 +1,35 @@
 package io.infinicast.client.impl.query;
-
 import io.infinicast.*;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.errors.ICError;
-import io.infinicast.client.api.paths.HandlerRegistrationOptions;
-import io.infinicast.client.api.paths.IAPathContext;
-import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.infinicast.client.api.paths.handler.messages.APMessageCallback;
-import io.infinicast.client.api.paths.handler.messages.APValidateDataChangeCallback;
-import io.infinicast.client.api.paths.handler.messages.APValidateMessageCallback;
-import io.infinicast.client.api.paths.handler.objects.APObjectIntroduceCallback;
-import io.infinicast.client.api.paths.handler.reminders.AReminderCallback;
-import io.infinicast.client.api.paths.handler.requests.APRequestCallback;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.query.ListenTerminateReason;
-import io.infinicast.client.impl.IConnector;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
-import io.infinicast.client.impl.pathAccess.RequestResponder;
-import io.infinicast.client.impl.responder.ValidationResponder;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
     Logger _logger = LoggerFactory.getLogger(PathQueryWithHandlerExecutor.class);
     public PathQueryWithHandlerExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
@@ -112,8 +122,13 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
         PathQueryWithHandlerExecutor self = this;
         super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Request, super._path, new DCloudMessageHandler() {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context, int requestId) {
-                callback.accept(json, new RequestResponder(_messageManager, context.getPath(), context.getEndpoint().getEndpointId(), requestId), context);
+                _logger.info((((((((("received request " + requestId) + " ") + _path.toString()) + " endpoint: ") + context.getEndpoint().getEndpointId()) + " data ") + context.getEndpointData()) + " path ") + context.getPath().toString());
+                RequestResponder responder = new RequestResponder(_messageManager, context.getPath(), context.getEndpoint().getEndpointId(), requestId);
+                callback.accept(json, responder, context);
                 ;
+                if (!(responder.alreadyResponded())) {
+                    _connector.getRequestResponseManager().addResponder(responder);
+                }
             }
         }
         , completeCallback, options);

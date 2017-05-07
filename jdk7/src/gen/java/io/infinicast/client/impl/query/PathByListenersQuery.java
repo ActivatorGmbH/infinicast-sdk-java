@@ -1,16 +1,35 @@
 package io.infinicast.client.impl.query;
-
-import io.infinicast.CompletableFuture;
-import io.infinicast.QuadConsumer;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.errors.ICError;
-import io.infinicast.client.api.errors.ICException;
-import io.infinicast.client.api.paths.IAPathContext;
-import io.infinicast.client.api.paths.IPathByListenersQuery;
-import io.infinicast.client.api.paths.taskObjects.PathListWithCountResult;
-import io.infinicast.client.impl.pathAccess.IPathAndCount;
-
-import java.util.ArrayList;
+import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * access to listeners on a given path.
 */
@@ -53,7 +72,7 @@ public class PathByListenersQuery implements IPathByListenersQuery {
         final CompletableFuture<PathListWithCountResult> tcs = new CompletableFuture<PathListWithCountResult>();
         this.toList(new QuadConsumer<ICError, ArrayList<IPathAndCount>, IAPathContext, Integer>() {
             public void accept(ICError error, ArrayList<IPathAndCount> list, IAPathContext context, Integer count) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {

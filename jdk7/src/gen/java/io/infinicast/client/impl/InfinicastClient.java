@@ -1,27 +1,35 @@
 package io.infinicast.client.impl;
-
 import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
 import io.infinicast.client.api.*;
-import io.infinicast.client.api.errors.ICError;
-import io.infinicast.client.api.errors.ICErrorType;
-import io.infinicast.client.api.errors.ICException;
-import io.infinicast.client.api.paths.IEndpointContext;
-import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.impl.contexts.APEndpointContext;
-import io.infinicast.client.impl.helper.ErrorHandlingHelper;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
-import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
-import io.infinicast.client.impl.messaging.sender.MessageSender;
-import io.infinicast.client.impl.objectState.Endpoint;
-import io.infinicast.client.impl.objectState.ObjectStateManager;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-import io.infinicast.client.protocol.Connector2EpsMessageTypeConverter;
-import io.infinicast.client.protocol.Eps2ConnectorMessageTypeConverter;
-import io.infinicast.client.utils.NetFactory;
-import io.infinicast.client.utils.PathUtils;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -39,9 +47,11 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     Action _onDisconnect;
     BiConsumer<IPath, String> _unhandeledErrorHandler;
     DisconnectManager _disconnectManager;
+    IntervalChecker _requestResponseChecker;
+    RequestResponseManager _responseManager = new RequestResponseManager();
     public InfinicastClient() {
         super("");
-        this._ClientLogger.info(("Infinicast Client " + VersionHelper.getClientVersion()));
+        this._ClientLogger.info("Infinicast Client " + VersionHelper.getClientVersion());
         Connector2EpsMessageTypeConverter.init();
         Eps2ConnectorMessageTypeConverter.init();
     }
@@ -87,7 +97,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.connectWithCredentials(address, space, conntectRole, credentials, new Consumer<ICError>() {
             public void accept(ICError errorInfo) {
-                if ((errorInfo != null)) {
+                if (errorInfo != null) {
                     tcs.completeExceptionally(new ICException(errorInfo));
                 }
                 else {
@@ -138,15 +148,20 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     }
     void whenDisconnected() {
         DisconnectManager discMan = this._disconnectManager;
-        if ((discMan != null)) {
+        if (discMan != null) {
             discMan.StopDisconnectChecker();
             this._disconnectManager = null;
+        }
+        IntervalChecker responseChecker = this._requestResponseChecker;
+        if (responseChecker != null) {
+            responseChecker.StopChecker();
+            this._requestResponseChecker = null;
         }
         super.messageManager.destroy();
         this._credentials = null;
         this._thisEndpoint = null;
         IEndpoint2ServerNetLayer netLayer = this._endpoint2ServerNetLayer;
-        if ((netLayer != null)) {
+        if (netLayer != null) {
             netLayer.Close();
             this._endpoint2ServerNetLayer = null;
         }
@@ -189,7 +204,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             throw new RuntimeException(new Exception("not a valid Endpoint path!"));
         }
         String endpointId = path.substring(12);
-        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/"));
+        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/", StringComparison.CurrentCulture));
         Endpoint endpointObject = new Endpoint(path, endpointId, this);
         return endpointObject;
     }
@@ -204,7 +219,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             throw new RuntimeException(new Exception("not a valid Endpoint path!"));
         }
         String endpointId = endpointPath.substring(12);
-        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/"));
+        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/", StringComparison.CurrentCulture));
         Endpoint endpointObject = new Endpoint(path, endpointId, this);
         return endpointObject;
     }
@@ -229,8 +244,8 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         InfinicastClient self = this;
         if (data.containsNonNull("type")) {
             String type = data.getString("type");
-            if ((!(StringExtensions.IsNullOrEmpty(type)) && StringExtensions.areEqual(type, "registerMsgDebugger"))) {
-                if ((onEvent == null)) {
+            if (!(StringExtensions.IsNullOrEmpty(type)) && StringExtensions.areEqual(type, "registerMsgDebugger")) {
+                if (onEvent == null) {
                     data.set("remove", true);
                     super.messageManager.registerHandler(Connector2EpsMessageType.DebugObserverMessage, super.path(PathUtils.infinicastInternStart), null);
                 }
@@ -245,11 +260,11 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
                 }
                 super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.SystemCommand, path, data, new DMessageResponseHandler() {
                     public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
-                        if ((err != null)) {
+                        if (err != null) {
                             registrationCompleteHandler.accept(err);
                             ;
                         }
-                        else if (((json == null) || json.containsNonNull("error"))) {
+                        else if ((json == null) || json.containsNonNull("error")) {
                             registrationCompleteHandler.accept(ICError.create(ICErrorType.InternalError, json.getString("error"), ""));
                             ;
                         }
@@ -272,7 +287,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.pathRoleSetup(path, role, pathSettings, new CompleteCallback() {
             public void accept(ICError info) {
-                if ((info != null)) {
+                if (info != null) {
                     tcs.completeExceptionally(new ICException(info));
                 }
                 else {
@@ -326,49 +341,52 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         this._ClientLogger.info("disconnected");
         this.whenDisconnected();
         Console.WriteLine("Disconnect triggered");
-        if ((this._onDisconnect != null)) {
+        if (this._onDisconnect != null) {
             this._onDisconnect.accept();
             ;
         }
     }
     public void unhandeledError(IPath iaPath, JObject errorJson) {
         String text = "";
-        if ((errorJson != null)) {
+        if (errorJson != null) {
             text = errorJson.toString();
         }
-        if ((this._unhandeledErrorHandler != null)) {
+        if (this._unhandeledErrorHandler != null) {
             this._unhandeledErrorHandler.accept(iaPath, text);
             ;
             return ;
         }
-        if ((iaPath != null)) {
+        if (iaPath != null) {
             text = (" path: " + iaPath.toString());
         }
-        this._ClientLogger.error(("an Unhandeled Error occured: " + text));
+        this._ClientLogger.error("an Unhandeled Error occured: " + text);
     }
     public void unhandeledErrorInfo(IPath iaPath, ICError icErrorJson) {
-        if ((this._unhandeledErrorHandler != null)) {
+        if (this._unhandeledErrorHandler != null) {
             this._unhandeledErrorHandler.accept(iaPath, icErrorJson.getMessage());
             ;
             return ;
         }
         String text = icErrorJson.getMessage();
-        if ((iaPath != null)) {
+        if (iaPath != null) {
             text = (" path: " + iaPath.toString());
         }
-        this._ClientLogger.error(("an Unhandeled Error occured: " + text));
+        this._ClientLogger.error("an Unhandeled Error occured: " + text);
     }
     public JObject getCredentials() {
         return this._credentials;
     }
     public void receivedPing(int msgLastRoundTrip, long msgSendTime) {
         DisconnectManager discMan = this._disconnectManager;
-        if ((discMan != null)) {
+        if (discMan != null) {
             discMan.ReceivedPing();
         }
     }
+    public RequestResponseManager getRequestResponseManager() {
+        return this._responseManager;
+    }
     public void onInitConnector(ICError error, JObject data, JObject endPoint) {
-        if (((data != null) && (data.get("error") != null))) {
+        if ((data != null) && (data.get("error") != null)) {
             this._onConnect.accept(ICError.fromJson(data.getJObject("error")));
             ;
         }
@@ -385,11 +403,13 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         return this;
     }
     void init() {
-        if ((this._objectStateManager == null)) {
+        if (this._objectStateManager == null) {
             super.messageManager = new ConnectorMessageManager();
             this._objectStateManager = new ObjectStateManager(this);
-            if ((this._disconnectManager == null)) {
+            if (this._disconnectManager == null) {
                 this.initDisconnectDetection();
+                this._requestResponseChecker = new IntervalChecker();
+                this._responseManager.initChecker(this._requestResponseChecker);
             }
             super.setConnector(this);
         }
@@ -418,7 +438,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             path = PathUtils.cleanup(path);
         }
         JObject message = new JObject();
-        if ((pathSettings != null)) {
+        if (pathSettings != null) {
             message.set("data", pathSettings.toJson());
         }
         message.set("role", role);
@@ -440,7 +460,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
         this.onOtherEndpointDisconnected(role, callback, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tsc.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -465,7 +485,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         return new StormSettings(super.messageManager);
     }
     public IPath getEndpointPath(String address) {
-        return super.path((("/~endpoints/" + address) + "/"));
+        return super.path(("/~endpoints/" + address) + "/");
     }
     /**
      * registers a listener that will be triggered as soon as an endpoint of the givven {@code role} is disconnected

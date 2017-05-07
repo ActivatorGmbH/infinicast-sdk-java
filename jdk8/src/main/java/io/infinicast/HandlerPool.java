@@ -19,7 +19,6 @@ public class HandlerPool {
 
         if (sExecutor != null) {
             sExecutor.shutdown();
-            sExecutor = null;
         }
     }
 

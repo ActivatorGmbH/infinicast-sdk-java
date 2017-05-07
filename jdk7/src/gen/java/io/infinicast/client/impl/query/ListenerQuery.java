@@ -1,18 +1,35 @@
 package io.infinicast.client.impl.query;
-
-import io.infinicast.CompletableFuture;
-import io.infinicast.Consumer;
-import io.infinicast.TriConsumer;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.errors.ICError;
-import io.infinicast.client.api.errors.ICException;
+import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.api.paths.taskObjects.ListenerListResult;
-import io.infinicast.client.api.query.ListeningType;
-import io.infinicast.client.impl.pathAccess.IEndpointAndData;
-
-import java.util.ArrayList;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * access to listeners on a given path.
 */
@@ -59,7 +76,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<ListenerListResult> tcs = new CompletableFuture<ListenerListResult>();
         this.toList(new TriConsumer<ICError, ArrayList<IEndpointAndData>, IAPathContext>() {
             public void accept(ICError error, ArrayList<IEndpointAndData> list, IAPathContext context) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -90,11 +107,11 @@ public class ListenerQuery implements IListenerQuery {
         }
         , this.getHandlerRegistrationOptions(), new CompleteCallback() {
             public void accept(ICError error) {
-                if ((registrationCompleteCallback != null)) {
+                if (registrationCompleteCallback != null) {
                     registrationCompleteCallback.accept(error);
                     ;
                 }
-                else if ((error != null)) {
+                else if (error != null) {
                     _executor.unhandeledError(error);
                 }
                 ;
@@ -110,7 +127,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onStart(handler, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -136,7 +153,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onDataChange(handler, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -161,11 +178,11 @@ public class ListenerQuery implements IListenerQuery {
         }
         , this.getHandlerRegistrationOptions(), new CompleteCallback() {
             public void accept(ICError error) {
-                if ((registrationCompleteCallback != null)) {
+                if (registrationCompleteCallback != null) {
                     registrationCompleteCallback.accept(error);
                     ;
                 }
-                else if ((error != null)) {
+                else if (error != null) {
                     _executor.unhandeledError(error);
                 }
                 ;
@@ -181,7 +198,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.onEnd(handler, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -218,11 +235,11 @@ public class ListenerQuery implements IListenerQuery {
         }
         , this.getHandlerRegistrationOptions(), new CompleteCallback() {
             public void accept(ICError error) {
-                if ((registrationCompleteCallback != null)) {
+                if (registrationCompleteCallback != null) {
                     registrationCompleteCallback.accept(error);
                     ;
                 }
-                else if ((error != null)) {
+                else if (error != null) {
                     _executor.unhandeledError(error);
                 }
                 ;
@@ -244,11 +261,11 @@ public class ListenerQuery implements IListenerQuery {
         ListenerQuery self = this;
         this._executor.getAndListenOnListeners(onStart, onChange, onEnd, this.getHandlerRegistrationOptions(), new CompleteCallback() {
             public void accept(ICError error) {
-                if ((registrationCompleteCallback != null)) {
+                if (registrationCompleteCallback != null) {
                     registrationCompleteCallback.accept(error);
                     ;
                 }
-                else if ((error != null)) {
+                else if (error != null) {
                     _executor.unhandeledError(error);
                 }
                 ;
@@ -279,7 +296,7 @@ public class ListenerQuery implements IListenerQuery {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.live(onStart, onEnd, onChange, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {

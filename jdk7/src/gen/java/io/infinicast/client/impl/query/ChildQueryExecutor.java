@@ -1,23 +1,35 @@
 package io.infinicast.client.impl.query;
-
 import io.infinicast.*;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.errors.ICError;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.paths.handler.lists.APListAddCallback;
-import io.infinicast.client.api.paths.handler.lists.APListQueryResultCallback;
-import io.infinicast.client.api.paths.handler.objects.CreateObjectCallback;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.impl.IConnector;
-import io.infinicast.client.impl.contexts.PathAndEndpointContext;
-import io.infinicast.client.impl.messaging.ConnectorMessageManager;
-import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
-import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
-import io.infinicast.client.impl.pathAccess.IPathAndData;
-import io.infinicast.client.impl.pathAccess.PathAndData;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-
-import java.util.ArrayList;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 public class ChildQueryExecutor extends BaseQueryExecutor  {
     public ChildQueryExecutor(IConnector connector, IPath path, ConnectorMessageManager messageManager) {
         super(connector, path, messageManager);
@@ -153,7 +165,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
                 if (!(checkIfHasErrorsAndCallHandlersNew(err, new CompleteCallback() {
                     public void accept(ICError error) {
-                        if ((registrationCompleteCallback != null)) {
+                        if (registrationCompleteCallback != null) {
                             registrationCompleteCallback.accept(error);
                             ;
                         }
@@ -168,7 +180,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                         onAdd.accept(d, ctx);
                         ;
                     }
-                    if ((registrationCompleteCallback != null)) {
+                    if (registrationCompleteCallback != null) {
                         registrationCompleteCallback.accept(null);
                         ;
                     }
@@ -180,7 +192,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         if (!(isRemove)) {
             super._messageManager.registerHandler(Connector2EpsMessageType.ListAdd, super._path, new DCloudMessageHandler() {
                 public void accept(JObject json, ICError err, IPathAndEndpointContext context, int id) {
-                    if ((onAdd != null)) {
+                    if (onAdd != null) {
                         onAdd.accept(json, context);
                         ;
                     }
@@ -190,7 +202,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             );
             super._messageManager.registerHandler(Connector2EpsMessageType.ListChange, super._path, new DCloudMessageHandler() {
                 public void accept(JObject json, ICError err, IPathAndEndpointContext context, int id) {
-                    if ((onChange != null)) {
+                    if (onChange != null) {
                         onChange.accept(json, context);
                         ;
                     }
@@ -200,7 +212,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             );
             super._messageManager.registerHandler(Connector2EpsMessageType.ListRemove, super._path, new DCloudMessageHandler() {
                 public void accept(JObject json, ICError err, IPathAndEndpointContext context, int id) {
-                    if ((onRemove != null)) {
+                    if (onRemove != null) {
                         onRemove.accept(json, context);
                         ;
                     }
@@ -227,7 +239,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
                 if (!(checkIfHasErrorsAndCallHandlersNew(err, new CompleteCallback() {
                     public void accept(ICError error) {
-                        if ((completeCallback != null)) {
+                        if (completeCallback != null) {
                             completeCallback.accept(error, 0);
                             ;
                         }
@@ -238,7 +250,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                     }
                 }
                 ))) {
-                    if ((completeCallback != null)) {
+                    if (completeCallback != null) {
                         completeCallback.accept(null, json.getInt("count"));
                         ;
                     }
@@ -261,7 +273,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
                 if (!(checkIfHasErrorsAndCallHandlersNew(err, new CompleteCallback() {
                     public void accept(ICError error) {
-                        if ((completeCallback != null)) {
+                        if (completeCallback != null) {
                             completeCallback.accept(error, 0);
                             ;
                         }
@@ -272,7 +284,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
                     }
                 }
                 ))) {
-                    if ((completeCallback != null)) {
+                    if (completeCallback != null) {
                         completeCallback.accept(null, json.getInt("fullCount"));
                         ;
                     }
@@ -286,11 +298,11 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
         ChildQueryExecutor self = this;
         super._messageManager.addHandler((callback == null), connector2EpsMessageType, super._path, new DCloudMessageHandler() {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context, int id) {
-                if ((json != null)) {
-                    Console.WriteLine(((((connector2EpsMessageType.toString() + " ") + json.toString()) + " ") + context.getPath().toString()));
+                if (json != null) {
+                    Console.WriteLine((((connector2EpsMessageType.toString() + " ") + json.toString()) + " ") + context.getPath().toString());
                 }
                 else {
-                    Console.WriteLine(((connector2EpsMessageType.toString() + " null ") + context.getPath().toString()));
+                    Console.WriteLine((connector2EpsMessageType.toString() + " null ") + context.getPath().toString());
                 }
                 callback.accept(json, context);
                 ;

@@ -154,7 +154,11 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             responseChecker.StopChecker();
             this._requestResponseChecker = null;
         }
-        super.messageManager.destroy();
+        _objectStateManager = null;
+        if(super.messageManager!=null){
+            super.messageManager.destroy();
+        }
+        super.messageManager=null;
         this._credentials = null;
         this._thisEndpoint = null;
         IEndpoint2ServerNetLayer netLayer = this._endpoint2ServerNetLayer;

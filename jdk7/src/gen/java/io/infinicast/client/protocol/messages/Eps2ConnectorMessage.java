@@ -1,12 +1,35 @@
 package io.infinicast.client.protocol.messages;
-
-import io.infinicast.APlayStringMessage;
-import io.infinicast.JArray;
-import io.infinicast.JObject;
-import io.infinicast.client.api.errors.ICError;
-import io.infinicast.client.api.errors.ICErrorType;
-import io.infinicast.client.protocol.Eps2ConnectorMessageType;
-import io.infinicast.client.protocol.Eps2ConnectorMessageTypeConverter;
+import io.infinicast.*;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 public class Eps2ConnectorMessage extends BaseMessage  {
     Eps2ConnectorMessageType _type;
     JObject _endpointObject;
@@ -24,39 +47,39 @@ public class Eps2ConnectorMessage extends BaseMessage  {
     static Eps2ConnectorMessage parseFromJson(JObject data) {
         Eps2ConnectorMessage result = new Eps2ConnectorMessage();
         result._setDataByMessage(data);
-        if ((data.get("t") != null)) {
+        if (data.get("t") != null) {
             result.setType(Eps2ConnectorMessageTypeConverter.intToMessageType(data.getInt("t")));
         }
         else {
             result.setType((Eps2ConnectorMessageType) Eps2ConnectorMessageType.valueOf(data.getString("type")));
         }
-        if ((data.get("errorReason") != null)) {
+        if (data.get("errorReason") != null) {
             String reason = data.getString("errorReason");
             String msg = data.getString("errorMsg");
             String path = data.getString("errorPath");
             ICError error = new ICError((ICErrorType) ICErrorType.valueOf(reason), msg, path, null);
             result.setError(error);
         }
-        if ((data.get("endpointObject") != null)) {
-            result.setEndpointObject((data.getJObject("endpointObject")));
+        if (data.get("endpointObject") != null) {
+            result.setEndpointObject(data.getJObject("endpointObject"));
         }
-        if ((data.get("fullCount") != null)) {
-            result.setFullCount((data.getInt("fullCount")));
+        if (data.get("fullCount") != null) {
+            result.setFullCount(data.getInt("fullCount"));
         }
-        if ((data.get("newlyCreated") != null)) {
-            result.setNewlyCreated((data.getBoolean("newlyCreated")));
+        if (data.get("newlyCreated") != null) {
+            result.setNewlyCreated(data.getBoolean("newlyCreated"));
         }
-        if ((data.get("errorCode") != null)) {
-            result.setErrorCode((data.getInt("errorCode")));
+        if (data.get("errorCode") != null) {
+            result.setErrorCode(data.getInt("errorCode"));
         }
-        if ((data.get("errorData") != null)) {
-            result.setErrorData((data.getJObject("errorData")));
+        if (data.get("errorData") != null) {
+            result.setErrorData(data.getJObject("errorData"));
         }
-        if ((data.get("disconnected") != null)) {
-            result.setDisconnected((data.getBoolean("disconnected")));
+        if (data.get("disconnected") != null) {
+            result.setDisconnected(data.getBoolean("disconnected"));
         }
-        if ((data.get("list") != null)) {
-            result.setList((data.getJArray("list")));
+        if (data.get("list") != null) {
+            result.setList(data.getJArray("list"));
         }
         return result;
     }
@@ -64,25 +87,25 @@ public class Eps2ConnectorMessage extends BaseMessage  {
         JObject result = new JObject();
         super._fillJson(result);
         result.set("type", this.getType().toString());
-        if ((this.getEndpointObject() != null)) {
+        if (this.getEndpointObject() != null) {
             result.set("Endpoint", this.getEndpointObject());
         }
-        if ((this.getFullCount() != null)) {
+        if (this.getFullCount() != null) {
             result.set("fullCount", this.getFullCount());
         }
-        if ((this.getNewlyCreated() != null)) {
+        if (this.getNewlyCreated() != null) {
             result.set("newlyCreated", this.getNewlyCreated());
         }
-        if ((this.getErrorCode() != null)) {
+        if (this.getErrorCode() != null) {
             result.set("errorCode", this.getErrorCode());
         }
-        if ((this.getErrorData() != null)) {
+        if (this.getErrorData() != null) {
             result.set("errorData", this.getErrorData());
         }
-        if ((this.getDisconnected() != null)) {
+        if (this.getDisconnected() != null) {
             result.set("disconnected", this.getDisconnected());
         }
-        if ((this.getList() != null)) {
+        if (this.getList() != null) {
             result.set("list", this.getList());
         }
         APlayStringMessage msg = new APlayStringMessage();

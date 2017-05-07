@@ -1,20 +1,35 @@
 package io.infinicast.client.impl.objectState;
-
 import io.infinicast.*;
-import io.infinicast.client.api.DRoleListHandler;
-import io.infinicast.client.api.EndpointSubscription;
-import io.infinicast.client.api.IEndpoint;
-import io.infinicast.client.api.IPath;
-import io.infinicast.client.api.errors.ICError;
-import io.infinicast.client.api.errors.ICException;
-import io.infinicast.client.api.paths.EndpointConnectionInfo;
-import io.infinicast.client.api.paths.IPathAndEndpointContext;
-import io.infinicast.client.api.paths.options.CompleteCallback;
-import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
-import io.infinicast.client.impl.pathAccess.PathImpl;
-import io.infinicast.client.protocol.Connector2EpsMessageType;
-
-import java.util.ArrayList;
+import org.joda.time.DateTime;
+import java.util.*;
+import java.util.function.*;
+import java.util.concurrent.*;
+import io.infinicast.client.api.*;
+import io.infinicast.client.impl.*;
+import io.infinicast.client.protocol.*;
+import io.infinicast.client.utils.*;
+import io.infinicast.client.api.errors.*;
+import io.infinicast.client.api.paths.*;
+import io.infinicast.client.api.query.*;
+import io.infinicast.client.api.paths.handler.*;
+import io.infinicast.client.api.paths.taskObjects.*;
+import io.infinicast.client.api.paths.options.*;
+import io.infinicast.client.api.paths.handler.messages.*;
+import io.infinicast.client.api.paths.handler.reminders.*;
+import io.infinicast.client.api.paths.handler.lists.*;
+import io.infinicast.client.api.paths.handler.objects.*;
+import io.infinicast.client.api.paths.handler.requests.*;
+import io.infinicast.client.impl.contexts.*;
+import io.infinicast.client.impl.helper.*;
+import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.impl.query.*;
+import io.infinicast.client.impl.responder.*;
+import io.infinicast.client.impl.messaging.*;
+import io.infinicast.client.impl.objectState.*;
+import io.infinicast.client.impl.messaging.handlers.*;
+import io.infinicast.client.impl.messaging.receiver.*;
+import io.infinicast.client.impl.messaging.sender.*;
+import io.infinicast.client.protocol.messages.*;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -70,7 +85,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addRole(path, role, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -94,7 +109,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.addRoleToStringPath(pathString, role, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -133,7 +148,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.removeRole(path, role, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -158,7 +173,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<Void> tcs = new CompletableFuture<Void>();
         this.removeRoleFromStringPath(pathString, role, new CompleteCallback() {
             public void accept(ICError error) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -216,7 +231,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<ArrayList<String>> tcs = new CompletableFuture<ArrayList<String>>();
         this.getRolesForStringPath(pathString, new DRoleListHandler() {
             public void accept(ICError error, ArrayList<String> roles) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -274,7 +289,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<EndpointConnectionInfo> tcs = new CompletableFuture<EndpointConnectionInfo>();
         this.getEndpointConnectionInfo(new BiConsumer<ICError, EndpointConnectionInfo>() {
             public void accept(ICError error, EndpointConnectionInfo info) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -307,7 +322,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
                         JObject ob = (JObject) jToken;
                         EndpointSubscription epSubscription = new EndpointSubscription();
                         epSubscription.setPath(ob.getString("path"));
-                        if ((ob.get("roles") != null)) {
+                        if (ob.get("roles") != null) {
                             ArrayList<String> roles = new ArrayList<String>();
                             JArray rolesArray = ob.getJArray("roles");
                             for (JToken role : rolesArray) {
@@ -318,7 +333,8 @@ public class Endpoint extends PathImpl  implements IEndpoint {
                         }
                         resultList.add(epSubscription);
                     }
-                    result.accept(null, resultList);
+                    //                        Console.WriteLine("GetSubscribedPaths Result " + json.ToString());                        
+                        result.accept(null, resultList);
                     ;
                 }
                 ;
@@ -331,7 +347,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         final CompletableFuture<ArrayList<EndpointSubscription>> tcs = new CompletableFuture<ArrayList<EndpointSubscription>>();
         this.getSubscribedPaths(pathStartsWith, messageFilter, new BiConsumer<ICError, ArrayList<EndpointSubscription>>() {
             public void accept(ICError error, ArrayList<EndpointSubscription> info) {
-                if ((error != null)) {
+                if (error != null) {
                     tcs.completeExceptionally(new ICException(error));
                 }
                 else {
@@ -412,7 +428,7 @@ public class Endpoint extends PathImpl  implements IEndpoint {
         super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.ModifyRoleForPath, pathString, data, new DMessageResponseHandler() {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
                 if (!(checkIfHasErrorsAndCallHandlersNew(err, onComplete))) {
-                    if ((onComplete != null)) {
+                    if (onComplete != null) {
                         onComplete.accept(null);
                         ;
                     }
