@@ -1,35 +1,35 @@
 package io.infinicast.client.impl.pathAccess;
+
 import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.api.errors.*;
+import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.pathAccess.*;
+import io.infinicast.client.api.paths.handler.CompletionCallback;
+import io.infinicast.client.api.paths.handler.JsonCompletionCallback;
+import io.infinicast.client.api.paths.handler.messages.APMessageCallback;
+import io.infinicast.client.api.paths.handler.messages.APValidateDataChangeCallback;
+import io.infinicast.client.api.paths.handler.messages.APValidateMessageCallback;
+import io.infinicast.client.api.paths.handler.objects.APObjectIntroduceCallback;
+import io.infinicast.client.api.paths.handler.objects.GetDataCallback;
+import io.infinicast.client.api.paths.handler.reminders.AReminderCallback;
+import io.infinicast.client.api.paths.handler.requests.APRequestAnswerCallback;
+import io.infinicast.client.api.paths.handler.requests.APRequestCallback;
+import io.infinicast.client.api.paths.handler.requests.IAPResponder;
+import io.infinicast.client.api.paths.options.CompleteCallback;
+import io.infinicast.client.api.paths.taskObjects.ADataAndPathAndEndpointContext;
+import io.infinicast.client.api.paths.taskObjects.ADataAndPathContext;
+import io.infinicast.client.api.query.ListenTerminateReason;
+import io.infinicast.client.impl.IConnector;
+import io.infinicast.client.impl.contexts.APathContext;
+import io.infinicast.client.impl.helper.ErrorHandlingHelper;
+import io.infinicast.client.impl.messaging.ConnectorMessageManager;
+import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
 import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+import io.infinicast.client.protocol.Connector2EpsMessageType;
+import io.infinicast.client.utils.PathUtils;
+
+import java.util.HashMap;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -102,7 +102,7 @@ public class PathImpl implements IPath {
     public IPath parentPathWithDepth(int depth) {
         String parentPath = this._internalPath;
         for (int i = 0;
-         (i < depth); i++) {
+         (i < depth); (i)++) {
             parentPath = PathUtils.getParentPath(parentPath);
             if (StringExtensions.IsNullOrEmpty(parentPath)) {
                 return null;
@@ -1425,7 +1425,7 @@ public class PathImpl implements IPath {
     public void sendRequest(JObject data, final APRequestAnswerCallback answer) {
         PathImpl self = this;
         this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.Request, this, data, new DMessageResponseHandler() {
-            public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
+            public void accept(final JObject json, final ICError err, IPathAndEndpointContext context) {
                 if (!(checkIfHasErrorsAndCallHandlersNew(err, new CompleteCallback() {
                     public void accept(ICError error) {
                         err.setCustomJson(json);
@@ -1601,7 +1601,7 @@ public class PathImpl implements IPath {
      * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
     public void modifyDataAtomic(AtomicChange data, final CompletionCallback completeCallback) {
-        PathImpl self = this;
+        final PathImpl self = this;
         JObject json = new JObject();
         json.set("changes", data.toJson());
         if (data.hasNamedQueries()) {
@@ -1696,7 +1696,7 @@ public class PathImpl implements IPath {
      * @param completeCallback a callback function that indicates if the function was successfull(error=null) or failed(error contains the error in that case)
     */
     public void modifyDataAtomicAndGetResult(AtomicChange data, final JsonCompletionCallback completeCallback) {
-        PathImpl self = this;
+        final PathImpl self = this;
         JObject json = new JObject();
         json.set("changes", data.toJson());
         if (data.hasNamedQueries()) {

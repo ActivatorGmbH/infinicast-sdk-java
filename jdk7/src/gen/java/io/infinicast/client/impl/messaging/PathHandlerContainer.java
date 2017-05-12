@@ -1,35 +1,12 @@
 package io.infinicast.client.impl.messaging;
-import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.api.errors.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+
+import io.infinicast.JObject;
+import io.infinicast.client.api.IPath;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
+
+import java.util.HashMap;
 public class PathHandlerContainer {
     HashMap<String, PathMessageHandlerContainer> _handlersByType;
     IPath _path;
@@ -41,11 +18,13 @@ public class PathHandlerContainer {
         if (!(this._handlersByType.containsKey(type))) {
             this._handlersByType.put(type, new PathMessageHandlerContainer(this._path));
         }
-        this._handlersByType.get(type).addHandler(handler);
+        PathMessageHandlerContainer container = this._handlersByType.get(type);
+        container.addHandler(handler);
     }
     public void callHandlers(ICError error, String type, JObject data, IPathAndEndpointContext context, int requestId) {
         if (this._handlersByType.containsKey(type)) {
-            this._handlersByType.get(type).callHandlers(error, data, context, requestId);
+            PathMessageHandlerContainer container = this._handlersByType.get(type);
+            container.callHandlers(error, data, context, requestId);
         }
     }
     public IPath getPath() {

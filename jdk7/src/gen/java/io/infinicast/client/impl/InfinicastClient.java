@@ -1,35 +1,28 @@
 package io.infinicast.client.impl;
+
 import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
 import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.api.errors.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+import io.infinicast.client.api.errors.ICError;
+import io.infinicast.client.api.errors.ICErrorType;
+import io.infinicast.client.api.errors.ICException;
+import io.infinicast.client.api.paths.IEndpointContext;
+import io.infinicast.client.api.paths.IPathAndEndpointContext;
+import io.infinicast.client.api.paths.options.CompleteCallback;
+import io.infinicast.client.impl.contexts.APEndpointContext;
+import io.infinicast.client.impl.helper.ErrorHandlingHelper;
+import io.infinicast.client.impl.messaging.ConnectorMessageManager;
+import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
+import io.infinicast.client.impl.messaging.handlers.DMessageResponseHandler;
+import io.infinicast.client.impl.messaging.sender.MessageSender;
+import io.infinicast.client.impl.objectState.Endpoint;
+import io.infinicast.client.impl.objectState.ObjectStateManager;
+import io.infinicast.client.impl.pathAccess.PathImpl;
+import io.infinicast.client.impl.responder.RequestResponseManager;
+import io.infinicast.client.protocol.Connector2EpsMessageType;
+import io.infinicast.client.protocol.Connector2EpsMessageTypeConverter;
+import io.infinicast.client.protocol.Eps2ConnectorMessageTypeConverter;
+import io.infinicast.client.utils.NetFactory;
+import io.infinicast.client.utils.PathUtils;
 /**
  * Everything in Infinicast is using paths. Paths are the way to share anything:
  * paths can be used to store data, send requests and send messages.
@@ -52,14 +45,14 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public InfinicastClient() {
         super("");
         this._ClientLogger.info("Infinicast Client " + VersionHelper.getClientVersion());
-        Connector2EpsMessageTypeConverter.init();
-        Eps2ConnectorMessageTypeConverter.init();
+        Connector2EpsMessageTypeConverter.initialize();
+        Eps2ConnectorMessageTypeConverter.initialize();
     }
     void setCredentials(JObject credentials) {
         this._credentials = credentials;
     }
     public void connectWithCredentials(String address, String space, String connectRole, JObject credentials, Consumer<ICError> onConnect_) {
-        this.init();
+        this.initialize();
         try {
             this._onConnect = onConnect_;
             InfinicastClient connector = this;
@@ -157,7 +150,12 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             responseChecker.StopChecker();
             this._requestResponseChecker = null;
         }
-        super.messageManager.destroy();
+        this._objectStateManager = null;
+        ConnectorMessageManager mm = super.messageManager;
+        super.messageManager = null;
+        if (mm != null) {
+            mm.destroy();
+        }
         this._credentials = null;
         this._thisEndpoint = null;
         IEndpoint2ServerNetLayer netLayer = this._endpoint2ServerNetLayer;
@@ -204,7 +202,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             throw new RuntimeException(new Exception("not a valid Endpoint path!"));
         }
         String endpointId = path.substring(12);
-        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/", StringComparison.CurrentCulture));
+        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/"));
         Endpoint endpointObject = new Endpoint(path, endpointId, this);
         return endpointObject;
     }
@@ -219,7 +217,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             throw new RuntimeException(new Exception("not a valid Endpoint path!"));
         }
         String endpointId = endpointPath.substring(12);
-        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/", StringComparison.CurrentCulture));
+        endpointId = StringExtensions.removeFrom(endpointId, endpointId.lastIndexOf("/"));
         Endpoint endpointObject = new Endpoint(path, endpointId, this);
         return endpointObject;
     }
@@ -402,7 +400,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public PathImpl getRootPath() {
         return this;
     }
-    void init() {
+    void initialize() {
         if (this._objectStateManager == null) {
             super.messageManager = new ConnectorMessageManager();
             this._objectStateManager = new ObjectStateManager(this);
@@ -434,15 +432,16 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     }
     public void pathRoleSetup(String path, String role, PathRoleSettings pathSettings, final CompleteCallback onComplete) {
         InfinicastClient self = this;
-        if (!(StringExtensions.IsNullOrEmpty(path))) {
-            path = PathUtils.cleanup(path);
+        String cleanPath = path;
+        if (!(StringExtensions.areEqual(cleanPath, null))) {
+            cleanPath = PathUtils.cleanup(cleanPath);
         }
         JObject message = new JObject();
         if (pathSettings != null) {
             message.set("data", pathSettings.toJson());
         }
         message.set("role", role);
-        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.PathRoleSetup, path, message, new DMessageResponseHandler() {
+        super.messageManager.sendMessageWithResponseString(Connector2EpsMessageType.PathRoleSetup, cleanPath, message, new DMessageResponseHandler() {
             public void accept(JObject json, ICError err, IPathAndEndpointContext context) {
                 ErrorHandlingHelper.checkIfHasErrorsAndCallHandlersFull(getConnector(), err, onComplete, context.getPath());
             }

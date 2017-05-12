@@ -1,35 +1,7 @@
 package io.infinicast.client.protocol.messages;
-import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.api.errors.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+
+import io.infinicast.JObject;
+import io.infinicast.StringExtensions;
 public class BaseMessage {
     String _role;
     String _path;
@@ -39,39 +11,39 @@ public class BaseMessage {
     String _answerTarget;
     String _endpoint;
     public void _setDataByMessage(JObject data) {
-        if ((data.get("role") != null)) {
+        if (data.get("role") != null) {
             this.setRole(data.getString("role"));
         }
-        if ((data.get("path") != null)) {
+        if (data.get("path") != null) {
             this.setPath(data.getString("path"));
         }
-        if ((data.get("data") != null)) {
+        if (data.get("data") != null) {
             this.setData(data.getJObject("data"));
         }
-        if ((data.get("originalEndpoint") != null)) {
-            this.setOriginalEndpoint((data.getString("originalEndpoint")));
+        if (data.get("originalEndpoint") != null) {
+            this.setOriginalEndpoint(data.getString("originalEndpoint"));
         }
-        if ((data.get("requestId") != null)) {
-            this.setRequestId((data.getInt("requestId")));
+        if (data.get("requestId") != null) {
+            this.setRequestId(data.getInt("requestId"));
         }
         else {
             this.setRequestId(null);
         }
-        if ((data.get("answerTarget") != null)) {
-            this.setAnswerTarget((data.getString("answerTarget")));
+        if (data.get("answerTarget") != null) {
+            this.setAnswerTarget(data.getString("answerTarget"));
         }
-        if ((data.get("endpoint") != null)) {
-            this.setEndpoint((data.getString("endpoint")));
+        if (data.get("endpoint") != null) {
+            this.setEndpoint(data.getString("endpoint"));
         }
     }
     public void _setDataByClone(BaseMessage original) {
         this.setRole(original.getRole());
-        this.setPath((original.getPath()));
-        this.setData((original.getData()));
-        this.setOriginalEndpoint((original.getOriginalEndpoint()));
-        this.setRequestId((original.getRequestId()));
-        this.setAnswerTarget((original.getAnswerTarget()));
-        this.setEndpoint((original.getEndpoint()));
+        this.setPath(original.getPath());
+        this.setData(original.getData());
+        this.setOriginalEndpoint(original.getOriginalEndpoint());
+        this.setRequestId(original.getRequestId());
+        this.setAnswerTarget(original.getAnswerTarget());
+        this.setEndpoint(original.getEndpoint());
     }
     public void _fillJson(JObject result) {
         if (!(StringExtensions.IsNullOrEmpty(this.getRole()))) {
@@ -80,13 +52,13 @@ public class BaseMessage {
         if (!(StringExtensions.IsNullOrEmpty(this.getPath()))) {
             result.set("path", this.getPath());
         }
-        if ((this.getData() != null)) {
+        if (this.getData() != null) {
             result.set("data", this.getData());
         }
         if (!(StringExtensions.IsNullOrEmpty(this.getOriginalEndpoint()))) {
             result.set("originalEndpoint", this.getOriginalEndpoint());
         }
-        if ((this.getRequestId() != null)) {
+        if (this.getRequestId() != null) {
             result.set("requestId", this.getRequestId());
         }
         if (!(StringExtensions.IsNullOrEmpty(this.getAnswerTarget()))) {

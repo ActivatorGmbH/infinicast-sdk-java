@@ -1,67 +1,45 @@
 package io.infinicast.client.utils;
-import io.infinicast.*;
-import org.joda.time.DateTime;
-import java.util.*;
-import java.util.function.*;
-import java.util.concurrent.*;
-import io.infinicast.client.api.*;
-import io.infinicast.client.impl.*;
-import io.infinicast.client.protocol.*;
-import io.infinicast.client.utils.*;
-import io.infinicast.client.api.errors.*;
-import io.infinicast.client.api.paths.*;
-import io.infinicast.client.api.query.*;
-import io.infinicast.client.api.paths.handler.*;
-import io.infinicast.client.api.paths.taskObjects.*;
-import io.infinicast.client.api.paths.options.*;
-import io.infinicast.client.api.paths.handler.messages.*;
-import io.infinicast.client.api.paths.handler.reminders.*;
-import io.infinicast.client.api.paths.handler.lists.*;
-import io.infinicast.client.api.paths.handler.objects.*;
-import io.infinicast.client.api.paths.handler.requests.*;
-import io.infinicast.client.impl.contexts.*;
-import io.infinicast.client.impl.helper.*;
-import io.infinicast.client.impl.pathAccess.*;
-import io.infinicast.client.impl.query.*;
-import io.infinicast.client.impl.responder.*;
-import io.infinicast.client.impl.messaging.*;
-import io.infinicast.client.impl.objectState.*;
-import io.infinicast.client.impl.messaging.handlers.*;
-import io.infinicast.client.impl.messaging.receiver.*;
-import io.infinicast.client.impl.messaging.sender.*;
-import io.infinicast.client.protocol.messages.*;
+
+import io.infinicast.StringExtensions;
+import io.infinicast.StringUtils;
+import io.infinicast.client.api.IPath;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 public class PathUtils {
     public static String infinicastInternStart = "/~IC/";
     public static HashMap<String, String> parsePath(String pathVariables, String path) {
         HashMap<String, String> result = new HashMap<String, String>();
-        List<String> splittedVariables = pathVariables.splitAsPath();
-        List<String> splittedPath = path.splitAsPath();
+        List<String> splittedVariables = StringExtensions.splitAsPath(pathVariables);
+        List<String> splittedPath = StringExtensions.splitAsPath(path);
         for (int i = 0;
-         (i < splittedPath.size()); i++) {
+         (i < splittedPath.size()); (i)++) {
             if (splittedVariables.size() > i) {
                 String variable = splittedVariables.get(i);
                 if (variable.startsWith("$")) {
-                    result.put(variable.substring(1), splittedPath[i]);
+                    result.put(variable.substring(1), splittedPath.get(i));
                 }
             }
         }
         return result;
     }
     public static String cleanup(String path) {
-        while (path.contains("//")) {
-            path = path.replace("//", "/");
+        String result = path;
+        while (result.contains("//")) {
+            result = path.replace("//", "/");
         }
-        if (!(path.startsWith("/"))) {
-            path = ("/" + path);
+        if (!(result.startsWith("/"))) {
+            result = ("/" + result);
         }
-        if (!(path.endsWith("/")) && !(path.endsWith("*"))) {
-            path = (path + "/");
+        if (!(result.endsWith("/")) && !(result.endsWith("*"))) {
+            result = (result + "/");
         }
-        return path;
+        return result;
     }
     public static String getObjectListPath(String path) {
-        path = PathUtils.cleanup(path);
-        return PathUtils.getParentPath(path);
+        String result = PathUtils.cleanup(path);
+        return PathUtils.getParentPath(result);
     }
     static void createWildcardSubElement(String str, List<String> splitted, int index, ArrayList<String> results) {
         if (index == splitted.size()) {
@@ -73,17 +51,17 @@ public class PathUtils {
         }
     }
     public static ArrayList<String> getWildCardedPaths(String path) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<String>();
         if (StringExtensions.IsNullOrEmpty(path)) {
-            list.add("");
-            return list;
+            result.add("");
+            return result;
         }
-        path = PathUtils.cleanup(path);
+        String cleanPath = PathUtils.cleanup(path);
         // for c# splitted returns also the last element as empty. This is a difference between java and c# - MAX: how about the overload with StringSplitOptions?
-            path = path.butLast();
-        List<String> splitted = path.splitAsPath();
-        PathUtils.createWildcardSubElement("", splitted, 1, list);
-        return list;
+            cleanPath = StringExtensions.butLast(cleanPath);
+        List<String> splitted = StringExtensions.splitAsPath(cleanPath);
+        PathUtils.createWildcardSubElement("", splitted, 1, result);
+        return result;
     }
     public static String combine(String path1, String path2) {
         return PathUtils.cleanup((path1 + "/") + path2);
@@ -92,12 +70,12 @@ public class PathUtils {
         return PathUtils.combine(path, id);
     }
     public static String getParentPath(String path) {
-        path = PathUtils.cleanup(path);
+        String result = PathUtils.cleanup(path);
         // all paths will end with / !
-            path = path.butLast();
-        if (path.contains("/")) {
-            path = path.substring(0, (path.lastIndexOf("/", StringComparison.Ordinal) + 1));
-            return path;
+            result = StringExtensions.butLast(result);
+        if (result.contains("/")) {
+            result = result.substring(0, (result.lastIndexOf("/") + 1));
+            return result;
         }
         return "";
     }
@@ -106,7 +84,7 @@ public class PathUtils {
         if (str.endsWith("/")) {
             str = str.substring(0, (str.length() - 1));
         }
-        if (str.lastIndexOf("/", StringComparison.Ordinal) != -1) {
+        if (str.lastIndexOf("/") != -1) {
             str = str.substring(str.lastIndexOf("/") + 1);
         }
         return str;
@@ -127,15 +105,13 @@ public class PathUtils {
         if (StringExtensions.IsNullOrEmpty(path)) {
             return "";
         }
-        path = PathUtils.cleanup(path);
-        return StringUtils.GetStringPathEleByIdx(path, idx);
+        String result = PathUtils.cleanup(path);
+        return StringUtils.GetStringPathEleByIdx(result, idx);
     }
     public static String pathToString(IPath path) {
         if (path == null) {
             return "";
         }
-        else {
-            return path.toString();
-        }
+        return path.toString();
     }
 }
