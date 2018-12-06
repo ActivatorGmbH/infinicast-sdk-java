@@ -225,14 +225,7 @@ public class ChildQueryExecutor extends BaseQueryExecutor  {
     }
     void onChildHandler(final APListAddCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback, final Connector2EpsMessageType connector2EpsMessageType) {
         super._messageManager.addHandler((callback == null), connector2EpsMessageType, super._path, (json, err, context, id) -> {
-            if (json != null) {
-                Console.WriteLine((((connector2EpsMessageType.toString() + " ") + json.toString()) + " ") + context.getPath().toString());
-            }
-            else {
-                Console.WriteLine((connector2EpsMessageType.toString() + " null ") + context.getPath().toString());
-            }
             callback.accept(json, context);
-            ;
         }
         , completeCallback, options);
     }

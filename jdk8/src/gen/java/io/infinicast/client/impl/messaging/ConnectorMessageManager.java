@@ -144,7 +144,6 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
             if (listenTerminationHandler != null) {
                 this._receiver.addHandler((messageType.toString() + "_ListenTerminate"), path, (json, error, context, id) -> {
                     this._receiver.removeHandlers(messageType.toString(), path.toString());
-                    Console.WriteLine("Listenterminate received " + json.toString());
                     APathContext ctx = new APathContext();
                     ctx.setPath(context.getPath());
                     ListenTerminateReason reason = (ListenTerminateReason) ListenTerminateReason.valueOf(json.getString("reason"));

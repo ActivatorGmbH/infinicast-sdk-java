@@ -1,26 +1,51 @@
 package io.infinicast;
 
-// TODO: use proper logger
 public class Logger {
+
+    public static ILogger _logger;
+    public static void SetLogger(ILogger logger){
+        _logger = logger;
+    }
     public void exception(String where, Exception x) {
-        System.err.print("Exception thrown");
-        System.err.println(x);
+        if(_logger!=null){
+            _logger.logException(where,x);
+        }else{
+            System.err.print("Exception thrown");
+            System.err.println(x);
+        }
     }
 
     public void error(String msg) {
-        System.err.println(msg);
+
+        if(_logger!=null){
+            _logger.logError(msg);
+        }else {
+            System.err.println(msg);
+        }
     }
 
     public void warn(String msg) {
-        System.out.println(msg);
+        if(_logger!=null){
+            _logger.logWarn(msg);
+        }else {
+            System.out.println(msg);
+        }
     }
 
     public void debug(String msg) {
-        System.out.println(msg);
+        if(_logger!=null){
+            _logger.logDebug(msg);
+        }else {
+            System.out.println(msg);
+        }
     }
 
     public void info(String msg) {
-        System.out.println(msg);
+        if(_logger!=null){
+            _logger.logInfo(msg);
+        }else {
+            System.out.println(msg);
+        }
     }
 
     public boolean getIsDebugEnabled() {
@@ -28,7 +53,11 @@ public class Logger {
     }
 
     public void error(String s, Exception ex) {
-        System.err.println(s + " " + ex.toString());
+        if(_logger!=null){
+            _logger.logError(s,ex);
+        }else {
+            System.err.println(s + " " + ex.toString());
+        }
     }
 }
 

@@ -316,7 +316,6 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     public void triggerDisconnect() {
         this._ClientLogger.info("disconnected");
         this.whenDisconnected();
-        Console.WriteLine("Disconnect triggered");
         if (this._onDisconnect != null) {
             this._onDisconnect.accept();
             ;
