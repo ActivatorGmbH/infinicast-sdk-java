@@ -1,13 +1,14 @@
 package io.infinicast.client.impl.helper;
 
-import io.infinicast.Logger;
-import io.infinicast.LoggerFactory;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.options.CompleteCallback;
 import io.infinicast.client.impl.IConnector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ErrorHandlingHelper {
-    static Logger _logger = LoggerFactory.getLogger(ErrorHandlingHelper.class);
+    private static Logger logger = LoggerFactory.getLogger(ErrorHandlingHelper.class);
     public static void checkIfHasErrorsAndCallHandlersFull(IConnector connector, ICError error, CompleteCallback completeCallback, IPath path) {
         if (error != null) {
             if (completeCallback != null) {

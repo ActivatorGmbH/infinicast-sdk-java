@@ -26,6 +26,8 @@ import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.impl.query.*;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.utils.PathUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
@@ -39,7 +41,7 @@ public class PathImpl implements IPath {
     ChildQueryExecutor _childQueryExecutor = null;
     ChildrenWithListenersQueryExecutor _childWithListenersQueryExecutor = null;
     PathQueryWithHandlerExecutor _pathQueryWithHandlerExecutor = null;
-    Logger _logger = LoggerFactory.getLogger(PathImpl.class);
+    private static Logger _logger = LoggerFactory.getLogger(PathImpl.class);
     ListenerQueryExecutor _listenerQueryExecutor = null;
     JObject _advancedOptions = null;
     String _internalPath;

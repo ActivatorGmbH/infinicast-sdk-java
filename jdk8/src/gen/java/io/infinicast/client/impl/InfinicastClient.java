@@ -20,6 +20,8 @@ import io.infinicast.client.protocol.Connector2EpsMessageTypeConverter;
 import io.infinicast.client.protocol.Eps2ConnectorMessageTypeConverter;
 import io.infinicast.client.utils.NetFactory;
 import io.infinicast.client.utils.PathUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -36,7 +38,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     String _space = "";
     Endpoint _thisEndpoint;
     JObject _credentials = null;
-    Logger _ClientLogger = LoggerFactory.getLogger(InfinicastClient.class);
+    private static Logger _ClientLogger = LoggerFactory.getLogger(InfinicastClient.class);
     Consumer<ICError> _onConnect;
     Action _onDisconnect;
     BiConsumer<IPath, String> _unhandeledErrorHandler;

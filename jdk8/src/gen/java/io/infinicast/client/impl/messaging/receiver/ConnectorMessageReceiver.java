@@ -15,12 +15,14 @@ import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.protocol.Eps2ConnectorProtocol;
 import io.infinicast.client.protocol.IEndpoint2ConnectorProtocolHandler;
 import io.infinicast.client.utils.PathUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2ConnectorProtocolHandler {
     ConcurrentHashMap<String, PathHandlerContainer> _handlerMap = new ConcurrentHashMap<String, PathHandlerContainer>();
-    Logger _logger = LoggerFactory.getLogger(ConnectorMessageReceiver.class);
+    private static Logger _logger = LoggerFactory.getLogger(ConnectorMessageReceiver.class);
     Eps2ConnectorProtocol _receiveProtocol = new Eps2ConnectorProtocol();
     HandlerPool handlerPool = new HandlerPool();
     IConnector _connector;
@@ -185,7 +187,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         messageHandlerBag.addHandler(messageTypeAsString, handler);
     }
     public void receive(APlayStringMessage msg) {
-        if (this._logger.getIsDebugEnabled()) {
+        if (this._logger.isDebugEnabled()) {
             this._logger.debug("received " + msg.getDataAsString());
         }
         try {

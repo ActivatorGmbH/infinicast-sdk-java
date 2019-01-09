@@ -1,8 +1,6 @@
 package io.infinicast.client.impl.pathAccess;
 
 import io.infinicast.JObject;
-import io.infinicast.Logger;
-import io.infinicast.LoggerFactory;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.errors.ICErrorType;
@@ -10,8 +8,11 @@ import io.infinicast.client.api.errors.ICException;
 import io.infinicast.client.api.paths.handler.requests.IAPResponder;
 import io.infinicast.client.impl.messaging.ConnectorMessageManager;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class RequestResponder implements IAPResponder {
-    static Logger _logger = LoggerFactory.getLogger(RequestResponder.class);
+    private static Logger _logger = LoggerFactory.getLogger(RequestResponder.class);
     ConnectorMessageManager _messageManager;
     IPath _path;
     int _requestId;

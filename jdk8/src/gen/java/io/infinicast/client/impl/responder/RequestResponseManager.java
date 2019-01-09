@@ -2,14 +2,14 @@ package io.infinicast.client.impl.responder;
 
 import io.infinicast.ConcurrentHashmapExtensions;
 import io.infinicast.IntervalChecker;
-import io.infinicast.Logger;
-import io.infinicast.LoggerFactory;
 import io.infinicast.client.impl.pathAccess.RequestResponder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 public class RequestResponseManager {
-    static Logger _logger = LoggerFactory.getLogger(RequestResponseManager.class);
+    private static Logger _logger = LoggerFactory.getLogger(RequestResponseManager.class);
     public static int timeBetweenChecks = 5000;
     ArrayList<RequestResponder> _toBeRemoved;
     ConcurrentHashMap<RequestResponder, RequestResponder> _awaitingResponders = new ConcurrentHashMap<RequestResponder, RequestResponder>();

@@ -69,11 +69,11 @@ public class JToken {
     }
 
     public void set(String key, JObject value) {
-        ((ObjectNode) this.node).put(key, ((JToken) value).node);
+        ((ObjectNode) this.node).set(key, ((JToken) value).node);
     }
 
     public void set(String key, JArray value) {
-        ((ObjectNode) this.node).put(key, ((JToken) value).node);
+        ((ObjectNode) this.node).set(key, ((JToken) value).node);
     }
 
     public void set(String key, DateTime value) {

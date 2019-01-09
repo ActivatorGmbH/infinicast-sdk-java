@@ -1,16 +1,16 @@
 package io.infinicast.client.impl.messaging;
 
 import io.infinicast.JObject;
-import io.infinicast.Logger;
-import io.infinicast.LoggerFactory;
 import io.infinicast.client.api.IPath;
 import io.infinicast.client.api.errors.ICError;
 import io.infinicast.client.api.paths.IPathAndEndpointContext;
 import io.infinicast.client.impl.messaging.handlers.DCloudMessageHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 public class PathMessageHandlerContainer {
-    static Logger logger = LoggerFactory.getLogger(PathMessageHandlerContainer.class);
+    private static Logger _logger = LoggerFactory.getLogger(PathMessageHandlerContainer.class);
     ArrayList<DCloudMessageHandler> _handlers;
     IPath _path;
     public PathMessageHandlerContainer(IPath path) {
@@ -34,7 +34,7 @@ public class PathMessageHandlerContainer {
                     ;
                 }
                 else {
-                    PathMessageHandlerContainer.logger.error("null handler for request " + requestId);
+                    PathMessageHandlerContainer._logger.error("null handler for request " + requestId);
                 }
             }
         }
