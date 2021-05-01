@@ -42,10 +42,12 @@
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
+            <name>Central Repository OSSRH</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
         <repository>
             <id>ossrh</id>
+            <name>Central Repository OSSRH</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
@@ -53,8 +55,7 @@
     <properties>
         <!-- Maven -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.gpg.plugin>1.5</version.gpg.plugin>
-		<maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.release>11</maven.compiler.release>
 
         <!-- Jars -->
         <version.slf4j.api>1.7.14</version.slf4j.api>
@@ -166,20 +167,15 @@
     </build>
 
     <profiles>
+        <!-- Inspired by https://github.com/samuelmeuli/action-maven-publish/blob/master/docs/deployment-setup.md -->
         <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
+            <id>deploy</id>
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
+                        <version>2.4</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -192,7 +188,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
+                        <version>2.10.4</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -205,10 +201,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>${version.gpg.plugin}</version>
-                        <configuration>
-                            <useAgent>false</useAgent>
-                        </configuration>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -216,13 +209,20 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                                <configuration>
+                                    <!-- Prevent `gpg` from using pinentry programs -->
+                                    <gpgArguments>
+                                        <arg>--pinentry-mode</arg>
+                                        <arg>loopback</arg>
+                                    </gpgArguments>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.7</version>
+                        <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>
@@ -230,19 +230,6 @@
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
-                    <!--
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-release-plugin</artifactId>
-                        <version>2.5</version>
-                        <configuration>
-                            <autoVersionSubmodules>true</autoVersionSubmodules>
-                            <useReleaseProfile>false</useReleaseProfile>
-                            <releaseProfiles>release</releaseProfiles>
-                            <goals>deploy</goals>
-                        </configuration>
-                    </plugin>
-                    -->
                 </plugins>
             </build>
         </profile>
