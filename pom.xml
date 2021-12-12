@@ -56,10 +56,6 @@
         <!-- Maven -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>11</maven.compiler.release>
-
-        <!-- Jars -->
-        <version.slf4j.api>1.7.14</version.slf4j.api>
-        <version.slf4j.impl>2.5</version.slf4j.impl>
     </properties>
 
     <dependencies>
@@ -67,12 +63,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>${version.slf4j.api}</version>
+            <version>1.7.14</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
-            <version>${version.slf4j.impl}</version>
+            <version>2.15.0</version>
         </dependency>
 
         <dependency>
