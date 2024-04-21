@@ -16,6 +16,9 @@ on:
 
 jobs:
   build:
+    permissions:
+      # Allow dependabot to upload dependency info
+      contents: write
 
     runs-on: ubuntu-latest
 
