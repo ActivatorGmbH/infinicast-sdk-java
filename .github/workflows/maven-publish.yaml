@@ -20,11 +20,12 @@ jobs:
         server-password: MAVEN_PASSWORD
         gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
         gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
-#    - name: Import GPG Key
-#      uses: crazy-max/ghaction-import-gpg@v6
-#      with:
-#        gpg_private_key: 
-#        passphrase: 
+    # We name releases v1.2.3 but Maven wants 1.2.3
+    - id: get_version
+      uses: baileyherbert/version-action@v3
+    - if: github.event.release
+      name: Update version in pom.xml (Release only)
+      run: mvn -B versions:set -DnewVersion=${{ steps.get_version.outputs.version-without-v }} -DgenerateBackupPoms=false
     - name: Publish package
       run: mvn -B -Pdeploy -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} deploy
       env:
