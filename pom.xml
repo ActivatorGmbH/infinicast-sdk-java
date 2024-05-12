@@ -65,6 +65,12 @@
             <artifactId>slf4j-api</artifactId>
             <version>2.0.13</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+            <version>2.0.13</version>
+        </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -80,7 +86,8 @@
         <dependency>
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
-            <version>2.2.3</version>
+            <!-- SDK Code is currently not compatible with MINA 2.2.x -->
+            <version>2.1.8</version>
         </dependency>
 
         <!-- Unit tests -->

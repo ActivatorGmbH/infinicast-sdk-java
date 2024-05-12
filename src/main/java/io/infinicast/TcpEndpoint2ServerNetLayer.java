@@ -35,15 +35,19 @@ public class TcpEndpoint2ServerNetLayer extends IoHandlerAdapter implements IEnd
 
     @Override
     public void sessionOpened(IoSession session) throws Exception {
-        logger.info("connection opened");
+        logger.info("session opened");
         super.sessionOpened(session);
 
+        // In Mina 2.1 the connect/create future was resolved during the sessinoCreated event
+        // From 2.2 it is resolved after this sessionOpened event is triggered
+        // Since client.send() checks for the connection to be established first, using the same
+        // synchronized variable, it results in a deadlock
         client.send(new LowLevelConnectMessage());
     }
 
     @Override
     public void sessionClosed(IoSession session) throws Exception {
-        logger.info("connection closed");
+        logger.info("session closed");
         super.sessionClosed(session);
         handler.onDisconnect();
     }

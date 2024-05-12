@@ -39,8 +39,11 @@ public class APlayTcpClient extends IoHandlerAdapter {
     public String connect(SocketAddress address) {
         try {
             synchronized (connector) {
-                logger.info("Conecting to " + address.toString());
+                logger.info("Connecting to " + address.toString());
                 ConnectFuture future = connector.connect(address);
+                // The future is resolved with the session being created (MINA 2.1), resp. being opened (MINA 2.2)
+                // Currently we cannot use MINA 2.2 since we trigger the first write in the evant that would resolve
+                // the future which results in a deadlock
                 future.awaitUninterruptibly();
                 logger.info("Connection established");
                 session = future.getSession();
