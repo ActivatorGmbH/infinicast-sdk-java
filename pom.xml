@@ -87,7 +87,7 @@
             <groupId>org.apache.mina</groupId>
             <artifactId>mina-core</artifactId>
             <!-- SDK Code is currently not compatible with MINA 2.2.x -->
-            <version>2.1.8</version>
+            <version>2.2.3</version>
         </dependency>
 
         <!-- Unit tests -->
