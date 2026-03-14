@@ -4,7 +4,7 @@
 
     <groupId>io.infinicast</groupId>
     <artifactId>infinicast-client</artifactId>
-    <version>3.0.3</version>
+    <version>3.0.4</version>
     <packaging>jar</packaging>
 
     <name>Infinicast SDK Java</name>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>2.17.2</version>
+            <version>2.18.6</version>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
