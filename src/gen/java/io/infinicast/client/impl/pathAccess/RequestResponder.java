@@ -32,7 +32,7 @@ public class RequestResponder implements IAPResponder {
         }
         this.didRespond = true;
         this._messageManager.sendRequestAnswer(Connector2EpsMessageType.RequestResponse, this._path, json, this._targetEndpoint, this._requestId);
-        RequestResponder._logger.info(((((((("response " + this._requestId) + " ") + this._path.toString()) + " endpoint: ") + this._targetEndpoint) + " data ") + " path ") + this._path.toString());
+        RequestResponder._logger.debug("response id={}", this._requestId);
     }
     public void respondWithError(ICError error) {
         if (this.didRespond) {
@@ -40,7 +40,7 @@ public class RequestResponder implements IAPResponder {
         }
         this.didRespond = true;
         this._messageManager.sendRequestAnswer(Connector2EpsMessageType.RequestResponseFailed, this._path, error.toJson(), this._targetEndpoint, this._requestId);
-        RequestResponder._logger.info(((((((("errorResponse " + this._requestId) + " ") + this._path.toString()) + " endpoint: ") + this._targetEndpoint) + " data ") + " path ") + this._path.toString());
+        RequestResponder._logger.debug("error response id={}", this._requestId);
     }
     public boolean alreadyResponded() {
         return this.didRespond;

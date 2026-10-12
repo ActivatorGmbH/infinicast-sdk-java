@@ -101,7 +101,7 @@ public class PathQueryWithHandlerExecutor extends BaseQueryExecutor  {
     }
     public void onRequest(final APRequestCallback callback, HandlerRegistrationOptions options, CompleteCallback completeCallback) {
         super._messageManager.addHandler((callback == null), Connector2EpsMessageType.Request, super._path, (json, err, context, requestId) -> {
-            this._logger.info((((((((("received request " + requestId) + " ") + super._path.toString()) + " endpoint: ") + context.getEndpoint().getEndpointId()) + " data ") + context.getEndpointData()) + " path ") + context.getPath().toString());
+            this._logger.debug("received request id={}", requestId);
             RequestResponder responder = new RequestResponder(super._messageManager, context.getPath(), context.getEndpoint().getEndpointId(), requestId);
             callback.accept(json, responder, context);
             ;
