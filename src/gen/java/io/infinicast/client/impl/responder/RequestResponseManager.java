@@ -6,16 +6,12 @@ import io.infinicast.client.impl.pathAccess.RequestResponder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 public class RequestResponseManager {
     private static Logger _logger = LoggerFactory.getLogger(RequestResponseManager.class);
     public static int timeBetweenChecks = 5000;
-    ArrayList<RequestResponder> _toBeRemoved;
     ConcurrentHashMap<RequestResponder, RequestResponder> _awaitingResponders = new ConcurrentHashMap<RequestResponder, RequestResponder>();
-    public RequestResponseManager() {
-        this._toBeRemoved = new ArrayList<RequestResponder>();
-    }
+    public RequestResponseManager() {}
     public void initChecker(IntervalChecker requestResponseChecker) {
         requestResponseChecker.StartChecker(() -> {
             this._check();
@@ -33,19 +29,26 @@ public class RequestResponseManager {
     void doCheck() {
         for (RequestResponder responder : this._awaitingResponders.keySet()) {
             if (responder.alreadyResponded()) {
-                this._toBeRemoved.add(responder);
+                this._awaitingResponders.remove(responder);
             }
             else if (responder.answerTakesLong()) {
-                RequestResponseManager._logger.info("responder takes long " + responder.toString());
-                responder.sendHandlingStarted();
+                // Tracking is only needed until the one-time handling notice.
+                // The request's completion callback still owns the responder and
+                // may send its final answer after this entry is removed.
+                try {
+                    if (!responder.alreadyResponded()) {
+                        RequestResponseManager._logger.info("responder takes long " + responder.toString());
+                        responder.sendHandlingStarted();
+                    }
+                } finally {
+                    this._awaitingResponders.remove(responder);
+                }
             }
         }
-        for (RequestResponder requestResponder : this._toBeRemoved) {
-            this._awaitingResponders.remove(requestResponder);
-        }
-        if (this._toBeRemoved.size() > 0) {
-            this._toBeRemoved.clear();
-        }
+    }
+
+    public void clearAwaitingResponders() {
+        this._awaitingResponders.clear();
     }
     public void addResponder(RequestResponder responder) {
         ConcurrentHashmapExtensions.getOrAdd(this._awaitingResponders, responder, responder);

@@ -149,6 +149,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             responseChecker.StopChecker();
             this._requestResponseChecker = null;
         }
+        this._responseManager.clearAwaitingResponders();
         this._objectStateManager = null;
         ConnectorMessageManager mm = super.messageManager;
         super.messageManager = null;
