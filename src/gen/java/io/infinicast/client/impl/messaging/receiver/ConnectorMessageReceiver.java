@@ -39,6 +39,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     public void onReceiveRequest(ICError error, JObject data, String path, int requestId, JObject senderEndpointObject) {
         PathAndEndpointContext endpointOb = this.getEndpointContext(senderEndpointObject, path);
+        endpointOb.setRequestId(requestId);
         boolean wasSomethingCalled = this.callHandlers(error, path, Connector2EpsMessageType.Request, data, endpointOb, requestId);
         String endpointId = endpointOb.getEndpoint().getEndpointId();
         if (!(wasSomethingCalled)) {

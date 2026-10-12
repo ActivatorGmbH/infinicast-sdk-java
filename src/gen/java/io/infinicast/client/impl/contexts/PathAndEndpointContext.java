@@ -8,6 +8,7 @@ public class PathAndEndpointContext implements IPathAndEndpointContext {
     IPath _path;
     IEndpoint _endpoint;
     JObject _endpointData;
+    int _requestId;
     public PathAndEndpointContext(IPath path_, IEndpoint endpointOb_, JObject endpointData_) {
         this.setPath(path_);
         this.setEndpoint(endpointOb_);
@@ -30,5 +31,12 @@ public class PathAndEndpointContext implements IPathAndEndpointContext {
     }
     public void setEndpointData(JObject value) {
         this._endpointData = value;
+    }
+    @Override
+    public int getRequestId() {
+        return this._requestId;
+    }
+    public void setRequestId(int value) {
+        this._requestId = value;
     }
 }
