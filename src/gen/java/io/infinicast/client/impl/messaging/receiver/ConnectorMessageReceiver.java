@@ -39,11 +39,44 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
     }
     public void onReceiveRequest(ICError error, JObject data, String path, int requestId, JObject senderEndpointObject) {
         PathAndEndpointContext endpointOb = this.getEndpointContext(senderEndpointObject, path);
+        // Core owns these top-level envelope fields. The nested endpoint data is
+        // client-controlled and must never provide an audit identity or IP.
+        if (senderEndpointObject != null) {
+            Object trace = senderEndpointObject.get("coreAuditTraceId");
+            if (trace instanceof String && ((String) trace).matches("[A-Za-z0-9_-]{4,32}")) {
+                endpointOb.setCoreAuditTraceId((String) trace);
+            }
+            if ("/acp/auth/".equals(path)) {
+                Object ip = senderEndpointObject.get("coreTrustedClientIp");
+                Object source = senderEndpointObject.get("coreTrustedIpSource");
+                if (endpointOb.getCoreAuditTraceId() != null && ip instanceof String
+                        && "trusted_ingress_proxy_protocol".equals(source)
+                        && isIpLiteral((String) ip)) {
+                    endpointOb.setCoreTrustedClientIp((String) ip);
+                    endpointOb.setCoreTrustedIpSource((String) source);
+                }
+            }
+        }
         boolean wasSomethingCalled = this.callHandlers(error, path, Connector2EpsMessageType.Request, data, endpointOb, requestId);
         String endpointId = endpointOb.getEndpoint().getEndpointId();
         if (!(wasSomethingCalled)) {
             this._logger.error(((("did not find a handler for the request " + path) + " ") + endpointId) + requestId);
             this._connectorMessageManager.sendRequestAnswerString(Connector2EpsMessageType.RequestHandlingFailed, path, null, endpointId, requestId);
+        }
+    }
+    private static boolean isIpLiteral(String value) {
+        if (value == null || value.length() > 45) return false;
+        if (value.matches("[0-9]{1,3}(\\.[0-9]{1,3}){3}")) {
+            for (String part : value.split("\\.")) {
+                if (Integer.parseInt(part) > 255) return false;
+            }
+            return true;
+        }
+        if (!value.contains(":") || !value.matches("[0-9A-Fa-f:.]+")) return false;
+        try {
+            return java.net.InetAddress.getByName(value) instanceof java.net.Inet6Address;
+        } catch (java.net.UnknownHostException invalidLiteral) {
+            return false;
         }
     }
     public void onReceiveJsonQueryResult(ICError error, JArray list, int fullCount, int requestId) {
