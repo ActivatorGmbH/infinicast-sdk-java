@@ -399,6 +399,41 @@ public class SetDataJoinFrameContractTest {
     }
 
     @Test
+    public void legacyAsyncRequestKeepsHistoricalTransportFailureContract() throws Exception {
+        Connector2EpsMessageTypeConverter.initialize();
+        ConnectorMessageManager manager = new ConnectorMessageManager();
+        IEndpoint2ServerNetLayer failingLayer = (IEndpoint2ServerNetLayer)
+                Proxy.newProxyInstance(IEndpoint2ServerNetLayer.class.getClassLoader(),
+                        new Class<?>[]{IEndpoint2ServerNetLayer.class},
+                        (proxy, method, args) -> {
+                            if ("SendToServer".equals(method.getName())) {
+                                throw new IllegalStateException("fixture_transport_failure");
+                            }
+                            return null;
+                        });
+        manager.setSender(new MessageSender(failingLayer));
+        PathImpl path = new PathImpl("/fixture/");
+        path.setMessageManager(manager);
+        Field handlerMapField = ConnectorMessageReceiver.class.getDeclaredField("_handlerMap");
+        handlerMapField.setAccessible(true);
+        Map<?, ?> handlers = (Map<?, ?>) handlerMapField.get(manager.getReceiver());
+
+        // The existing public Async API historically suppressed a local send
+        // exception. The request stays pending until its normal timeout/lifecycle.
+        CompletableFuture<?> legacy = path.sendRequestAsync(new JObject());
+        assertFalse("legacy Async call must not fail synchronously", legacy.isDone());
+        assertEquals(1, handlers.size());
+
+        // Auth diagnostics opt in to observable failure and must release only
+        // their own handler, even while a legacy response is outstanding.
+        CompletableFuture<Void> optIn = path.setDataAsync(new JObject(),
+                SetDataDiagnosticOrigin.AUTH_NORMAL);
+        assertTrue("opt-in SetData must report the local send failure", optIn.isCompletedExceptionally());
+        assertEquals("failed opt-in send must release its handler", 1, handlers.size());
+        manager.destroy();
+    }
+
+    @Test
     public void realTransportFailureCompletesObservedFutureAndRemovesHandler() throws Exception {
         Connector2EpsMessageTypeConverter.initialize();
         ConnectorMessageManager manager = new ConnectorMessageManager();

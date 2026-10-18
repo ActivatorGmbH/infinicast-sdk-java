@@ -325,7 +325,11 @@ public class ConnectorMessageManager implements IEndpoint2ServerNetLayerHandler 
         }
         try {
             // A rebind cannot reroute this request onto its replacement sender.
-            sendCheckedResponse(boundSender, frame);
+            // Only the explicit SetData diagnostic overload opts in to an
+            // observable local send failure. Keep all legacy response APIs on
+            // MessageSender's historical best-effort path.
+            if (origin != null) sendCheckedResponse(boundSender, frame);
+            else boundSender.sendMessage(frame);
         } catch (RuntimeException sendFailure) {
             _receiver.removeHandlers(Connector2EpsMessageType.RequestResponse.toString(),
                     responseKey);
