@@ -3,6 +3,7 @@ package io.infinicast.client.protocol;
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
 import io.infinicast.client.api.query.ListeningType;
+import io.infinicast.client.api.paths.SetDataDiagnosticOrigin;
 import io.infinicast.client.impl.VersionHelper;
 import io.infinicast.client.protocol.messages.Connector2EpsMessage;
 public class Connector2EpsProtocol {
@@ -102,6 +103,34 @@ public class Connector2EpsProtocol {
         }
         msg.setData(jsonData);
         msg.setRequestId(messageRequestId);
+        return msg;
+    }
+    public Connector2EpsMessage encodeMessageWithResponse(Connector2EpsMessageType messageType,
+            String path, JObject jsonData, int messageRequestId, SetDataDiagnosticOrigin origin) {
+        if (origin == null) {
+            return encodeMessageWithResponse(messageType, path, jsonData, messageRequestId);
+        }
+        if (messageType != Connector2EpsMessageType.SetObjectData) {
+            throw new IllegalArgumentException("Diagnostic origin applies only to SetObjectData");
+        }
+        Connector2EpsMessage msg = encodeMessageWithResponse(messageType, path, jsonData, messageRequestId);
+        msg.setDiagnosticOrigin(origin);
+        return msg;
+    }
+    public Connector2EpsMessage encodeMessageWithResponse(Connector2EpsMessageType messageType,
+            String path, JObject jsonData, int messageRequestId, SetDataDiagnosticOrigin origin,
+            String authJoinMarkerV1) {
+        Connector2EpsMessage msg = encodeMessageWithResponse(
+                messageType, path, jsonData, messageRequestId, origin);
+        if (authJoinMarkerV1 != null) {
+            if (messageType != Connector2EpsMessageType.SetObjectData ||
+                    (origin != SetDataDiagnosticOrigin.AUTH_NORMAL &&
+                     origin != SetDataDiagnosticOrigin.AUTH_BAN) ||
+                    !authJoinMarkerV1.matches("[0-9a-f]{32}")) {
+                throw new IllegalArgumentException("Invalid SetData join marker");
+            }
+            msg.setAuthJoinMarkerV1(authJoinMarkerV1);
+        }
         return msg;
     }
     public Connector2EpsMessage encodeDebugPingInfo(String path, int pingInMs) {

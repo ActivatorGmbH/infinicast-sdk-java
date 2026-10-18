@@ -129,10 +129,59 @@ public class PathImpl implements IPath {
     */
     public CompletableFuture<Void> setDataAsync(JObject json) {
         final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
-        this.setData(json, (error) -> {
-            PathImpl.handleCompleteHandlerAsyncVoid(tsc, error);
-        });
+        try {
+            this.setData(json, (error) -> {
+                PathImpl.handleCompleteHandlerAsyncVoid(tsc, error);
+            });
+        } catch (RuntimeException sendFailure) {
+            tsc.completeExceptionally(sendFailure);
+        }
         return tsc;
+    }
+    @Override
+    public CompletableFuture<Void> setDataAsync(JObject json, SetDataDiagnosticOrigin origin) {
+        if (origin == null) {
+            return setDataAsync(json);
+        }
+        final CompletableFuture<Void> tsc = new CompletableFuture<Void>();
+        final CompleteCallback completeCallback = error -> PathImpl.handleCompleteHandlerAsyncVoid(tsc, error);
+        try {
+            this.messageManager.sendMessageWithResponse(Connector2EpsMessageType.SetObjectData,
+                    this, json, origin, (resultJson, error, context) -> {
+                        if (!this.checkIfHasErrorsAndCallHandlersNew(error, completeCallback)) {
+                            completeCallback.accept(null);
+                        }
+                    });
+        } catch (RuntimeException sendFailure) {
+            tsc.completeExceptionally(sendFailure);
+        }
+        return tsc;
+    }
+    @Override
+    public CompletableFuture<Void> setDataAsync(JObject json, SetDataDiagnosticOrigin origin,
+            BiConsumer<String, CompletableFuture<Void>> preparedObserver) {
+        if (origin == null) {
+            CompletableFuture<Void> original = setDataAsync(json);
+            if (preparedObserver != null) {
+                try { preparedObserver.accept(null, original); }
+                catch (RuntimeException ignored) { /* diagnostics must not change the write */ }
+            }
+            return original;
+        }
+        final CompletableFuture<Void> original = new CompletableFuture<Void>();
+        final CompleteCallback completeCallback = error ->
+                PathImpl.handleCompleteHandlerAsyncVoid(original, error);
+        try {
+            this.messageManager.sendObservedSetData(this, json, origin, original,
+                    preparedObserver, (resultJson, error, context) -> {
+                        if (!this.checkIfHasErrorsAndCallHandlersNew(error, completeCallback)) {
+                            completeCallback.accept(null);
+                        }
+                    });
+        } catch (RuntimeException sendFailure) {
+            original.completeExceptionally(sendFailure);
+        }
+        return original;
     }
     /**
      * sets the data of a given field to the value if the field is currently empty.

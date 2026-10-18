@@ -5,11 +5,14 @@ import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
 import io.infinicast.client.protocol.Connector2EpsMessageType;
 import io.infinicast.client.protocol.Connector2EpsMessageTypeConverter;
+import io.infinicast.client.api.paths.SetDataDiagnosticOrigin;
 public class Connector2EpsMessage extends BaseMessage  {
     String _space;
     Connector2EpsMessageType _type;
     Connector2EpsMessageType _handlerType;
     String _version;
+    SetDataDiagnosticOrigin _diagnosticOrigin;
+    String _authJoinMarkerV1;
     public static Connector2EpsMessage parseString(APlayStringMessage stringMessage) {
         JObject data = JObject.Parse(stringMessage.getDataAsString());
         return Connector2EpsMessage.parseInternal(data);
@@ -29,6 +32,12 @@ public class Connector2EpsMessage extends BaseMessage  {
             result.set("space", this.getSpace().toString());
         }
         result.set("t", Connector2EpsMessageTypeConverter.messageTypeToInt(this.getType()));
+        if (this.getType() == Connector2EpsMessageType.SetObjectData && this._diagnosticOrigin != null) {
+            result.set("diagnosticOrigin", this._diagnosticOrigin.name());
+            if (this._authJoinMarkerV1 != null) {
+                result.set("authJoinMarkerV1", this._authJoinMarkerV1);
+            }
+        }
         if (this.getHandlerType() != null) {
             result.set("handlerType", this.getHandlerType().toString());
         }
@@ -48,6 +57,8 @@ public class Connector2EpsMessage extends BaseMessage  {
         newMsg._setDataByClone(original);
         newMsg.setType(original.getType());
         newMsg.setHandlerType(original.getHandlerType());
+        newMsg.setDiagnosticOrigin(original.getDiagnosticOrigin());
+        newMsg.setAuthJoinMarkerV1(original.getAuthJoinMarkerV1());
         return newMsg;
     }
     public static Connector2EpsMessage parseInner(JObject data) {
@@ -76,5 +87,17 @@ public class Connector2EpsMessage extends BaseMessage  {
     }
     public void setVersion(String value) {
         this._version = value;
+    }
+    public SetDataDiagnosticOrigin getDiagnosticOrigin() {
+        return this._diagnosticOrigin;
+    }
+    public void setDiagnosticOrigin(SetDataDiagnosticOrigin value) {
+        this._diagnosticOrigin = value;
+    }
+    public String getAuthJoinMarkerV1() {
+        return this._authJoinMarkerV1;
+    }
+    public void setAuthJoinMarkerV1(String value) {
+        this._authJoinMarkerV1 = value;
     }
 }
