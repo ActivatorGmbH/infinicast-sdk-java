@@ -1,6 +1,5 @@
 package io.infinicast.client.api.errors;
 
-import io.infinicast.InfinicastExceptionHelper;
 import io.infinicast.JObject;
 import io.infinicast.StringExtensions;
 public class ICError {
@@ -30,7 +29,9 @@ public class ICError {
         this.setMessage(icError.getMessage());
     }
     public static ICError fromException(Exception x, String path) {
-        return new ICError(ICErrorType.InternalError, InfinicastExceptionHelper.ExceptionToString(x), path, null);
+        // Exception messages and stack traces can contain protocol payloads.
+        // Keep the error type and path, but expose only this fixed class to callbacks and logs.
+        return new ICError(ICErrorType.InternalError, "internal_exception", path, null);
     }
     public JObject toJson() {
         JObject job = new JObject();

@@ -45,6 +45,37 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
     DisconnectManager _disconnectManager;
     IntervalChecker _requestResponseChecker;
     RequestResponseManager _responseManager = new RequestResponseManager();
+    private final Object transportLifecycleLock = new Object();
+    private Thread initCallbackOwner;
+    private int initCallbackDepth;
+    public Object transportLifecycleLock() { return transportLifecycleLock; }
+    /** Called with transportLifecycleLock held, before any replacement bind. */
+    public void awaitInitCallback() {
+        synchronized (transportLifecycleLock) {
+            while (initCallbackDepth != 0 && initCallbackOwner != Thread.currentThread()) {
+                try { transportLifecycleLock.wait(); }
+                catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while awaiting Init callback");
+                }
+            }
+        }
+    }
+    public void beginInitCallback() {
+        synchronized (transportLifecycleLock) {
+            awaitInitCallback();
+            initCallbackOwner = Thread.currentThread();
+            initCallbackDepth++;
+        }
+    }
+    public void endInitCallback() {
+        synchronized (transportLifecycleLock) {
+            if (--initCallbackDepth == 0) {
+                initCallbackOwner = null;
+                transportLifecycleLock.notifyAll();
+            }
+        }
+    }
     public InfinicastClient() {
         super("");
         this._ClientLogger.info("Infinicast Client " + VersionHelper.getClientVersion());
@@ -55,20 +86,21 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         this._credentials = credentials;
     }
     public void connectWithCredentials(String address, String space, String connectRole, JObject credentials, Consumer<ICError> onConnect_) {
-        this.initialize();
         try {
-            this._onConnect = onConnect_;
-            InfinicastClient connector = this;
             TcpEndpoint2ServerNetLayer e2SNetLayer = new TcpEndpoint2ServerNetLayer();
             Endpoint2ServerNetSettings netSettings = new Endpoint2ServerNetSettings();
             netSettings.setServerAddress(NetFactory.createServerAddress(address));
-            connector.setSpace(space);
-            connector.setRole(connectRole);
-            connector.setCredentials(credentials);
-            netSettings.setHandler(super.messageManager);
-            this._endpoint2ServerNetLayer = e2SNetLayer;
-            super.messageManager.setSender(new MessageSender(e2SNetLayer));
-            super.messageManager.setConnector(this);
+            synchronized (transportLifecycleLock) {
+                awaitInitCallback();
+                this.initialize();
+                this._onConnect = onConnect_;
+                this.setSpace(space);
+                this.setRole(connectRole);
+                this.setCredentials(credentials);
+                this._endpoint2ServerNetLayer = e2SNetLayer;
+                super.messageManager.setConnector(this);
+                netSettings.setHandler(super.messageManager.bindSender(new MessageSender(e2SNetLayer)));
+            }
             String result = e2SNetLayer.Open(netSettings);
             if (!(StringExtensions.IsNullOrEmpty(result))) {
                 onConnect_.accept(ICError.create(ICErrorType.InternalError, result, ""));
@@ -76,7 +108,7 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
             }
         }
         catch (Exception e) {
-            this._onConnect.accept(ICError.fromException(e, ""));
+            onConnect_.accept(ICError.fromException(e, ""));
             ;
         }
     }
@@ -139,29 +171,40 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         this.whenDisconnected();
     }
     void whenDisconnected() {
-        DisconnectManager discMan = this._disconnectManager;
-        if (discMan != null) {
-            discMan.StopDisconnectChecker();
-            this._disconnectManager = null;
-        }
-        IntervalChecker responseChecker = this._requestResponseChecker;
-        if (responseChecker != null) {
-            responseChecker.StopChecker();
-            this._requestResponseChecker = null;
-        }
-        this._objectStateManager = null;
+        Runnable cleanup;
+        synchronized (transportLifecycleLock) { cleanup = detachCurrentTransport(false); }
+        if (cleanup != null) cleanup.run();
+    }
+    /** Called by the manager while both lifecycle and generation locks are held. */
+    public Runnable detachForTransportDisconnect(ConnectorMessageManager expected) {
+        if (super.messageManager != expected) return null;
+        return detachCurrentTransport(true);
+    }
+    private Runnable detachCurrentTransport(boolean notify) {
         ConnectorMessageManager mm = super.messageManager;
+        IEndpoint2ServerNetLayer netLayer = this._endpoint2ServerNetLayer;
+        if (mm == null && netLayer == null) return null;
+        if (mm != null) mm.retireTransport();
+        DisconnectManager discMan = this._disconnectManager;
+        IntervalChecker responseChecker = this._requestResponseChecker;
+        Action callback = notify ? this._onDisconnect : null;
+        this._disconnectManager = null;
+        this._requestResponseChecker = null;
+        this._objectStateManager = null;
         super.messageManager = null;
-        if (mm != null) {
-            mm.destroy();
-        }
         this._credentials = null;
         this._thisEndpoint = null;
-        IEndpoint2ServerNetLayer netLayer = this._endpoint2ServerNetLayer;
-        if (netLayer != null) {
-            netLayer.Close();
-            this._endpoint2ServerNetLayer = null;
-        }
+        this._endpoint2ServerNetLayer = null;
+        return () -> {
+            if (discMan != null) discMan.StopDisconnectChecker();
+            if (responseChecker != null) responseChecker.StopChecker();
+            if (mm != null) mm.destroy();
+            try {
+                if (netLayer != null) netLayer.Close();
+            } finally {
+                if (callback != null) callback.accept();
+            }
+        };
     }
     /**
      * Disconnects the client from the cloud.
@@ -316,11 +359,11 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         return this._space;
     }
     public void triggerDisconnect() {
-        this._ClientLogger.info("disconnected");
-        this.whenDisconnected();
-        if (this._onDisconnect != null) {
-            this._onDisconnect.accept();
-            ;
+        Runnable cleanup;
+        synchronized (transportLifecycleLock) { cleanup = detachCurrentTransport(true); }
+        if (cleanup != null) {
+            this._ClientLogger.info("disconnected");
+            cleanup.run();
         }
     }
     public void unhandeledError(IPath iaPath, JObject errorJson) {
@@ -363,14 +406,28 @@ public class InfinicastClient extends PathImpl  implements IPath, IInfinicastCli
         return this._responseManager;
     }
     public void onInitConnector(ICError error, JObject data, JObject endPoint) {
+        Runnable notify = prepareInitConnector(error, data, endPoint);
+        if (notify != null) notify.run();
+    }
+    /** Apply endpoint state while the transport generation is locked. */
+    public Runnable prepareInitConnector(ICError error, JObject data, JObject endPoint) {
+        Consumer<ICError> callback = this._onConnect;
+        if (error != null) {
+            return callback == null ? null : () -> callback.accept(error);
+        }
         if ((data != null) && (data.get("error") != null)) {
-            this._onConnect.accept(ICError.fromJson(data.getJObject("error")));
-            ;
+            ICError connectError = ICError.fromJson(data.getJObject("error"));
+            return callback == null ? null : () -> callback.accept(connectError);
+        }
+        if (endPoint == null || endPoint.getString("path") == null ||
+                endPoint.getString("endpoint") == null) {
+            ICError connectError = ICError.create(ICErrorType.InternalError,
+                    "invalid_init_endpoint", "");
+            return callback == null ? null : () -> callback.accept(connectError);
         }
         else {
             this._thisEndpoint = new Endpoint(endPoint.getString("path"), endPoint.getString("endpoint"), this);
-            this._onConnect.accept(null);
-            ;
+            return callback == null ? null : () -> callback.accept(null);
         }
     }
     public ObjectStateManager getObjectStateManager() {

@@ -31,13 +31,14 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         this._connectorMessageManager = connectorMessageManager;
     }
     public void onInitConnector(ICError error, JObject data, JObject senderEndpoint) {
-        this._connector.onInitConnector(error, data, senderEndpoint);
+        this._connectorMessageManager.dispatchInitConnector(error, data, senderEndpoint);
     }
     public void onReceiveRequestResponse(ICError error, JObject data, int requestId, JObject senderEndpointObject) {
         PathAndEndpointContext endpointOb = this.getEndpointContext(senderEndpointObject, "");
         this.callHandlersLimited(error, "", Connector2EpsMessageType.RequestResponse, data, endpointOb, requestId, 1);
     }
     public void onReceiveRequest(ICError error, JObject data, String path, int requestId, JObject senderEndpointObject) {
+        if (!isCurrentTransportReceive()) return;
         PathAndEndpointContext endpointOb = this.getEndpointContext(senderEndpointObject, path);
         // Core owns these top-level envelope fields. The nested endpoint data is
         // client-controlled and must never provide an audit identity or IP.
@@ -59,7 +60,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         }
         boolean wasSomethingCalled = this.callHandlers(error, path, Connector2EpsMessageType.Request, data, endpointOb, requestId);
         String endpointId = endpointOb.getEndpoint().getEndpointId();
-        if (!(wasSomethingCalled)) {
+        if (!(wasSomethingCalled) && isCurrentTransportReceive()) {
             this._logger.error(((("did not find a handler for the request " + path) + " ") + endpointId) + requestId);
             this._connectorMessageManager.sendRequestAnswerString(Connector2EpsMessageType.RequestHandlingFailed, path, null, endpointId, requestId);
         }
@@ -186,6 +187,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         this.callHandlers(error, path, Connector2EpsMessageType.DebugObserverMessage, data, null, 0);
     }
     void callListenTerminate(ICError error, JObject data, JArray paths, String handlerType) {
+        if (!isCurrentTransportReceive()) return;
         for (JToken path : paths) {
             String pathString = path.toString();
             this.callHandlersByString(error, pathString, ((handlerType + "_") + Connector2EpsMessageType.ListenTerminate.toString()), data, this.getEndpointContext(null, pathString), 0);
@@ -220,14 +222,17 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         messageHandlerBag.addHandler(messageTypeAsString, handler);
     }
     public void receive(APlayStringMessage msg) {
+        if (!isCurrentTransportReceive()) return;
         if (this._logger.isDebugEnabled()) {
-            this._logger.debug("received " + msg.getDataAsString());
+            // Responses may include session data or other credentials.
+            this._logger.debug("received message");
         }
         try {
             this._receiveProtocol.decodeStringMessage(msg, this);
         }
         catch (Exception ex) {
-            this._logger.error((("Exception in decode message " + msg.getDataAsString()) + " ") + InfinicastExceptionHelper.ExceptionToString(ex));
+            // Decoder exception text can echo the untrusted protocol payload.
+            this._logger.error("Exception in decode message: " + ex.getClass().getSimpleName());
         }
     }
     public void setConnector(IConnector connector) {
@@ -257,6 +262,7 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         return bags;
     }
     int callHandlersLimitedByString(ICError error, String path, String type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
+        if (!isCurrentTransportReceive()) return 0;
         int callCount = 0;
         ArrayList<PathHandlerContainer> bags;
         if ((requestId != 0) && StringExtensions.IsNullOrEmpty(path)) {
@@ -284,9 +290,22 @@ public class ConnectorMessageReceiver implements IMessageReceiver, IEndpoint2Con
         return callCount;
     }
     void queueInHandlerPool(final ICError error, final PathHandlerContainer bag, final String type, final JObject data, final IPathAndEndpointContext context, final int requestId) {
+        final ConnectorMessageManager manager = _connectorMessageManager;
+        final Long receivingGeneration = manager == null ? null : manager.receivingTransportGeneration();
         this.handlerPool.QueueHandlerCall(() -> {
-            bag.callHandlers(error, type, data, context, requestId);
+            // Bound transports start at generation 1. Zero/null is an unbound
+            // direct receiver call, used by internal handlers and tests.
+            if (receivingGeneration == null || receivingGeneration <= 0 ||
+                    manager.isTransportGenerationCurrent(receivingGeneration)) {
+                bag.callHandlers(error, type, data, context, requestId);
+            }
         });
+    }
+    private boolean isCurrentTransportReceive() {
+        if (_connectorMessageManager == null) return true;
+        Long generation = _connectorMessageManager.receivingTransportGeneration();
+        return generation == null || generation <= 0 ||
+                _connectorMessageManager.isTransportGenerationCurrent(generation);
     }
     int callHandlersLimited(ICError error, String path, Connector2EpsMessageType type, JObject data, IPathAndEndpointContext context, int requestId, int handlerCount) {
         return this.callHandlersLimitedByString(error, path, type.toString(), data, context, requestId, handlerCount);

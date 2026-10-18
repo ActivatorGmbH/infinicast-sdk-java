@@ -53,6 +53,33 @@ public interface IPath {
     */
     CompletableFuture<Void> setDataAsync(JObject json);
     /**
+     * Sends an optional fixed diagnostic origin outside the data payload.
+     * Implementations without this capability fail explicitly for a non-null origin.
+     */
+    default CompletableFuture<Void> setDataAsync(JObject json, SetDataDiagnosticOrigin origin) {
+        if (origin == null) {
+            return setDataAsync(json);
+        }
+        throw new UnsupportedOperationException("SetData diagnostic origin is unavailable");
+    }
+    /**
+     * Optional request join. A null marker means this SDK/Core connection cannot
+     * provide a request-bound join. A non-null marker only means the frame was
+     * prepared for send; Comm ingress must independently confirm receipt.
+     */
+    default CompletableFuture<Void> setDataAsync(JObject json, SetDataDiagnosticOrigin origin,
+            BiConsumer<String, CompletableFuture<Void>> preparedObserver) {
+        if (origin == null) {
+            CompletableFuture<Void> original = setDataAsync(json);
+            if (preparedObserver != null) {
+                try { preparedObserver.accept(null, original); }
+                catch (RuntimeException ignored) { /* optional diagnostics */ }
+            }
+            return original;
+        }
+        throw new UnsupportedOperationException("SetData request join is unavailable");
+    }
+    /**
      * Modifies the data by converting the given field in the data to an array and ensures that the json will be removed from the set
      * if the data field is not existing or not a json array it will be initialized as [].
      * a completion callback or a promise can be used to get an information about the complete data after the change or error.
